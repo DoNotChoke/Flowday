@@ -120,7 +120,7 @@ Quy tắc nghiệp vụ:
 - **Màu:** ink `#151515`, nền `#F3F3F1`, panel cột `#E9E9E5`, chữ phụ `#5F5F5F`, xanh `#5B8DEF`, vàng `#FFC94A`, teal `#4FC1BE`, cam `#F47258`, lilac `#B9A5F2`.
 - **Tint:** `#E3ECFD`, `#FFF3D1`, `#DDF4F3`, `#FDE3DD`, `#EEEEEA`. **Heatmap:** `#E7E7E2`, `#BFE9E6`, `#7FD3CE`, `#3FB3AD`, `#1F7F7A`.
 - **Hình khối:** viền `1.5px solid #151515`, bóng cứng `0 3/4/5/6px 0 #151515`, bo góc 14–28 px, pill 999 px.
-- **Font:** Poppins 400–700. **Bẫy tiếng Việt:** CSS của bundle chỉ có subset latin, latin-ext, devanagari, không phủ U+1EA0–U+1EF1 (ạ, ấ, ệ, ữ...). Dùng stack `Poppins, "Be Vietnam Pro", sans-serif` để tên task tiếng Việt không bị lệch font.
+- **Font:** Giao diện dùng Poppins 400–700. Poppins thiếu U+1EA0–U+1EF1 (ạ, ấ, ệ, ữ...), nên **mọi nội dung người dùng nhập** (tên task, mô tả, tên project, comment, category) dùng class `font-content` (Be Vietnam Pro) để tiếng Việt đều nét. `font-sans` vẫn giữ Be Vietnam Pro làm dự phòng cho chữ Poppins không có.
 
 ### Chuẩn responsive
 

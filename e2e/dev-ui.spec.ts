@@ -24,6 +24,27 @@ test("md breakpoint starts at 744px", async ({ page }) => {
   await expect(marker).toBeVisible();
 });
 
+test("content text renders entirely in Be Vietnam Pro", async ({ page, browserName }) => {
+  test.skip(browserName !== "chromium", "platform font reporting needs the Chromium DevTools protocol");
+
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("DOM.enable");
+  await cdp.send("CSS.enable");
+  const { root } = await cdp.send("DOM.getDocument");
+  const { nodeId } = await cdp.send("DOM.querySelector", {
+    nodeId: root.nodeId,
+    selector: '[data-testid="vietnamese-content"]',
+  });
+
+  await expect
+    .poll(async () => {
+      const { fonts } = await cdp.send("CSS.getPlatformFontsForNode", { nodeId });
+      const others = fonts.filter((font) => !font.familyName.startsWith("Be Vietnam Pro"));
+      return { rendered: fonts.length > 0, others: others.map((font) => font.familyName) };
+    })
+    .toEqual({ rendered: true, others: [] });
+});
+
 test("renders Vietnamese with the web fonts, never a system font", async ({ page, browserName }) => {
   test.skip(browserName !== "chromium", "platform font reporting needs the Chromium DevTools protocol");
 

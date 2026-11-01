@@ -74,6 +74,15 @@ export default function DevUiPage() {
         <p className="font-bold">Chuẩn bị tài liệu họp nhóm và gửi cho đội thiết kế.</p>
       </section>
 
+      <section data-testid="vietnamese-content" className="flex flex-col gap-3 font-content">
+        <h2 className="text-xl font-semibold">Toàn bộ Be Vietnam Pro</h2>
+        <p className="text-xl">
+          Việt Nam: kế hoạch hôm nay gồm rất nhiều việc nhỏ; thư viện ấy ở đạo phố Mỹ Đình, chữ ữ và ỹ.
+        </p>
+        <p className="font-semibold">Hoàn thành báo cáo tiến độ dự án trước thứ Sáu tuần này.</p>
+        <p className="font-bold">Chuẩn bị tài liệu họp nhóm và gửi cho đội thiết kế.</p>
+      </section>
+
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Buttons</h2>
         <div className="flex flex-wrap items-center gap-3">

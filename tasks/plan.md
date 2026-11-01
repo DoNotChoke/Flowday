@@ -83,7 +83,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint B
 
-- [ ] `/dev/ui` đối chiếu đạt với thiết kế ở 390 và 1440 px, người duyệt đã xem
+- [x] `/dev/ui` đối chiếu đạt với thiết kế ở 390 và 1440 px, người duyệt đã xem
 
 ### Nhóm C: Tự động hóa
 
@@ -107,7 +107,6 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 | Chạy nhầm lệnh dev hoặc test vào DB production | Cao | `.env` trên máy chỉ chứa URL của branch `dev`; URL production chỉ nằm trong biến môi trường của Vercel |
 | `dev` và `production` dùng chung quota, hết thì cả hai dừng | Thấp | Theo dõi Usage; nếu dev tốn nhiều thì tách `dev` sang project riêng |
 | Dev và test cần mạng, test chậm hơn DB trên máy | Thấp | Chấp nhận được với một người dùng. Test có ghi dữ liệu phải tự dọn sau khi chạy |
-| Chữ tiếng Việt lệch nét vì trong cùng một từ có ký tự từ Poppins và Be Vietnam Pro | TB | Xem bằng mắt ở T0.6 với câu tiếng Việt dài. Nếu xấu, dùng riêng Be Vietnam Pro cho nội dung do người dùng nhập |
 | Next 16 khác kiến thức có sẵn | TB | Đọc `node_modules/next/dist/docs/` theo `AGENTS.md` trước khi viết `layout.tsx` và `globals.css` |
 | `npm test` trên Neon đã fail 1 lần rồi tự pass; mất thông báo lỗi, 8 lần thử lại quanh mốc Neon ngủ (5 và 7 phút) không tái hiện được | Thấp | Chưa rõ nguyên nhân nên chưa sửa. Nếu fail lại, giữ nguyên lỗi rồi mới xử lý. CI dùng Postgres riêng nên không bị ảnh hưởng |
 | WebKit trên Windows khác Safari thật | Thấp | CI chạy lại trên Linux; thiết bị thật kiểm tra ở T9.1 |

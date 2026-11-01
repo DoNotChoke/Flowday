@@ -202,9 +202,9 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 
 ## Checkpoint B: Sau T0.5–T0.8
 
-- [ ] Toàn bộ lệnh kiểm tra đều pass.
-- [ ] `/dev/ui` đạt yêu cầu ở 390 và 1440 px khi so với thiết kế.
-- [ ] Bạn đã xem `/dev/ui` và đồng ý phong cách trước khi dựng màn hình thật.
+- [x] Toàn bộ lệnh kiểm tra đều pass.
+- [x] `/dev/ui` đạt yêu cầu ở 390 và 1440 px khi so với thiết kế.
+- [x] Bạn đã xem `/dev/ui` và đồng ý phong cách trước khi dựng màn hình thật.
 
 ---
 

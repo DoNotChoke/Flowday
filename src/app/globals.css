@@ -6,6 +6,7 @@
   /* Named directly: next/font's variables add an Arial fallback that would take the
      Vietnamese glyphs Poppins lacks before Be Vietnam Pro gets them. */
   --font-sans: Poppins, "Be Vietnam Pro", sans-serif;
+  --font-content: "Be Vietnam Pro", sans-serif;
 
   --color-ink: #151515;
   --color-page: #f3f3f1;
