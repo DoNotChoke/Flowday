@@ -8,7 +8,7 @@ Phase 1 trả lời câu hỏi rủi ro nhất của dự án: Claude thật có
 
 **Hoàn thành khi:**
 
-1. Chỉ email trong `ALLOWED_EMAILS` đăng ký được, bằng cả mật khẩu lẫn Google. Route trong app chặn người chưa đăng nhập.
+1. Chỉ email trong `ALLOWED_EMAILS` đăng ký được. Google đã hoãn sang sau V1. Route trong app chặn người chưa đăng nhập.
 2. claude.ai và Claude Code đi hết luồng OAuth, `whoami` trả đúng người dùng.
 3. Khung app đúng thiết kế ở 1440 px, không có cuộn ngang ở 360, 390, 744, 820, 1024 và 1440 px.
 
@@ -105,14 +105,14 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T1.9 Mail và xác minh email (M)
 - [x] T1.10 Quên mật khẩu (M)
-- [ ] T1.11 Đăng nhập Google (S)
+- T1.11 Đăng nhập Google: hoãn theo quyết định của bạn
 
 ### Checkpoint hoàn thành Phase 1
 
-- [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile
+- [x] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile
 - [x] Bạn đã xem khung app ở 390, 820 và 1440 px
-- [ ] `PLAN.md` đã đánh dấu xong Phase 1
-- [ ] Sẵn sàng sang T2.1
+- [x] `PLAN.md` đã đánh dấu xong Phase 1
+- [x] Sẵn sàng sang T2.1
 
 ## Parallelization
 
@@ -143,10 +143,9 @@ Những việc này cần tài khoản của bạn. Secret chỉ đặt vào `.e
 |---|---|
 | T1.6 | Thêm connector trên claude.ai bằng URL tunnel, đăng nhập, bấm đồng ý, thử `whoami` |
 | T1.9 | Tạo tài khoản Resend bằng email của bạn, đặt `RESEND_API_KEY` vào `.env` |
-| T1.11 | Tạo OAuth client trên Google Cloud, đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` vào `.env` |
 
 ## Open Questions
 
 Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
 
-- **Google có còn cần không?** Mặc định giữ theo thiết kế, làm ở cuối. App một người dùng nên bỏ T1.11 cũng được, khi đó ẩn nút Google.
+- **Google:** đã chốt hoãn sang sau V1.

@@ -257,29 +257,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T1.11 Đăng nhập Google
 
-**Mô tả:** Bật `socialProviders.google` khi có đủ biến môi trường; thiếu thì ẩn nút. Thêm nút "Continue with Google" và "Sign up with Google" ở trang 01 và 02. Chỉ liên kết tài khoản khi email phía Google đã xác minh. `ALLOWED_EMAILS` vẫn áp dụng vì hook nằm ở bước tạo user.
-
-**Tiêu chí nghiệm thu:**
-- [ ] Bạn đăng nhập được bằng Google và vào `/tasks`.
-- [ ] Tài khoản Google ngoài danh sách bị từ chối, trang hiện lỗi dễ hiểu.
-- [ ] Thiếu biến môi trường thì không có nút, app vẫn chạy.
-
-**Kiểm chứng:**
-- [ ] E2E bấm nút và kiểm tra chuyển tới `accounts.google.com`.
-- [ ] Vitest khẳng định hook từ chối user tạo từ Google.
-- [ ] Đăng nhập Google bằng tay trên máy.
-
-**Phụ thuộc:** T1.9
-
-**File dự kiến:** `src/lib/auth/index.ts`, `src/app/(auth)/sign-in/SignInForm.tsx`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `.env.example`, `README.md`
-
-**Quy mô:** S
+Hoãn theo quyết định của bạn; xem `PLAN.md` mục 9. Mô tả gốc: `git show 8901b9f:tasks/todo.md`.
 
 ---
 
 ## Checkpoint hoàn thành Phase 1
 
-- [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile.
+- [x] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile. Bước xác minh trong E2E dùng helper ghi DB; link thật do Vitest phủ và bạn đã thử với email thật.
 - [x] Bạn đã xem khung app ở 390, 820 và 1440 px.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 1.
-- [ ] Sẵn sàng sang T2.1.
+- [x] `PLAN.md` đã đánh dấu xong Phase 1.
+- [x] Sẵn sàng sang T2.1.

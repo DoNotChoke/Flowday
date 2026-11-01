@@ -20,7 +20,7 @@ Xây **Flowday**: web app quản lý công việc, dùng đúng UI đã thiết 
 | Ngôn ngữ | TypeScript strict, Node 24 | UI mẫu là React; `.venv` trong repo đang rỗng nên không dùng Python |
 | Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4, `@dnd-kit` | Server Components + Server Actions, không cần thêm thư viện state |
 | Database | PostgreSQL 18 + Drizzle ORM | Truy vấn thống kê theo ngày và múi giờ; cùng driver `pg` cho local và Neon |
-| Đăng nhập | Better Auth: email/mật khẩu + Google, bắt buộc xác minh email | Plugin `mcp()` của `@better-auth/mcp` làm authorization server cho MCP. Email chủ tài khoản đã công khai trong commit nên phải xác minh để người lạ không đăng ký trước |
+| Đăng nhập | Better Auth: email/mật khẩu, bắt buộc xác minh email. Google hoãn sang sau V1 | Plugin `mcp()` của `@better-auth/mcp` làm authorization server cho MCP. Email chủ tài khoản đã công khai trong commit nên phải xác minh để người lạ không đăng ký trước |
 | MCP | Remote MCP (Streamable HTTP), không giữ session, tại `/api/mcp`, dùng `createMcpHandler` của `@modelcontextprotocol/server` 2.x | Một URL dùng được cho claude.ai, Desktop, mobile và Claude Code. Handler kiểu Web Fetch chạy thẳng trong route handler và phục vụ cả hai đời giao thức |
 | Xác thực MCP | OAuth 2.1 (PKCE S256) với CIMD; DCR tắt, chỉ bật nếu T1.6 cho thấy cần | Claude dùng CIMD khi server quảng bá. DCR cho bất kỳ ai ghi vào bảng client và đã bị MCP deprecate |
 | Cập nhật dữ liệu | Refetch khi quay lại tab, không poll | Để Neon được ngủ. `shortcut: chưa có realtime, thêm poll hoặc SSE nếu cần thấy task ngay khi đang nhìn Board` |
@@ -229,9 +229,9 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T1.8 Khung phone và tablet (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360, 390, 744, 820 px; 1023 px có bottom nav, 1024 px có Sidebar; drawer đóng bằng Esc và trả focus đúng chỗ.
 - [x] **T1.9 Mail và xác minh email (M).** `lib/mail` gọi API Resend bằng `fetch`, dev in ra console. *Xong khi:* chưa xác minh thì không đăng nhập được; nhận email thật từ `onboarding@resend.dev`.
 - [x] **T1.10 Quên mật khẩu (M).** `/forgot-password`, `/reset-password`. *Xong khi:* đổi mật khẩu qua link email thành công; link dùng lại bị từ chối; form không tiết lộ email có tồn tại hay không.
-- [ ] **T1.11 Đăng nhập Google (S).** *Xong khi:* đăng nhập được bằng Google; tài khoản ngoài danh sách bị từ chối; thiếu biến môi trường thì ẩn nút.
+- **T1.11 Đăng nhập Google: hoãn theo quyết định của bạn.** App một người dùng chưa cần; xem mục 9.
 
-**Checkpoint:** nếu T1.6 không đạt, **dừng lại** và đánh giá lại thư viện OAuth trước khi làm T1.7.
+**Checkpoint:** đã đạt. T1.6 qua cổng rủi ro, Phase 1 đóng với T1.11 hoãn lại.
 
 ### Phase 2 — Quản lý task
 
@@ -308,7 +308,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [ ] **T9.1 Kiểm tra responsive (M).** Playwright quét mọi route ở 360/390/744/820/1024/1180/1440 px. *Xong khi:* `scrollWidth <= clientWidth` trên tất cả route, kèm kiểm tra tay trên iPhone, Android và iPad thật (dọc, ngang, Split View).
 - [ ] **T9.2 Accessibility (S).** Bàn phím, focus, nhãn form, tương phản với axe. *Xong khi:* không còn lỗi axe mức serious trở lên.
 - [ ] **T9.3 Bảo mật (M).** Security headers, rate limit trang đăng nhập, rà quyền trên mọi service, trang Terms và Privacy, thêm lại checkbox Terms ở trang đăng ký. *Xong khi:* `npm audit` sạch mức high; test IDOR pass.
-- [ ] **T9.4 Triển khai (M).** Vercel Hobby region `sin1`, Neon branch `production` qua connection string pooled, Resend gửi từ `onboarding@resend.dev` tới email của chính tài khoản Resend, QStash, Google OAuth production, migrate trong CI, `pg_dump` hằng đêm bằng GitHub Actions vì gói Free của Neon chỉ giữ 6 giờ lịch sử. *Xong khi:* đã thử restore từ backup; deploy lại không mất dữ liệu; `/tasks` tải dưới 2 giây từ Việt Nam kể cả khi DB vừa thức.
+- [ ] **T9.4 Triển khai (M).** Vercel Hobby region `sin1`, Neon branch `production` qua connection string pooled, Resend gửi từ `onboarding@resend.dev` tới email của chính tài khoản Resend, QStash, migrate trong CI, `pg_dump` hằng đêm bằng GitHub Actions vì gói Free của Neon chỉ giữ 6 giờ lịch sử. *Xong khi:* đã thử restore từ backup; deploy lại không mất dữ liệu; `/tasks` tải dưới 2 giây từ Việt Nam kể cả khi DB vừa thức.
 - [ ] **T9.5 Nghiệm thu production (S).** Kết nối Claude bằng URL thật, chạy lại T3.6 và E2E. *Xong khi:* 3 tiêu chí ở mục 1 đều đạt.
 
 ## 7. Rủi ro
@@ -329,13 +329,13 @@ Kế hoạch đang chạy theo mặc định bên dưới. Trả lời khác th�
 
 | Câu hỏi | Mặc định | Cần trả lời trước |
 |---|---|---|
-| Có giữ đăng nhập Google không? | Có, làm ở cuối Phase 1 | T1.11 |
 | Ngôn ngữ giao diện? | Tiếng Anh như thiết kế; nội dung task tiếng Việt vẫn hiển thị đúng | T0.7 |
 
 ## 9. Sau V1
 
 Theo thứ tự đề xuất:
 
+1. Đăng nhập Google (T1.11 trong `git show 8901b9f:tasks/todo.md`): nút ở trang 01 và 02, `socialProviders.google`; `ALLOWED_EMAILS` đã áp dụng sẵn vì hook nằm ở bước tạo user.
 1. AI "Break into subtasks" qua Claude API (`@anthropic-ai/sdk`, model `claude-opus-5-5`).
 2. Browser notification + PWA.
 3. Attachment và tab Files.
