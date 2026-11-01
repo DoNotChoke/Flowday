@@ -63,6 +63,32 @@ test("signing up, signing out and signing in again works", async ({ page, isMobi
   await expect(page.getByRole("heading", { name: "Hi, Nguyễn Việt" })).toBeVisible();
 });
 
+test("signing in, creating a project and a task in it, then seeing the task on the board", async ({ page, request }, testInfo) => {
+  await register(request, testInfo);
+  await page.goto("/sign-in");
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
+
+  await page.goto("/projects/new");
+  await expect(page.getByRole("button", { name: "Create project" })).toBeEnabled();
+  await page.getByLabel("Project name").fill("Đồ án tốt nghiệp");
+  await page.getByRole("button", { name: "Create project" }).click();
+  await expect(page.getByRole("heading", { name: "Đồ án tốt nghiệp" })).toBeVisible();
+
+  await page.getByRole("link", { name: "New task" }).click();
+  await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+  await page.getByLabel("Task name").fill("Viết chương ba");
+  await page.getByLabel("Project", { exact: true }).selectOption({ label: "Đồ án tốt nghiệp" });
+  await page.getByRole("button", { name: "Create Task" }).click();
+  await expect(page).toHaveURL("/tasks");
+
+  const card = page.getByRole("region", { name: "On going" }).getByRole("link", { name: /Viết chương ba/ });
+  await expect(card).toContainText("Đồ án tốt nghiệp");
+
+  await page.reload();
+  await expect(card).toContainText("Đồ án tốt nghiệp");
+});
+
 test("a signed-out visitor is sent to sign-in and returned afterwards", async ({ page, request }, testInfo) => {
   await register(request, testInfo);
 
