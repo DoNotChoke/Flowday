@@ -1,9 +1,15 @@
 import { Suspense } from "react";
 import { Button } from "@/components/ui/Button";
+import { requireUserId } from "@/lib/auth/session";
+import { countOpenTasks } from "@/services/board";
 import { AppLogo } from "./AppLogo";
 import { NavLinks } from "./NavLinks";
 import { ProjectsSection } from "./ProjectsSection";
 import { UserMenu } from "./UserMenu";
+
+async function OpenTaskCount() {
+  return <span className="text-xs text-muted">{await countOpenTasks(await requireUserId())}</span>;
+}
 
 export function Sidebar() {
   return (
@@ -22,7 +28,7 @@ export function Sidebar() {
         <div className="flex flex-col gap-1">
           <span className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-[1px] text-muted">WORKSPACE</span>
           <Suspense>
-            <NavLinks />
+            <NavLinks taskCount={<Suspense><OpenTaskCount /></Suspense>} />
           </Suspense>
         </div>
 

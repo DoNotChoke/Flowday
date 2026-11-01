@@ -149,7 +149,7 @@ test.describe("signed in on a wide screen", () => {
     test(`no horizontal scroll at ${width} px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
 
-      await expect(page.getByRole("heading", { name: "My tasks" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Hi, Việt" })).toBeVisible();
       await expectNoHorizontalScroll(page);
     });
   }

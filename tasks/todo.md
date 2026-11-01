@@ -97,22 +97,22 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T2.4 Board đọc dữ liệu
 
-**Mô tả:** Trang 03 tại `/tasks`: lời chào, số task đến hạn hôm nay, 4 thẻ thống kê với delta 7 ngày, lọc category và project, sort, 4 cột, card với vòng %, trạng thái rỗng. Thêm prop bo góc cho `Card`, badge số task ở mục My tasks. Chưa có ô search (T2.9) và số streak (T7.2). Dữ liệu nằm trong `<Suspense>`, có skeleton.
+**Mô tả:** Trang 03 tại `/tasks`: lời chào, số task đến hạn hôm nay, 4 thẻ thống kê với delta 7 ngày, lọc category và project, sort, 4 cột, card với vòng %, trạng thái rỗng. Card task tự giữ bo góc 18 px nên `Card` không cần đổi. Badge số task ở mục My tasks. Sort có thêm Manual làm mặc định để kéo thả có ý nghĩa. Chưa có ô search (T2.9) và số streak (T7.2). Dữ liệu nằm trong `<Suspense>`, có skeleton.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Số liệu và delta khớp DB, "hôm nay" tính theo múi giờ người dùng.
-- [ ] Vòng % là subtask done/total; không có subtask thì 100% khi completed, ngược lại 0%.
-- [ ] Lọc và sort nằm trên URL, tải lại vẫn giữ.
-- [ ] Task của Claude sau này không cần thay đổi gì ở Board.
+- [x] Số liệu và delta khớp DB, "hôm nay" tính theo múi giờ người dùng.
+- [x] Vòng % là subtask done/total; không có subtask thì 100% khi completed, ngược lại 0%.
+- [x] Lọc và sort nằm trên URL, tải lại vẫn giữ.
+- [x] Task của Claude sau này không cần thay đổi gì ở Board.
 
 **Kiểm chứng:**
-- [ ] Vitest cho service thống kê với dữ liệu biên quanh nửa đêm.
-- [ ] E2E lọc và sort; không có cuộn ngang ở 1024 và 1440 px.
-- [ ] So ảnh với `design/screens/03-tasks-board.html` ở 1440 px.
+- [x] Vitest cho service thống kê với dữ liệu biên quanh nửa đêm.
+- [x] E2E lọc và sort; không có cuộn ngang ở 1024 và 1440 px.
+- [x] So ảnh với `design/screens/03-tasks-board.html` ở 1440 px.
 
 **Phụ thuộc:** T2.3
 
-**File dự kiến:** `src/app/(app)/tasks/page.tsx`, `src/components/app/board/Board.tsx`, `src/components/app/board/TaskCard.tsx`, `src/components/ui/Card.tsx`, `src/services/tasks.ts`
+**File dự kiến:** `src/app/(app)/tasks/page.tsx`, `src/components/app/board/Board.tsx`, `src/components/app/board/TaskCard.tsx`, `src/services/board.ts`, `src/services/board.test.ts`
 
 **Quy mô:** M
 

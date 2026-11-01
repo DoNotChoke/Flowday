@@ -113,3 +113,55 @@ for (const width of [360, 390, 820, 1440]) {
     await expectNoHorizontalScroll(page);
   });
 }
+
+test.describe("the board", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.getByLabel("Task name").fill("Viết chương ba");
+    await page.getByRole("button", { name: "Research" }).click();
+    await page.getByRole("button", { name: "Create Task" }).click();
+    await expect(page).toHaveURL("/tasks");
+  });
+
+  test("a new task appears in its column with the greeting above", async ({ page }) => {
+    await expect(page.getByRole("heading", { name: "Hi, Việt" })).toBeVisible();
+
+    const column = page.getByRole("region", { name: "On going" });
+    await expect(column.getByRole("link", { name: /Viết chương ba/ })).toBeVisible();
+    await expect(column.getByText("1", { exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Task status" }).getByText("1 Tasks")).toBeVisible();
+  });
+
+  test("the filter stays in the address and survives a reload", async ({ page }) => {
+    await page.getByRole("group", { name: "Filter by category" }).getByRole("link", { name: "Design" }).click();
+    await expect(page).toHaveURL(/category=/);
+    await expect(page.getByRole("link", { name: /Viết chương ba/ })).toHaveCount(0);
+
+    await page.reload();
+    await expect(page.getByRole("link", { name: /Viết chương ba/ })).toHaveCount(0);
+
+    await page.getByRole("group", { name: "Filter by category" }).getByRole("link", { name: "All" }).click();
+    await expect(page.getByRole("link", { name: /Viết chương ba/ })).toBeVisible();
+  });
+
+  test("a card opens its task", async ({ page }) => {
+    await page.getByRole("link", { name: /Viết chương ba/ }).click();
+
+    await expect(page).toHaveURL(/\/tasks\/[0-9a-f-]{36}$/);
+    await expect(page.getByRole("heading", { name: "Viết chương ba" })).toBeVisible();
+  });
+
+  test("the sidebar counts open tasks", async ({ page, isMobile }) => {
+    test.skip(isMobile, "the sidebar starts at 1024 px");
+
+    await expect(page.getByRole("link", { name: "My tasks" })).toContainText("1");
+  });
+
+  for (const width of [360, 390, 820, 1024, 1440]) {
+    test(`no horizontal scroll at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+
+      await expect(page.getByRole("heading", { name: "Hi, Việt" })).toBeVisible();
+      await expectNoHorizontalScroll(page);
+    });
+  }
+});

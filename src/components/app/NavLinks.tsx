@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
 
 export const links = [
   { label: "My tasks", href: "/tasks", icon: "M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" },
@@ -11,7 +12,7 @@ export const links = [
   { label: "Settings", href: "/settings", icon: "M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" },
 ];
 
-export function NavLinks() {
+export function NavLinks({ taskCount }: { taskCount?: ReactNode }) {
   const pathname = usePathname();
 
   return links.map(({ label, href, icon }) => {
@@ -26,7 +27,8 @@ export function NavLinks() {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d={icon} />
         </svg>
-        {label}
+        <span className="flex-1">{label}</span>
+        {href === "/tasks" && taskCount}
       </Link>
     );
   });
