@@ -66,7 +66,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm A: Tạo và nhìn thấy dữ liệu
 
 - [x] T2.1 Schema, datetime và service task (M)
-- [ ] T2.2 Create project (M)
+- [x] T2.2 Create project (M)
 - [ ] T2.2b Project trên Sidebar và drawer (S)
 - [ ] T2.3 Create task (M)
 - [ ] T2.4 Board đọc dữ liệu (M)

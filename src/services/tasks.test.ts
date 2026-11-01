@@ -2,7 +2,8 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { category, project, user } from "@/lib/db/schema";
-import { createTask, deleteTask, getTask, listTasks, NotFoundError, updateTask } from "./tasks";
+import { NotFoundError } from "./errors";
+import { createTask, deleteTask, getTask, listTasks, updateTask } from "./tasks";
 
 const alice = "tasks-test-alice";
 const bob = "tasks-test-bob";

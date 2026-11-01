@@ -35,15 +35,15 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** `src/services/projects.ts` với `createProject`: sinh `key` bỏ dấu tiếng Việt qua `unaccent` trong Postgres (hoặc chuẩn hóa NFD), trùng thì thêm số, tạo starter tasks theo template trong một transaction, cấp số bằng `UPDATE ... RETURNING`. Trang 09 tại `/projects/new`: 4 template, tên, prefix, mục tiêu, 6 màu, 6 icon, ngày bắt đầu và kết thúc, time budget, Live preview. Ẩn Members, Workflow statuses, Visibility. Thêm `flex-wrap` cho hàng màu và icon, `Project name` chỉ span từ `md`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Tạo từ template sinh đúng starter tasks, mã `FLW-1` trở đi.
-- [ ] `Đồ án tốt nghiệp` cho prefix `DAT`; prefix trùng thì thành `DAT2`; prefix sửa tay được validate.
-- [ ] Tạo đồng thời 2 task không bị trùng số.
-- [ ] Không có cuộn ngang ở 360 px.
+- [x] Tạo từ template sinh đúng starter tasks, mã `FLW-1` trở đi.
+- [x] `Đồ án tốt nghiệp` cho prefix `DAT`; prefix trùng thì thành `DAT2`. Prefix chỉ đọc như thiết kế.
+- [x] Tạo đồng thời 2 task không bị trùng số.
+- [x] Không có cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [ ] Vitest chạy 10 lần tạo song song và test cô lập theo user.
-- [ ] E2E tạo project từ form và thấy Live preview cập nhật.
-- [ ] So ảnh với `design/screens/09-create-project.html` ở 390 và 1440 px.
+- [x] Vitest chạy 10 lần tạo song song và test cô lập theo user.
+- [x] E2E tạo project từ form và thấy Live preview cập nhật.
+- [x] So ảnh với `design/screens/09-create-project.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** T2.1
 

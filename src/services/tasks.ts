@@ -3,20 +3,15 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
 import { zonedToUtc } from "@/lib/datetime";
+import { NotFoundError, parseInput } from "./errors";
 
-type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type TaskRow = typeof task.$inferSelect;
 
-export class NotFoundError extends Error {
-  constructor(what: string) {
-    super(`${what} not found.`);
-  }
-}
-
-const POSITION_GAP = 1024;
+export const POSITION_GAP = 1024;
 
 const fields = {
-  title: z.string().trim().min(1).max(200),
+  title: z.string().trim().min(1, "Enter a task name.").max(200),
   description: z.string().max(10_000).nullable().optional(),
   status: z.enum(taskStatus.enumValues),
   priority: z.enum(taskPriority.enumValues),
@@ -63,7 +58,7 @@ async function nextNumber(tx: Transaction, userId: string, projectId: string) {
   return row.number;
 }
 
-async function endOfColumn(tx: Transaction, userId: string, status: TaskRow["status"]) {
+export async function endOfColumn(tx: Transaction, userId: string, status: TaskRow["status"]) {
   const [row] = await tx
     .select({ last: max(task.position) })
     .from(task)
@@ -85,7 +80,7 @@ async function setCategories(tx: Transaction, userId: string, taskId: string, ca
 }
 
 export async function createTask(userId: string, input: CreateTaskInput) {
-  const { categoryIds, dueDate, dueTime, ...values } = createSchema.parse(input);
+  const { categoryIds, dueDate, dueTime, ...values } = parseInput(createSchema, input);
 
   return db.transaction(async (tx) => {
     const [row] = await tx
@@ -130,7 +125,7 @@ export function listTasks(userId: string, filter: { status?: TaskRow["status"]; 
 }
 
 export async function updateTask(userId: string, id: string, input: UpdateTaskInput) {
-  const { categoryIds, dueDate, dueTime, ...values } = updateSchema.parse(input);
+  const { categoryIds, dueDate, dueTime, ...values } = parseInput(updateSchema, input);
 
   return db.transaction(async (tx) => {
     const [current] = await tx

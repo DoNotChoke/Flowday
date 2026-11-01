@@ -238,7 +238,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `tasks/plan.md`.
 
 - [x] **T2.1 Schema và service (M).** Tách bảng Better Auth sang file riêng, thêm bảng của app (trừ `focus_session` ở T6.2 và `milestone` ở T4.4), seed category mặc định, `lib/datetime`, `src/services` với zod. Mọi hàm nhận `userId`. *Xong khi:* test CRUD pass; test user A không đọc/sửa được task của user B.
-- [ ] **T2.2 Create project (M).** Trang 09: template và starter tasks, tên, prefix, mục tiêu, màu, icon, ngày, time budget, Live preview; *Xong khi:* tạo từ template sinh đúng starter tasks có mã `FLW-1` trở đi; tên tiếng Việt cho prefix không dấu; tạo đồng thời 2 task không trùng số.
+- [x] **T2.2 Create project (M).** Trang 09: template và starter tasks, tên, prefix, mục tiêu, màu, icon, ngày, time budget, Live preview; *Xong khi:* tạo từ template sinh đúng starter tasks có mã `FLW-1` trở đi; tên tiếng Việt cho prefix không dấu; tạo đồng thời 2 task không trùng số.
 - [ ] **T2.2b Project trên Sidebar và drawer (S).** *Xong khi:* project mới hiện ngay; 30 project vẫn cuộn trong Sidebar.
 - [ ] **T2.3 Create task (M).** Trang 04: Project, Time estimate (giờ/phút, chip nhanh, số phiên focus), category nhiều lựa chọn, tạo category mới, status, priority, ngày giờ, nhắc hạn, Live preview. Bấm "+ New project" không mất nội dung đang nhập. *Xong khi:* tạo task xong xuất hiện trên Board; lỗi validation hiển thị tại trường tương ứng.
 - [ ] **T2.4 Board đọc dữ liệu (M).** Trang 03: 4 thẻ thống kê, cột, lọc category/project, sort, trạng thái rỗng, lời chào. *Xong khi:* số liệu khớp DB; delta tính theo 7 ngày gần nhất.
