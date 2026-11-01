@@ -21,6 +21,7 @@ test("without a key, development prints the mail instead of sending it", async (
 test("without a key, production fails loudly and logs nothing", async () => {
   vi.stubEnv("RESEND_API_KEY", "");
   vi.stubEnv("NODE_ENV", "production");
+  vi.stubEnv("FLOWDAY_DEV_MAIL", "");
   const log = vi.spyOn(console, "log").mockImplementation(() => {});
 
   await expect(sendMail(message)).rejects.toThrow("RESEND_API_KEY");
