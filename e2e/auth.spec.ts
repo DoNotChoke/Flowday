@@ -1,6 +1,9 @@
-import { randomInt } from "node:crypto";
+import { once } from "node:events";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+import { createHash, randomBytes, randomInt } from "node:crypto";
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
-import { deleteUser, expectNoHorizontalScroll } from "./helpers";
+import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll } from "./helpers";
 
 const password = "correct-horse-battery";
 
@@ -115,10 +118,112 @@ test("a forged session cookie gets past the proxy but not into the app", async (
 });
 
 test("the proxy leaves API and well-known paths alone", async ({ request }) => {
-  for (const path of ["/api/mcp", "/.well-known/oauth-protected-resource"]) {
-    const response = await request.get(path, { maxRedirects: 0 });
-    expect(response.status(), path).toBe(404);
+  const api = await request.get("/api/mcp", { maxRedirects: 0 });
+  expect(api.status()).toBe(401);
+
+  const wellKnown = await request.get("/.well-known/oauth-protected-resource", { maxRedirects: 0 });
+  expect(wellKnown.status()).toBe(404);
+});
+
+test.describe("connecting an MCP client", () => {
+  let redirectUri: string;
+  let callbackServer: Server;
+  const verifier = randomBytes(32).toString("base64url");
+  let clientId: string;
+
+  test.beforeEach(async () => {
+    callbackServer = createServer((_, response) => response.end("ok")).listen(0);
+    await once(callbackServer, "listening");
+    redirectUri = `http://localhost:${(callbackServer.address() as AddressInfo).port}/callback`;
+    // Registered without a port, like Claude Code, which then picks any free port.
+    clientId = await createOAuthClient("http://localhost/callback");
+  });
+
+  test.afterEach(async () => {
+    await deleteOAuthClient(clientId);
+    callbackServer.close();
+  });
+
+  function authorizeUrl(baseURL: string | undefined) {
+    const query = new URLSearchParams({
+      response_type: "code",
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      scope: "openid profile offline_access tasks:read tasks:write",
+      state: "xyz",
+      code_challenge: createHash("sha256").update(verifier).digest("base64url"),
+      code_challenge_method: "S256",
+      resource: `${baseURL}/api/mcp`,
+    });
+    return `/api/auth/oauth2/authorize?${query}`;
   }
+
+  test("sign-in, consent, token, refresh and whoami work end to end", async ({ page, request, baseURL, playwright }, testInfo) => {
+    await register(request, testInfo);
+    // Claude calls from a server, without the cookies register() left in `request`.
+    const claude = await playwright.request.newContext({ baseURL });
+
+    await page.goto(authorizeUrl(baseURL));
+    await expect(page).toHaveURL(/\/sign-in\?/);
+    await signIn(page, testInfo);
+
+    await expect(page).toHaveURL(/\/oauth\/consent\?/);
+    await expect(page.getByRole("heading", { name: "Allow E2E Client" })).toBeVisible();
+    await expect(page.getByText("localhost", { exact: true })).toBeVisible();
+    await expect(page.getByText("runs on this device")).toBeVisible();
+    await page.getByRole("button", { name: "Allow" }).click();
+
+    await page.waitForURL(`${redirectUri}?*`);
+    const callback = new URL(page.url()).searchParams;
+    expect(callback.get("state")).toBe("xyz");
+
+    const tokenResponse = await claude.post("/api/auth/oauth2/token", {
+      form: {
+        grant_type: "authorization_code",
+        code: callback.get("code")!,
+        redirect_uri: redirectUri,
+        client_id: clientId,
+        code_verifier: verifier,
+        resource: `${baseURL}/api/mcp`,
+      },
+    });
+    expect(tokenResponse.status(), await tokenResponse.text()).toBe(200);
+    const tokens = await tokenResponse.json();
+
+    const whoami = await claude.post("/api/mcp", {
+      headers: {
+        authorization: `Bearer ${tokens.access_token}`,
+        accept: "application/json, text/event-stream",
+        "mcp-protocol-version": "2025-11-25",
+      },
+      data: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "whoami", arguments: {} } },
+    });
+    expect(await whoami.text()).toContain(emailFor(testInfo));
+
+    const refreshResponse = await claude.post("/api/auth/oauth2/token", {
+      form: {
+        grant_type: "refresh_token",
+        refresh_token: tokens.refresh_token,
+        client_id: clientId,
+        resource: `${baseURL}/api/mcp`,
+      },
+    });
+    expect(refreshResponse.status(), await refreshResponse.text()).toBe(200);
+    expect((await refreshResponse.json()).refresh_token).not.toBe(tokens.refresh_token);
+  });
+
+  test("denying sends an error back to the client, with no code", async ({ page, request, baseURL }, testInfo) => {
+    await register(request, testInfo);
+    await page.goto(authorizeUrl(baseURL));
+    await signIn(page, testInfo);
+
+    await page.getByRole("button", { name: "Deny" }).click();
+
+    await page.waitForURL(`${redirectUri}?*`);
+    const callback = new URL(page.url()).searchParams;
+    expect(callback.get("error")).toBe("access_denied");
+    expect(callback.has("code")).toBe(false);
+  });
 });
 
 test("the password can be shown and hidden", async ({ page }) => {

@@ -87,7 +87,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm B: Cổng rủi ro MCP
 
 - [x] T1.4 Authorization server: JWT, `mcp()`, CIMD (M)
-- [ ] T1.5 `/api/mcp`, `whoami` và trang consent (M)
+- [x] T1.5 `/api/mcp`, `whoami` và trang consent (M)
 - [ ] T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S)
 
 ### Checkpoint B — dừng lại để quyết định

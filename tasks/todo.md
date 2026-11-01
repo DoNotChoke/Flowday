@@ -112,15 +112,15 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Cài `@modelcontextprotocol/server` và `zod`. `src/mcp/server.ts` tạo `McpServer` với tool `whoami` (scope `tasks:read`), trả tên, email và múi giờ từ `sub` của token. `src/app/api/mcp/route.ts` dùng `createMcpHandler` với `legacy` mặc định, bọc trong `requireMcpAuth`, có `challengeScopes`. Trang `/oauth/consent` dựng từ primitive: hiện tên client, hostname của redirect URI, danh sách scope, cảnh báo thêm khi redirect là loopback, nút Allow và Deny.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Không có token hoặc token sai trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
-- [ ] Handler trả lời được cả `initialize` đời `2025-11-25` lẫn yêu cầu đời `2026-07-28`.
-- [ ] Trang consent hiện hostname của redirect URI và có cảnh báo loopback; bấm Deny trả lỗi về client.
-- [ ] Chưa đăng nhập mà vào luồng OAuth thì qua `/sign-in`, xong quay lại consent.
+- [x] Không có token hoặc token sai trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
+- [x] Handler trả lời được cả `initialize` đời `2025-11-25` lẫn yêu cầu đời `2026-07-28`.
+- [x] Trang consent hiện hostname của redirect URI và có cảnh báo loopback; bấm Deny trả lỗi về client.
+- [x] Chưa đăng nhập mà vào luồng OAuth thì qua `/sign-in`, xong quay lại consent.
 
 **Kiểm chứng:**
-- [ ] Vitest gọi `mcpHandler.fetch` với request của hai đời giao thức.
-- [ ] `npx @modelcontextprotocol/inspector --cli http://localhost:3000/api/mcp --transport http --method tools/list` trả `401`.
-- [ ] Trên máy: thêm connector vào Claude Code bằng URL `localhost`, đăng nhập, gọi `whoami` được.
+- [x] Vitest gọi `mcpHandler.fetch` với request của hai đời giao thức.
+- [x] `npx @modelcontextprotocol/inspector --cli http://localhost:3000/api/mcp --transport http --method tools/list` trả `401`.
+- [x] E2E đi hết luồng authorize → đăng nhập → consent → token → `whoami` → refresh với redirect loopback khác port. Thử bằng Claude Code thật chuyển sang T1.6, vì cần bạn đăng nhập trên trình duyệt.
 
 **Phụ thuộc:** T1.4
 

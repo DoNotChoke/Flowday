@@ -27,14 +27,16 @@ export function SignInForm() {
     setPending(true);
     setError(undefined);
 
-    const { error } = await authClient.signIn
+    const { data, error } = await authClient.signIn
       .email({
         email: String(values.get("email")),
         password: String(values.get("password")),
         rememberMe: values.get("remember") === "on",
       })
-      .catch(() => ({ error: { message: undefined } }));
+      .catch(() => ({ data: null, error: { message: undefined } }));
 
+    // In an OAuth flow the auth client is already navigating to the consent page.
+    if (data?.redirect) return;
     // A full load drops every client cache, which the new session makes stale.
     if (!error) return window.location.assign(returnPath());
 

@@ -223,7 +223,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T1.2 Trang đăng ký (M).** Trang 02, thanh đo độ mạnh mật khẩu. *Xong khi:* đăng ký xong tới `/tasks`; lỗi hiện tại form; không có cuộn ngang ở 360 px.
 - [x] **T1.3 Đăng nhập, đăng xuất, chặn route (M).** Trang 01, giữ đăng nhập 30 ngày, `getCurrentUser()`, `src/proxy.ts`. *Xong khi:* đăng ký → đăng xuất → đăng nhập chạy trong E2E; chưa đăng nhập bị chuyển về `/sign-in`.
 - [x] **T1.4 Authorization server (M).** `jwt()`, `mcp()`, `cimd()`, metadata ở gốc domain. *Xong khi:* metadata đạt checklist mục 5.
-- [ ] **T1.5 `/api/mcp`, `whoami` và consent (M).** `createMcpHandler` bọc trong `requireMcpAuth`, trang `/oauth/consent`. *Xong khi:* `401` đúng chuẩn; trả lời được cả hai đời giao thức; Claude Code trên máy gọi được `whoami`.
+- [x] **T1.5 `/api/mcp`, `whoami` và consent (M).** `createMcpHandler` bọc trong `requireMcpAuth`, trang `/oauth/consent`. *Xong khi:* `401` đúng chuẩn; trả lời được cả hai đời giao thức; Claude Code trên máy gọi được `whoami`.
 - [ ] **T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S).** Mở HTTPS bằng tunnel. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; refresh token hoạt động; đạt checklist mục 5.
 - [ ] **T1.7 Sidebar và layout `(app)` (M).** Trang tạm cho các route chưa làm, không hiện số giả. *Xong khi:* giống thiết kế ở 1440 px; mọi trang trong app chặn người chưa đăng nhập.
 - [ ] **T1.8 Khung phone và tablet (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360, 390, 744, 820 px; 1023 px có bottom nav, 1024 px có Sidebar; drawer đóng bằng Esc và trả focus đúng chỗ.
