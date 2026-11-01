@@ -1,4 +1,8 @@
+import { existsSync } from "node:fs";
 import { defineConfig, devices } from "@playwright/test";
+
+// CI provides these variables directly and has no .env file.
+if (existsSync(".env")) process.loadEnvFile();
 
 const baseURL = "http://localhost:3000";
 

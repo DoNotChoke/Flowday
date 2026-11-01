@@ -220,7 +220,7 @@ Phase 4, 5, 6 và 8 làm song song được sau Phase 3. Phase 7 cần dữ li�
 Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `tasks/plan.md`. Cổng rủi ro đứng trước khung app và mail, để nếu phải đổi thư viện OAuth thì không làm lại các phần đó.
 
 - [x] **T1.1 Auth server và `ALLOWED_EMAILS` (M).** Better Auth, Drizzle, migration, hook chặn đăng ký. *Xong khi:* email ngoài danh sách bị từ chối và không để lại dữ liệu; danh sách rỗng thì từ chối tất cả.
-- [ ] **T1.2 Trang đăng ký (M).** Trang 02, thanh đo độ mạnh mật khẩu. *Xong khi:* đăng ký xong tới `/tasks`; lỗi hiện tại form; không có cuộn ngang ở 360 px.
+- [x] **T1.2 Trang đăng ký (M).** Trang 02, thanh đo độ mạnh mật khẩu. *Xong khi:* đăng ký xong tới `/tasks`; lỗi hiện tại form; không có cuộn ngang ở 360 px.
 - [ ] **T1.3 Đăng nhập, đăng xuất, chặn route (M).** Trang 01, giữ đăng nhập 30 ngày, `getCurrentUser()`, `src/proxy.ts`. *Xong khi:* đăng ký → đăng xuất → đăng nhập chạy trong E2E; chưa đăng nhập bị chuyển về `/sign-in`.
 - [ ] **T1.4 Authorization server (M).** `jwt()`, `mcp()`, `cimd()`, metadata ở gốc domain. *Xong khi:* metadata đạt checklist mục 5.
 - [ ] **T1.5 `/api/mcp`, `whoami` và consent (M).** `createMcpHandler` bọc trong `requireMcpAuth`, trang `/oauth/consent`. *Xong khi:* `401` đúng chuẩn; trả lời được cả hai đời giao thức; Claude Code trên máy gọi được `whoami`.

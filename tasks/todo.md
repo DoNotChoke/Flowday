@@ -35,14 +35,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Layout `(auth)` và trang 02 tại `/sign-up`: họ tên, email, mật khẩu, thanh đo độ mạnh, panel "Three steps to a calmer day". Tạo `src/lib/auth/client.ts`. Lỗi hiện ngay tại trường tương ứng. Tạm chưa có nút Google và checkbox Terms. Dưới `lg`, panel minh họa xếp dưới form hoặc ẩn đi, đối chiếu `design/screens/02-sign-up.html`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đăng ký thành công thì tới `/tasks` (tạm là trang rỗng).
-- [ ] Email ngoài danh sách và email đã tồn tại hiện lỗi tại form, không chuyển trang.
-- [ ] Không có cuộn ngang ở 360 và 390 px; ô nhập 16 px trên cảm ứng.
+- [x] Đăng ký thành công thì tới `/tasks` (tạm là trang rỗng).
+- [x] Email ngoài danh sách và email đã tồn tại hiện lỗi tại form, không chuyển trang.
+- [x] Không có cuộn ngang ở 360 và 390 px; ô nhập 16 px trên cảm ứng.
 
 **Kiểm chứng:**
-- [ ] `e2e/auth.spec.ts` pass trên cả 2 project, mỗi project dùng email riêng và tự dọn dữ liệu.
-- [ ] Mở trang bằng tay, so ảnh với thiết kế ở 390 và 1440 px.
-- [ ] Toàn bộ form dùng được bằng bàn phím.
+- [x] `e2e/auth.spec.ts` pass trên cả 2 project, mỗi project dùng email riêng và tự dọn dữ liệu.
+- [x] Mở trang bằng tay, so ảnh với thiết kế ở 390 và 1440 px.
+- [x] Toàn bộ form dùng được bằng bàn phím.
 
 **Phụ thuộc:** T1.1
 
@@ -54,7 +54,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T1.3 Đăng nhập, đăng xuất, chặn route
 
-**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
+**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Thêm link "Already have an account? Sign in" còn thiếu ở `/sign-up`, form đăng nhập dùng `method="post"` và đọc mật khẩu từ `FormData` như form đăng ký. Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
 
 **Tiêu chí nghiệm thu:**
 - [ ] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.

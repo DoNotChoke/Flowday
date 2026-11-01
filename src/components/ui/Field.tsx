@@ -1,6 +1,6 @@
-import { useId, type ComponentProps, type ElementType } from "react";
+import { useId, type ComponentProps, type ElementType, type ReactNode } from "react";
 
-type FieldProps = { label: string; hint?: string; error?: string } & (
+type FieldProps = { label: string; hint?: string; error?: string; meter?: ReactNode } & (
   | ({ as?: "input" } & ComponentProps<"input">)
   | ({ as: "textarea" } & ComponentProps<"textarea">)
   | ({ as: "select" } & ComponentProps<"select">)
@@ -12,7 +12,7 @@ const shapes = {
   select: "select-chevron h-12.5 pe-10",
 };
 
-export function Field({ as = "input", label, hint, error, id, className = "", ...props }: FieldProps) {
+export function Field({ as = "input", label, hint, error, meter, id, className = "", ...props }: FieldProps) {
   const fallbackId = useId();
   const controlId = id ?? fallbackId;
   const messageId = `${controlId}-message`;
@@ -31,6 +31,7 @@ export function Field({ as = "input", label, hint, error, id, className = "", ..
         aria-describedby={message ? messageId : undefined}
         className={`w-full rounded-control border-hard bg-white px-4 text-[15px] shadow-hard-3 placeholder:text-muted aria-invalid:border-danger pointer-coarse:text-base ${shapes[as]} ${className}`}
       />
+      {meter}
       {message && (
         <p id={messageId} className={`text-xs ${error ? "font-medium text-danger" : "text-muted"}`}>
           {message}

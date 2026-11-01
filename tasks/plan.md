@@ -76,7 +76,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm A: Tài khoản tối thiểu
 
 - [x] T1.1 Auth server và `ALLOWED_EMAILS` (M)
-- [ ] T1.2 Trang đăng ký (M)
+- [x] T1.2 Trang đăng ký (M)
 - [ ] T1.3 Đăng nhập, đăng xuất, chặn route (M)
 
 ### Checkpoint A
