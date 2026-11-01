@@ -13,7 +13,7 @@ jobs:
       DATABASE_URL: postgresql://flowday:flowday@localhost:5432/flowday
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:3000
-      ALLOWED_EMAILS: e2e-desktop@flowday.test,e2e-mobile@flowday.test,e2e-shell-desktop@flowday.test,e2e-shell-mobile@flowday.test,e2e-projects-desktop@flowday.test,e2e-projects-mobile@flowday.test,e2e-tasks-desktop@flowday.test,e2e-tasks-mobile@flowday.test
+      ALLOWED_EMAILS: e2e-desktop@flowday.test,e2e-mobile@flowday.test,e2e-shell-desktop@flowday.test,e2e-shell-mobile@flowday.test,e2e-projects-desktop@flowday.test,e2e-projects-mobile@flowday.test,e2e-tasks-desktop@flowday.test,e2e-tasks-mobile@flowday.test,e2e-board-desktop@flowday.test,e2e-board-mobile@flowday.test
       FLOWDAY_DEV_UI: "1"
       FLOWDAY_DEV_MAIL: "1"
     services:

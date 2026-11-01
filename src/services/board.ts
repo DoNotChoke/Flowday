@@ -9,11 +9,6 @@ export type BoardFilter = { categoryId?: string; projectId?: string; sort?: "man
 
 const WEEK = 7 * 86_400_000;
 
-export function percentDone(status: Status, done: number, total: number) {
-  if (total > 0) return Math.round((done / total) * 100);
-  return status === "completed" ? 100 : 0;
-}
-
 const order = {
   manual: [asc(task.position), asc(task.id)],
   priority: [desc(task.priority), asc(task.position), asc(task.id)],

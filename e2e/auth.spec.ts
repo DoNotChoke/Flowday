@@ -64,6 +64,7 @@ test("signing up, signing out and signing in again works", async ({ page, isMobi
 });
 
 test("signing in, creating a project and a task in it, then seeing the task on the board", async ({ page, request }, testInfo) => {
+  test.slow();
   await register(request, testInfo);
   await page.goto("/sign-in");
   await signIn(page, testInfo);

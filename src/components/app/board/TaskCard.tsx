@@ -1,6 +1,7 @@
 import Link from "next/link";
+import type { ComponentProps } from "react";
 import type { getBoard } from "@/services/board";
-import { percentDone } from "@/services/board";
+import { percentDone } from "@/lib/progress";
 
 export type Card = Awaited<ReturnType<typeof getBoard>>["tasks"][number];
 
@@ -11,14 +12,16 @@ const priorities = {
   low: { label: "Low", tone: "bg-stone-tint", dot: "#7a7a7a" },
 };
 
-export function TaskCard({ card, color }: { card: Card; color: string }) {
+type TaskCardProps = { card: Card; color: string } & Omit<ComponentProps<typeof Link>, "href" | "className">;
+
+export function TaskCard({ card, color, ...link }: TaskCardProps) {
   const percent = percentDone(card.status, card.subtasksDone, card.subtasksTotal);
   const priority = priorities[card.priority];
   const canceled = card.status === "canceled";
   const ring = canceled ? "#b5b5b0" : color;
 
   return (
-    <Link href={`/tasks/${card.id}`} className="flex flex-col gap-3 rounded-[18px] border-hard bg-white p-4 shadow-hard-4">
+    <Link {...link} href={`/tasks/${card.id}`} className="flex touch-manipulation flex-col gap-3 rounded-[18px] border-hard bg-white p-4 shadow-hard-4 select-none [-webkit-touch-callout:none]">
       <div className="flex items-center justify-between gap-2">
         <span className="min-w-0 truncate rounded-full bg-[#f0f0ec] px-2.5 py-1 font-content text-[11px] font-medium">
           {card.categories.join(" · ") || "No category"}

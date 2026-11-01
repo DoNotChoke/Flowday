@@ -2,11 +2,12 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { category, project, user } from "@/lib/db/schema";
-import { NotFoundError } from "./errors";
-import { createTask, deleteTask, getTask, listTasks, updateTask } from "./tasks";
+import { NotFoundError, ValidationError } from "./errors";
+import { createTask, deleteTask, getTask, listTasks, moveTask, updateTask } from "./tasks";
 
 const alice = "tasks-test-alice";
 const bob = "tasks-test-bob";
+const mover = "tasks-test-mover";
 let aliceCategory: string;
 let bobCategory: string;
 let aliceProject: string;
@@ -16,6 +17,7 @@ beforeAll(async () => {
   await db.insert(user).values([
     { id: alice, name: "Alice", email: "tasks-alice@flowday.test" },
     { id: bob, name: "Bob", email: "tasks-bob@flowday.test", timezone: "America/New_York" },
+    { id: mover, name: "Mover", email: "tasks-mover@flowday.test" },
   ]);
   const categories = await db
     .insert(category)
@@ -38,7 +40,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  await db.delete(user).where(inArray(user.id, [alice, bob]));
+  await db.delete(user).where(inArray(user.id, [alice, bob, mover]));
   await db.$client.end();
 });
 
@@ -176,4 +178,79 @@ test("a project's numbering is shared, not per user", async () => {
   const [row] = await db.select().from(project).where(eq(project.id, aliceProject));
 
   expect(row.taskSeq).toBeGreaterThan(0);
+});
+
+async function column(userId: string, status: "in_process" | "completed") {
+  return (await listTasks(userId, { status })).map((row) => row.title);
+}
+
+test("a task moves between two cards, to the top and to the end of a column", async () => {
+  const first = await createTask(mover, { title: "first", status: "in_process" });
+  const last = await createTask(mover, { title: "last", status: "in_process" });
+  const middle = await createTask(mover, { title: "middle" });
+  const top = await createTask(mover, { title: "top" });
+  const end = await createTask(mover, { title: "end" });
+
+  await moveTask(mover, middle.id, { status: "in_process", afterId: first.id });
+  await moveTask(mover, top.id, { status: "in_process", afterId: null });
+  await moveTask(mover, end.id, { status: "in_process", afterId: last.id });
+
+  expect(await column(mover, "in_process")).toEqual(["top", "first", "middle", "last", "end"]);
+  await Promise.all([first, last, middle, top, end].map((row) => deleteTask(mover, row.id)));
+});
+
+test("a task reorders inside its own column", async () => {
+  const a = await createTask(mover, { title: "a", status: "in_process" });
+  const b = await createTask(mover, { title: "b", status: "in_process" });
+  const c = await createTask(mover, { title: "c", status: "in_process" });
+
+  await moveTask(mover, a.id, { status: "in_process", afterId: b.id });
+
+  expect(await column(mover, "in_process")).toEqual(["b", "a", "c"]);
+  await Promise.all([a, b, c].map((row) => deleteTask(mover, row.id)));
+});
+
+test("moving into an empty column works, and completing stamps the time only when the status changes", async () => {
+  const moved = await createTask(mover, { title: "done" });
+
+  const completed = await moveTask(mover, moved.id, { status: "completed", afterId: null });
+  expect(completed.completedAt).toBeInstanceOf(Date);
+
+  const again = await moveTask(mover, moved.id, { status: "completed", afterId: null });
+  expect(again.completedAt).toEqual(completed.completedAt);
+
+  const reopened = await moveTask(mover, moved.id, { status: "ongoing", afterId: null });
+  expect(reopened.completedAt).toBeNull();
+  await deleteTask(mover, moved.id);
+});
+
+test("a neighbour that left the column puts the task at the end", async () => {
+  const stays = await createTask(mover, { title: "stays", status: "in_process" });
+  const gone = await createTask(mover, { title: "gone" });
+  const moved = await createTask(mover, { title: "moved" });
+
+  await moveTask(mover, moved.id, { status: "in_process", afterId: gone.id });
+
+  expect(await column(mover, "in_process")).toEqual(["stays", "moved"]);
+  await Promise.all([stays, gone, moved].map((row) => deleteTask(mover, row.id)));
+});
+
+test("another user's task cannot be moved, and their cards do not place yours", async () => {
+  const mine = await createTask(mover, { title: "mine", status: "in_process" });
+  const theirs = await createTask(bob, { title: "theirs", status: "in_process" });
+
+  await expect(moveTask(mover, theirs.id, { status: "completed", afterId: null })).rejects.toBeInstanceOf(NotFoundError);
+  expect((await getTask(bob, theirs.id))?.status).toBe("in_process");
+
+  const moved = await createTask(mover, { title: "moved" });
+  await moveTask(mover, moved.id, { status: "in_process", afterId: theirs.id });
+  expect(await column(mover, "in_process")).toEqual(["mine", "moved"]);
+  await Promise.all([deleteTask(mover, mine.id), deleteTask(mover, moved.id), deleteTask(bob, theirs.id)]);
+});
+
+test("a status outside the list is refused", async () => {
+  const row = await createTask(mover, { title: "row" });
+
+  await expect(moveTask(mover, row.id, { status: "archived" as "ongoing", afterId: null })).rejects.toBeInstanceOf(ValidationError);
+  await deleteTask(mover, row.id);
 });

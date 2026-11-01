@@ -3,7 +3,8 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { category, subtask, task, user } from "@/lib/db/schema";
-import { getBoard, percentDone } from "./board";
+import { percentDone } from "@/lib/progress";
+import { getBoard } from "./board";
 import { createProject } from "./projects";
 import { createTask } from "./tasks";
 

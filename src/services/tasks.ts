@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, max, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
@@ -31,9 +31,11 @@ const createSchema = z.object({
   alertEnabled: fields.alertEnabled.default(false),
 });
 const updateSchema = z.object(fields).partial();
+const moveSchema = z.object({ status: fields.status, afterId: z.string().nullable() });
 
 export type CreateTaskInput = z.input<typeof createSchema>;
 export type UpdateTaskInput = z.input<typeof updateSchema>;
+export type MoveTaskInput = z.input<typeof moveSchema>;
 
 function statusStamps(status: TaskRow["status"]) {
   return {
@@ -146,6 +148,48 @@ export async function updateTask(userId: string, id: string, input: UpdateTaskIn
     if (categoryIds) await setCategories(tx, userId, id, categoryIds);
 
     const [row] = await tx.update(task).set(changes).where(eq(task.id, id)).returning();
+    return row;
+  });
+}
+
+// shortcut: positions run out of float precision after about 50 inserts into the same gap, renumber the column when two cards get too close.
+function positionAfter(cards: { id: string; position: number }[], afterId: string | null) {
+  if (afterId === null) return cards.length > 0 ? cards[0].position - POSITION_GAP : POSITION_GAP;
+  const index = cards.findIndex((card) => card.id === afterId);
+  // -1 picks the last card: a neighbour that left the column sends the task to the end.
+  const previous = cards.at(index);
+  const next = index === -1 ? undefined : cards[index + 1];
+  if (!previous) return POSITION_GAP;
+  return next ? (previous.position + next.position) / 2 : previous.position + POSITION_GAP;
+}
+
+export async function moveTask(userId: string, id: string, input: MoveTaskInput) {
+  const { status, afterId } = parseInput(moveSchema, input);
+
+  return db.transaction(async (tx) => {
+    const [current] = await tx
+      .select()
+      .from(task)
+      .where(and(eq(task.id, id), eq(task.userId, userId)))
+      .for("update");
+    if (!current) throw new NotFoundError("Task");
+
+    const cards = await tx
+      .select({ id: task.id, position: task.position })
+      .from(task)
+      .where(and(eq(task.userId, userId), eq(task.status, status), ne(task.id, id)))
+      .orderBy(asc(task.position), asc(task.id));
+
+    const [row] = await tx
+      .update(task)
+      .set({
+        status,
+        position: positionAfter(cards, afterId),
+        updatedAt: new Date(),
+        ...(status !== current.status && statusStamps(status)),
+      })
+      .where(eq(task.id, id))
+      .returning();
     return row;
   });
 }

@@ -133,14 +133,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Cài `@dnd-kit/core` và `@dnd-kit/sortable`. Đổi status và thứ tự, cập nhật lạc quan, `moveTask` trong service ghi `position` và `completed_at`. Hỗ trợ `KeyboardSensor` và `TouchSensor` có độ trễ. Có thông báo cho trình đọc màn hình.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Kéo sang cột khác được lưu sau khi tải lại.
-- [ ] Lỗi mạng thì card quay về chỗ cũ và có thông báo.
-- [ ] Bàn phím di chuyển được card giữa các cột.
+- [x] Kéo sang cột khác được lưu sau khi tải lại.
+- [x] Lỗi mạng thì card quay về chỗ cũ và có thông báo.
+- [x] Bàn phím di chuyển được card giữa các cột.
 - [ ] Vuốt dọc trên cảm ứng cuộn trang, giữ lâu mới kéo.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `moveTask`: giữa hai card, đầu cột, cuối cột, cột rỗng, task của user khác.
-- [ ] E2E kéo bằng chuột, bằng bàn phím, và chặn mạng bằng `page.route`.
+- [x] Vitest cho `moveTask`: giữa hai card, đầu cột, cuối cột, cột rỗng, task của user khác.
+- [x] E2E kéo bằng chuột, bằng bàn phím, và chặn mạng bằng `page.route`.
 
 **Phụ thuộc:** T2.4
 
