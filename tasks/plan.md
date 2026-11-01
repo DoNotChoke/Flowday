@@ -76,7 +76,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm B: Thiết kế và UI
 
-- [ ] T0.5 Tách thiết kế ra `design/screens/` (S)
+- [x] T0.5 Tách thiết kế ra `design/screens/` (S)
 - [ ] T0.6 Design token và font (M)
 - [ ] T0.7 Primitive hành động: Button, Card, Chip, Segmented (M)
 - [ ] T0.8 Primitive form và overlay: Field, Switch, Sheet (M)
@@ -109,6 +109,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 | Dev và test cần mạng, test chậm hơn DB trên máy | Thấp | Chấp nhận được với một người dùng. Test có ghi dữ liệu phải tự dọn sau khi chạy |
 | Chữ tiếng Việt lệch nét vì trong cùng một từ có ký tự từ Poppins và Be Vietnam Pro | TB | Xem bằng mắt ở T0.6 với câu tiếng Việt dài. Nếu xấu, dùng riêng Be Vietnam Pro cho nội dung do người dùng nhập |
 | Next 16 khác kiến thức có sẵn | TB | Đọc `node_modules/next/dist/docs/` theo `AGENTS.md` trước khi viết `layout.tsx` và `globals.css` |
+| `npm test` trên Neon đã fail 1 lần rồi tự pass; mất thông báo lỗi, 8 lần thử lại quanh mốc Neon ngủ (5 và 7 phút) không tái hiện được | Thấp | Chưa rõ nguyên nhân nên chưa sửa. Nếu fail lại, giữ nguyên lỗi rồi mới xử lý. CI dùng Postgres riêng nên không bị ảnh hưởng |
 | WebKit trên Windows khác Safari thật | Thấp | CI chạy lại trên Linux; thiết bị thật kiểm tra ở T9.1 |
 | Test e2e không ổn định khi chạy `next dev` | Thấp | CI chạy e2e trên bản `next build` + `next start` nếu `next dev` gây lỗi chập chờn; khi đó `/dev/ui` cần cờ bật riêng |
 

@@ -207,7 +207,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T0.2 Playwright smoke (S).** *Xong khi:* test chạy trên Chromium desktop và WebKit mobile.
 - [x] **T0.3 Postgres và migration đầu tiên (M).** *Xong khi:* `unaccent` được cài qua migration trên DB mới của Neon.
 - [x] **T0.4 DB client, Vitest và README (M).** *Xong khi:* test `unaccent()` đi qua `src/lib/db`; README đủ để chạy dự án.
-- [ ] **T0.5 Tách thiết kế (S).** *Xong khi:* đủ 10 màn hình và Sidebar trong `design/screens/`, đọc được bằng mắt thường.
+- [x] **T0.5 Tách thiết kế (S).** *Xong khi:* đủ 10 màn hình và Sidebar trong `design/screens/`, đọc được bằng mắt thường.
 - [ ] **T0.6 Design token và font (M).** *Xong khi:* token, breakpoint 744 px và font tiếng Việt đúng trên `/dev/ui`; trang này trả 404 trong production.
 - [ ] **T0.7 Primitive hành động (M).** *Xong khi:* Button, Card, Chip, Segmented đạt vùng chạm 44 px và có focus rõ.
 - [ ] **T0.8 Primitive form và overlay (M).** *Xong khi:* Field, Switch, Sheet dùng được bằng bàn phím trên Chromium và WebKit.

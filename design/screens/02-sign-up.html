@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Flowday — Sign up</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#151515}a:hover{color:#C2412A}
+input::placeholder{color:#7A7A7A}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F3F3F1; font-family: Poppins, sans-serif; color: #151515; padding: 24px; display: flex; flex-wrap: wrap-reverse; gap: 24px">
+
+  <!-- Form -->
+  <section style="flex: 1 1 440px; min-width: 0; display: flex; align-items: center; justify-content: center; padding: 24px 8px">
+    <form style="width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 18px" sc-camel-on-submit="{{submit}}">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px">
+        <div style="width: 38px; height: 38px; border-radius: 11px; background: #151515; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#FFC94A" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        </div>
+        <span style="font-size: 20px; font-weight: 700">Flowday</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <h1 style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.8px">Create your account</h1>
+        <p style="margin: 0; font-size: 15px; color: #5F5F5F">Free forever for personal use. No credit card.</p>
+      </div>
+
+      <button type="button" style="height: 52px; display: flex; align-items: center; justify-content: center; gap: 12px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 4px 0 #151515; font-family: Poppins, sans-serif; font-size: 15px; font-weight: 500; color: #151515; cursor: pointer">
+        <svg width="20" height="20" sc-camel-view-box="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"></path><path fill="#FBBC05" d="M10.6 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.9-6.1z"></path><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"></path></svg>
+        Sign up with Google
+      </button>
+
+      <div style="display: flex; align-items: center; gap: 12px; color: #5F5F5F; font-size: 13px">
+        <span style="flex: 1; height: 1px; background: #CFCFCB"></span>or use your email<span style="flex: 1; height: 1px; background: #CFCFCB"></span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <label for="fullname" style="font-size: 14px; font-weight: 500">Full name</label>
+        <input id="fullname" type="text" placeholder="Your name" style="height: 50px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #151515; border-radius: 14px; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 15px; box-shadow: 0 3px 0 #151515; outline-color: #F47258">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <label for="remail" style="font-size: 14px; font-weight: 500">Email</label>
+        <input id="remail" type="email" placeholder="you@gmail.com" style="height: 50px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #151515; border-radius: 14px; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 15px; box-shadow: 0 3px 0 #151515; outline-color: #F47258">
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <label for="rpass" style="font-size: 14px; font-weight: 500">Password</label>
+        <input id="rpass" type="password" placeholder="Type to see strength" value="{{pw}}" sc-camel-on-change="{{setPw}}" style="height: 50px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #151515; border-radius: 14px; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 15px; box-shadow: 0 3px 0 #151515; outline-color: #F47258">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 4px" aria-hidden="true">
+          <sc-for list="{{bars}}" as="b" hint-placeholder-count="4">
+            <span style="height: 6px; border-radius: 4px; background: {{b.color}}"></span>
+          </sc-for>
+        </div>
+        <span style="font-size: 12px; color: #5F5F5F">{{strengthLabel}}</span>
+      </div>
+
+      <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: #3D3D3D; cursor: pointer">
+        <input type="checkbox" style="width: 18px; height: 18px; margin-top: 1px; accent-color: #151515">
+        <span>I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</span>
+      </label>
+
+      <button type="submit" style="height: 54px; background: #F47258; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 4px 0 #151515; font-family: Poppins, sans-serif; font-size: 16px; font-weight: 600; color: #151515; cursor: pointer">Create account</button>
+      <p style="margin: 0; text-align: center; font-size: 14px; color: #5F5F5F">Already have an account? <a href="Main.dc.html" style="font-weight: 600">Sign in</a></p>
+    </form>
+  </section>
+
+  <!-- Right: onboarding panel -->
+  <section style="flex: 1 1 520px; min-width: 0; box-sizing: border-box; background: #5B8DEF; border: 1.5px solid #151515; border-radius: 28px; box-shadow: 0 6px 0 #151515; padding: 40px; display: flex; flex-direction: column; justify-content: center; gap: 28px">
+    <h2 style="margin: 0; font-size: 40px; line-height: 1.15; font-weight: 700; letter-spacing: -1px; max-width: 520px">Three steps to a calmer day.</h2>
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; max-width: 540px">
+      <li style="display: flex; gap: 16px; align-items: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 18px; box-shadow: 0 4px 0 #151515; padding: 18px">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 12px; background: #FFC94A; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center; font-weight: 700">1</span>
+        <span><span style="display: block; font-weight: 600; font-size: 16px">Capture every task</span><span style="font-size: 14px; color: #5F5F5F">Name, priority, category — done in 5 seconds.</span></span>
+      </li>
+      <li style="display: flex; gap: 16px; align-items: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 18px; box-shadow: 0 4px 0 #151515; padding: 18px; margin-left: 32px">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 12px; background: #4FC1BE; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center; font-weight: 700">2</span>
+        <span><span style="display: block; font-weight: 600; font-size: 16px">Plan it on your calendar</span><span style="font-size: 14px; color: #5F5F5F">Drag tasks onto days, get a nudge before deadlines.</span></span>
+      </li>
+      <li style="display: flex; gap: 16px; align-items: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 18px; box-shadow: 0 4px 0 #151515; padding: 18px; margin-left: 64px">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 12px; background: #F47258; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center; font-weight: 700">3</span>
+        <span><span style="display: block; font-weight: 600; font-size: 16px">Keep the fire burning</span><span style="font-size: 14px; color: #5F5F5F">Build a streak and watch your year fill with green.</span></span>
+      </li>
+    </ol>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pw: '' }; }
+  renderVals() {
+    const pw = this.state.pw;
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+    const colors = ['#F47258', '#FFC94A', '#4FC1BE', '#1F7F7A'];
+    const labels = ['Use 8+ characters with a mix of letters, numbers & symbols', 'Weak password', 'Okay — add a number or symbol', 'Good password', 'Strong password'];
+    return {
+      pw,
+      setPw: (e) => this.setState({ pw: e.target.value }),
+      bars: [0, 1, 2, 3].map((i) => ({ color: i < score ? colors[score - 1] : '#DEDED9' })),
+      strengthLabel: labels[pw.length ? Math.max(score, 1) : 0],
+      submit: (e) => { if (e && e.preventDefault) e.preventDefault(); }
+    };
+  }
+}
+</script>
+
+
+</body></html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Flowday — Create task</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#151515}a:hover{color:#C2412A}
+input::placeholder,textarea::placeholder{color:#7A7A7A}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F3F3F1; font-family: Poppins, sans-serif; color: #151515; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+  <div style="flex: 1 1 240px; min-width: 0; max-width: 100%">
+    <dc-import name="Sidebar" active="tasks" hint-size="100%,860px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 14px">
+      <a href="Board.dc.html" aria-label="Back to tasks" style="width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 14px">
+        <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+      </a>
+      <div>
+        <div style="font-size: 13px; color: #5F5F5F">My tasks / New</div>
+        <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px">Create a new task</h1>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <!-- Form -->
+      <form sc-camel-on-submit="{{submit}}" style="flex: 3 1 480px; min-width: 0; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 28px; display: flex; flex-direction: column; gap: 22px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <label for="tname" style="font-size: 14px; font-weight: 600">Task name</label>
+          <input id="tname" type="text" value="{{title}}" sc-camel-on-change="{{setTitle}}" placeholder="e.g. Design onboarding flow" style="height: 52px; box-sizing: border-box; padding: 0 16px; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 3px 0 #151515; font-family: Poppins, sans-serif; font-size: 16px; outline-color: #F47258">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <label for="tdesc" style="font-size: 14px; font-weight: 600">Description</label>
+          <div style="border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 3px 0 #151515; overflow: hidden">
+            <textarea id="tdesc" rows="4" value="{{desc}}" sc-camel-on-change="{{setDesc}}" placeholder="Add your task details" style="display: block; width: 100%; box-sizing: border-box; border: 0; padding: 14px 16px; resize: vertical; font-family: Poppins, sans-serif; font-size: 14px; line-height: 1.6; outline: 0"></textarea>
+            <div style="display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-top: 1px solid #E4E4DF; background: #FAFAF8">
+              <button type="button" aria-label="Bold" style="width: 36px; height: 36px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; font-family: Poppins, sans-serif; font-weight: 700; font-size: 15px">B</button>
+              <button type="button" aria-label="Checklist" style="width: 36px; height: 36px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6l1.5 1.5L7 5M3 13l1.5 1.5L7 12M11 6h10M11 13h10M11 20h10"></path></svg></button>
+              <button type="button" aria-label="Attach file" style="width: 36px; height: 36px; border: 0; background: transparent; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7.1-7.1l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7L10 17.7a1.7 1.7 0 0 1-2.4-2.4l8-8"></path></svg></button>
+              <span style="flex: 1"></span>
+              <button type="button" style="height: 32px; padding: 0 12px; display: flex; align-items: center; gap: 6px; background: #E3ECFD; border: 1px solid #151515; border-radius: 999px; font-family: Poppins, sans-serif; font-size: 12px; font-weight: 500; cursor: pointer">
+                <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"></path></svg>Break into subtasks</button>
+            </div>
+          </div>
+        </div>
+
+        <fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">
+          <legend style="font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 10px">Priority</legend>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px">
+            <sc-for list="{{priorities}}" as="p" hint-placeholder-count="4">
+              <button type="button" sc-camel-on-click="{{p.pick}}" aria-pressed="{{p.pressed}}" style="height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px; background: {{p.bg}}; border: 1.5px solid #151515; border-radius: 14px; box-shadow: {{p.shadow}}; transform: {{p.lift}}; font-family: Poppins, sans-serif; font-size: 14px; font-weight: 600; color: #151515; cursor: pointer">
+                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="{{p.flag}}" stroke="#151515" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M5 21V4M5 4h11l-2 4 2 4H5"></path></svg>{{p.label}}
+              </button>
+            </sc-for>
+          </div>
+        </fieldset>
+
+        <fieldset style="border: 0; padding: 0; margin: 0">
+          <legend style="font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 10px">Category</legend>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+              <button type="button" sc-camel-on-click="{{c.toggle}}" aria-pressed="{{c.pressed}}" style="height: 38px; padding: 0 14px; display: flex; align-items: center; gap: 6px; background: {{c.bg}}; color: {{c.fg}}; border: 1.5px solid #151515; border-radius: 999px; font-family: Poppins, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer">{{c.mark}}{{c.label}}</button>
+            </sc-for>
+            <button type="button" style="height: 38px; padding: 0 14px; background: transparent; border: 1.5px dashed #151515; border-radius: 999px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">+ New category</button>
+          </div>
+        </fieldset>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="display: flex; justify-content: space-between; align-items: baseline">
+              <label for="tproject" style="font-size: 14px; font-weight: 600">Project</label>
+              <a href="CreateProject.dc.html" style="font-size: 12px; font-weight: 500">+ New project</a>
+            </div>
+            <div style="position: relative">
+              <span style="position: absolute; left: 14px; top: 19px; width: 12px; height: 12px; border-radius: 4px; background: {{projColor}}; border: 1.5px solid #151515; pointer-events: none"></span>
+              <sc-raw-select id="tproject" value="{{project}}" sc-camel-on-change="{{setProject}}" style="width: 100%; height: 50px; padding: 0 14px 0 36px; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 3px 0 #151515; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 14px; color: #151515">
+                <option>Flowday app</option>
+                <option>Thesis — Agent Memory</option>
+                <option>Digital Product Design</option>
+                <option>Personal</option>
+                <option>No project (Inbox)</option>
+              </sc-raw-select>
+            </div>
+            <span style="font-size: 12px; color: #5F5F5F">Task inherits the project’s members &amp; statuses.</span>
+          </div>
+
+          <fieldset style="border: 0; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0">
+            <legend style="font-size: 14px; font-weight: 600; padding: 0; margin-bottom: 8px">Time estimate</legend>
+            <div style="display: flex; gap: 8px">
+              <label style="flex: 1; min-width: 0; height: 50px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 3px 0 #151515; background: #FFFFFF">
+                <input type="number" min="0" max="99" value="{{estH}}" sc-camel-on-change="{{setEstH}}" aria-label="Hours" style="width: 100%; min-width: 0; border: 0; outline: 0; font-family: Poppins, sans-serif; font-size: 15px; font-weight: 600">
+                <span style="font-size: 13px; color: #5F5F5F">h</span>
+              </label>
+              <label style="flex: 1; min-width: 0; height: 50px; box-sizing: border-box; display: flex; align-items: center; gap: 6px; padding: 0 12px; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 3px 0 #151515; background: #FFFFFF">
+                <input type="number" min="0" max="59" step="15" value="{{estM}}" sc-camel-on-change="{{setEstM}}" aria-label="Minutes" style="width: 100%; min-width: 0; border: 0; outline: 0; font-family: Poppins, sans-serif; font-size: 15px; font-weight: 600">
+                <span style="font-size: 13px; color: #5F5F5F">m</span>
+              </label>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px">
+              <sc-for list="{{estChips}}" as="e" hint-placeholder-count="6">
+                <button type="button" sc-camel-on-click="{{e.pick}}" aria-pressed="{{e.pressed}}" style="height: 32px; padding: 0 12px; background: {{e.bg}}; border: 1.5px solid #151515; border-radius: 999px; font-family: Poppins, sans-serif; font-size: 12px; font-weight: 500; color: #151515; cursor: pointer">{{e.label}}</button>
+              </sc-for>
+            </div>
+            <span style="font-size: 12px; color: #5F5F5F">≈ {{pomos}} focus sessions (25 min)</span>
+          </fieldset>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <label for="tstatus" style="font-size: 14px; font-weight: 600">Status</label>
+            <sc-raw-select id="tstatus" style="height: 50px; padding: 0 14px; border: 1.5px solid #151515; border-radius: 14px; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 14px; color: #151515">
+              <option>On going</option><option>In process</option><option>Completed</option><option>Canceled</option>
+            </sc-raw-select>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <label for="tdate" style="font-size: 14px; font-weight: 600">Due date</label>
+            <input id="tdate" type="date" value="2026-11-06" style="height: 50px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #151515; border-radius: 14px; font-family: Poppins, sans-serif; font-size: 14px">
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <label for="ttime" style="font-size: 14px; font-weight: 600">Time</label>
+            <input id="ttime" type="time" value="17:00" style="height: 50px; box-sizing: border-box; padding: 0 14px; border: 1.5px solid #151515; border-radius: 14px; font-family: Poppins, sans-serif; font-size: 14px">
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <label for="tassignee" style="font-size: 14px; font-weight: 600">Assignee</label>
+          <div style="display: flex; align-items: center; gap: 10px; height: 50px; box-sizing: border-box; padding: 0 8px 0 14px; border: 1.5px solid #151515; border-radius: 14px">
+            <span style="display: flex; align-items: center; gap: 6px; background: #E3ECFD; border: 1px solid #151515; border-radius: 999px; padding: 3px 10px 3px 3px; font-size: 13px"><span style="width: 24px; height: 24px; border-radius: 50%; background: #5B8DEF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">N</span>Nghia</span>
+            <input id="tassignee" type="text" placeholder="Add people by name or email" style="flex: 1; min-width: 0; border: 0; outline: 0; font-family: Poppins, sans-serif; font-size: 14px">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#5F5F5F" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 16px; background: #F7F7F4; border-radius: 14px">
+          <div>
+            <div style="font-size: 14px; font-weight: 600">Get alert for this task</div>
+            <div style="font-size: 12px; color: #5F5F5F">Email + browser notification 30 min before due time</div>
+          </div>
+          <button type="button" role="switch" aria-checked="{{alertStr}}" aria-label="Get alert for this task" sc-camel-on-click="{{toggleAlert}}" style="flex: none; width: 56px; height: 32px; border-radius: 999px; border: 1.5px solid #151515; background: {{switchBg}}; position: relative; cursor: pointer; padding: 0">
+            <span style="position: absolute; top: 3px; left: {{knobLeft}}; width: 23px; height: 23px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid #151515; box-sizing: border-box"></span>
+          </button>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end">
+          <a href="Board.dc.html" style="height: 52px; padding: 0 24px; display: flex; align-items: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 14px; text-decoration: none; font-size: 15px; font-weight: 500">Cancel</a>
+          <button type="submit" style="height: 52px; padding: 0 36px; background: #F47258; border: 1.5px solid #151515; border-radius: 14px; box-shadow: 0 4px 0 #151515; font-family: Poppins, sans-serif; font-size: 15px; font-weight: 600; color: #151515; cursor: pointer">Create Task</button>
+        </div>
+      </form>
+
+      <!-- Live preview -->
+      <aside style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 1px; color: #5F5F5F">LIVE PREVIEW</span>
+        <div style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 18px; box-shadow: 0 4px 0 #151515; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap">
+            <span style="font-size: 11px; font-weight: 500; background: #F0F0EC; border-radius: 999px; padding: 4px 10px">{{catSummary}}</span>
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; background: {{pv.bg}}; border-radius: 999px; padding: 4px 10px; border: 1px solid #151515">{{pv.label}}</span>
+          </div>
+          <div style="font-size: 17px; font-weight: 600; line-height: 1.35">{{titleShown}}</div>
+          <div style="font-size: 13px; line-height: 1.6; color: #5F5F5F; white-space: pre-line">{{descShown}}</div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px dashed #D6D6D1; font-size: 12px; color: #3D3D3D">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 9px; height: 9px; border-radius: 3px; background: {{projColor}}; border: 1px solid #151515"></span>{{project}}</span>
+            <span style="font-weight: 600">Fri, Nov 6 · 17:00</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #3D3D3D">
+            <span style="display: flex; align-items: center; gap: 6px">
+              <svg width="14" height="14" sc-camel-view-box="0 0 24 24" fill="none" stroke="#3D3D3D" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path></svg>Est. {{estLabel}}</span>
+            <span>On going · 0/0 subtasks</span>
+          </div>
+        </div>
+
+        <div style="background: #FFF3D1; border: 1.5px solid #151515; border-radius: 18px; padding: 18px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"></path></svg>
+            Quick-add shortcut
+          </div>
+          <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #3A3200">Type naturally anywhere with <b>N</b>: “Review PR tomorrow 9am #Development !high” — Flowday fills date, category and priority for you.</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1220}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { title: '', desc: '', prio: 'High', cats: ['Design'], alert: true, project: 'Flowday app', estH: 2, estM: 0 };
+  }
+  renderVals() {
+    const s = this.state;
+    const PC = { 'Flowday app': '#F47258', 'Thesis — Agent Memory': '#5B8DEF', 'Digital Product Design': '#FFC94A', 'Personal': '#4FC1BE', 'No project (Inbox)': '#D6D6D1' };
+    const totalMin = (Number(s.estH) || 0) * 60 + (Number(s.estM) || 0);
+    const QUICK = [['15m', 0, 15], ['30m', 0, 30], ['1h', 1, 0], ['2h', 2, 0], ['4h', 4, 0], ['1 day', 8, 0]];
+    const extra = {
+      project: s.project,
+      projColor: PC[s.project] || '#D6D6D1',
+      setProject: (e) => this.setState({ project: e.target.value }),
+      estH: s.estH, estM: s.estM,
+      setEstH: (e) => this.setState({ estH: e.target.value }),
+      setEstM: (e) => this.setState({ estM: e.target.value }),
+      estLabel: totalMin ? ((Math.floor(totalMin / 60) ? Math.floor(totalMin / 60) + 'h ' : '') + (totalMin % 60 ? (totalMin % 60) + 'm' : '')).trim() : 'not set',
+      pomos: Math.max(0, Math.ceil(totalMin / 25)),
+      estChips: QUICK.map((q) => {
+        const on = q[1] * 60 + q[2] === totalMin;
+        return { label: q[0], pressed: on ? 'true' : 'false', bg: on ? '#FFF3D1' : '#FFFFFF', pick: () => this.setState({ estH: q[1], estM: q[2] }) };
+      })
+    };
+    const PR = [
+      { label: 'Low', bg: '#EEEEEA', flag: '#B5B5B0' },
+      { label: 'Medium', bg: '#E3ECFD', flag: '#5B8DEF' },
+      { label: 'High', bg: '#FFF3D1', flag: '#FFC94A' },
+      { label: 'Urgent', bg: '#FDE3DD', flag: '#F47258' }
+    ];
+    const CATS = ['Design', 'Development', 'Coding', 'Meeting', 'Research', 'Office Time', 'User Experience'];
+    const sel = PR.find((p) => p.label === s.prio);
+    return {
+      ...extra,
+      title: s.title,
+      desc: s.desc,
+      setTitle: (e) => this.setState({ title: e.target.value }),
+      setDesc: (e) => this.setState({ desc: e.target.value }),
+      titleShown: s.title || 'Untitled task',
+      descShown: s.desc || 'Your description will appear here.',
+      priorities: PR.map((p) => {
+        const on = p.label === s.prio;
+        return { ...p, pressed: on ? 'true' : 'false', bg: on ? p.bg : '#FFFFFF', shadow: on ? '0 4px 0 #151515' : 'none', lift: on ? 'translateY(-2px)' : 'none', pick: () => this.setState({ prio: p.label }) };
+      }),
+      pv: { label: sel.label + ' priority', bg: sel.bg },
+      cats: CATS.map((c) => {
+        const on = s.cats.indexOf(c) !== -1;
+        return {
+          label: c, pressed: on ? 'true' : 'false', mark: on ? '✓ ' : '',
+          bg: on ? '#151515' : '#FFFFFF', fg: on ? '#FFFFFF' : '#151515',
+          toggle: () => this.setState({ cats: on ? s.cats.filter((x) => x !== c) : s.cats.concat([c]) })
+        };
+      }),
+      catSummary: s.cats.length ? s.cats.join(' · ') : 'No category',
+      alertStr: s.alert ? 'true' : 'false',
+      switchBg: s.alert ? '#F47258' : '#DEDED9',
+      knobLeft: s.alert ? '27px' : '3px',
+      toggleAlert: () => this.setState({ alert: !s.alert }),
+      submit: (e) => { if (e && e.preventDefault) e.preventDefault(); }
+    };
+  }
+}
+</script>
+
+
+</body></html>

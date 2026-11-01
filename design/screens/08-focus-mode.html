@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Flowday — Focus mode</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#151515}a:hover{color:#C2412A}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F3F3F1; font-family: Poppins, sans-serif; color: #151515; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+  <div style="flex: 1 1 240px; min-width: 0; max-width: 100%">
+    <dc-import name="Sidebar" active="focus" hint-size="100%,860px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <!-- Timer -->
+    <section style="flex: 3 1 460px; min-width: 0; background: {{panelBg}}; border: 1.5px solid #151515; border-radius: 28px; box-shadow: 0 6px 0 #151515; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 26px">
+      <div role="tablist" aria-label="Timer mode" style="display: flex; flex-wrap: wrap; justify-content: center; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 14px; padding: 4px; gap: 4px">
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+          <button type="button" role="tab" aria-selected="{{m.sel}}" sc-camel-on-click="{{m.pick}}" style="height: 40px; padding: 0 18px; background: {{m.bg}}; border: 0; border-radius: 10px; font-family: Poppins, sans-serif; font-size: 14px; font-weight: {{m.weight}}; color: #151515; cursor: pointer">{{m.label}}</button>
+        </sc-for>
+      </div>
+
+      <div style="width: 300px; height: 300px; max-width: 100%; border-radius: 50%; border: 1.5px solid #151515; box-shadow: 0 6px 0 #151515; background: conic-gradient(#151515 0 {{progress}}%, #FFFFFF 0); display: flex; align-items: center; justify-content: center">
+        <div style="width: 252px; height: 252px; border-radius: 50%; background: #FFFFFF; border: 1.5px solid #151515; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+          <span style="font-size: 64px; font-weight: 700; letter-spacing: -2px; font-variant-numeric: tabular-nums" aria-live="polite">{{clock}}</span>
+          <span style="font-size: 13px; color: #5F5F5F">Session 3 of 4</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center">
+        <span style="font-size: 12px; font-weight: 600; letter-spacing: 1px">WORKING ON</span>
+        <a href="TaskDetail.dc.html" style="font-size: 20px; font-weight: 600; text-decoration: none">Website for Rune.io</a>
+        <span style="font-size: 13px; color: #3D3D3D">Next: optimize the job matching algorithm</span>
+      </div>
+
+      <div style="display: flex; gap: 14px; align-items: center">
+        <button type="button" sc-camel-on-click="{{reset}}" aria-label="Reset timer" style="width: 54px; height: 54px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 16px; box-shadow: 0 4px 0 #151515; cursor: pointer; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"></path></svg>
+        </button>
+        <button type="button" sc-camel-on-click="{{toggle}}" style="height: 60px; min-width: 180px; padding: 0 28px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #151515; color: #FFFFFF; border: 1.5px solid #151515; border-radius: 18px; box-shadow: 0 4px 0 #6B6B66; font-family: Poppins, sans-serif; font-size: 17px; font-weight: 600; cursor: pointer">
+          <sc-if value="{{running}}" hint-placeholder-val="{{false}}">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+          </sc-if>
+          <sc-if value="{{paused}}" hint-placeholder-val="{{true}}">
+            <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="#FFFFFF" aria-hidden="true"><path d="M7 4v16l13-8z"></path></svg>
+          </sc-if>
+          {{toggleLabel}}
+        </button>
+        <button type="button" sc-camel-on-click="{{skip}}" aria-label="Skip to next" style="width: 54px; height: 54px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 16px; box-shadow: 0 4px 0 #151515; cursor: pointer; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="#151515" aria-hidden="true"><path d="M5 4v16l10-8zM17 4h2.5v16H17z"></path></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Side -->
+    <aside style="flex: 2 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+      <section style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 22px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: center">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 600">Today’s queue</h2>
+          <span style="font-size: 12px; color: #5F5F5F">≈ 3h 20m</span>
+        </div>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+          <li style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1.5px solid #151515; border-radius: 14px; background: #FFF3D1"><span style="width: 8px; height: 8px; border-radius: 50%; background: #151515"></span><span style="flex: 1; font-size: 14px; font-weight: 600">Website for Rune.io</span><span style="font-size: 12px">2/4</span></li>
+          <li style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1.5px solid #E4E4DF; border-radius: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #F47258"></span><span style="flex: 1; font-size: 14px">Google OAuth sign-in</span><span style="font-size: 12px; color: #5F5F5F">0/3</span></li>
+          <li style="display: flex; align-items: center; gap: 12px; padding: 12px; border: 1.5px solid #E4E4DF; border-radius: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5B8DEF"></span><span style="flex: 1; font-size: 14px">Weekly sync notes</span><span style="font-size: 12px; color: #5F5F5F">0/1</span></li>
+        </ol>
+      </section>
+
+      <section style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 22px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 600">Ambient sound</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{sounds}}" as="s" hint-placeholder-count="4">
+            <button type="button" aria-pressed="{{s.sel}}" sc-camel-on-click="{{s.pick}}" style="height: 48px; background: {{s.bg}}; border: 1.5px solid #151515; border-radius: 12px; font-family: Poppins, sans-serif; font-size: 13px; font-weight: 500; color: #151515; cursor: pointer">{{s.label}}</button>
+          </sc-for>
+        </div>
+        <label style="display: flex; align-items: center; gap: 12px; font-size: 13px">Volume
+          <input type="range" min="0" max="100" value="60" style="flex: 1; accent-color: #151515">
+        </label>
+      </section>
+
+      <section style="background: #DDF4F3; border: 1.5px solid #151515; border-radius: 22px; padding: 20px; display: flex; align-items: center; gap: 14px">
+        <span style="flex: none; width: 44px; height: 44px; border-radius: 12px; background: #FFFFFF; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center">
+          <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M3 3l18 18"></path></svg>
+        </span>
+        <span style="font-size: 13px; line-height: 1.5">Notifications are muted while a focus session runs. Focus minutes count toward your streak.</span>
+      </section>
+    </aside>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mode: 'focus', left: 18 * 60 + 24, running: false, sound: 'Rain' };
+    this.timer = null;
+  }
+  componentDidMount() {
+    this.timer = setInterval(() => {
+      if (this.state.running && this.state.left > 0) this.setState({ left: this.state.left - 1 });
+    }, 1000);
+  }
+  componentWillUnmount() { if (this.timer) clearInterval(this.timer); }
+  renderVals() {
+    const M = { focus: ['Focus', 25, '#FFC94A'], short: ['Short break', 5, '#4FC1BE'], long: ['Long break', 15, '#5B8DEF'] };
+    const s = this.state;
+    const totalSec = M[s.mode][1] * 60;
+    const mm = String(Math.floor(s.left / 60)).padStart(2, '0');
+    const ss = String(s.left % 60).padStart(2, '0');
+    const keys = Object.keys(M);
+    return {
+      panelBg: M[s.mode][2],
+      clock: mm + ':' + ss,
+      progress: Math.round((1 - s.left / totalSec) * 100),
+      running: s.running, paused: !s.running,
+      toggleLabel: s.running ? 'Pause' : 'Start',
+      toggle: () => this.setState({ running: !s.running }),
+      reset: () => this.setState({ left: totalSec, running: false }),
+      skip: () => { const n = keys[(keys.indexOf(s.mode) + 1) % keys.length]; this.setState({ mode: n, left: M[n][1] * 60, running: false }); },
+      modes: keys.map((k) => ({ label: M[k][0], sel: k === s.mode ? 'true' : 'false', bg: k === s.mode ? '#151515' : 'transparent', weight: k === s.mode ? 600 : 400, pick: () => this.setState({ mode: k, left: M[k][1] * 60, running: false }) })).map((m) => ({ ...m, bg: m.sel === 'true' ? '#FFF3D1' : 'transparent' })),
+      sounds: ['Rain', 'Café', 'Lo-fi', 'Off'].map((l) => ({ label: l, sel: l === s.sound ? 'true' : 'false', bg: l === s.sound ? '#FFF3D1' : '#FFFFFF', pick: () => this.setState({ sound: l }) }))
+    };
+  }
+}
+</script>
+
+
+</body></html>

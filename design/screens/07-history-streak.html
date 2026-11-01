@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Flowday — History &amp; streak</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#151515}a:hover{color:#C2412A}
+@keyframes flick{0%,100%{transform:scale(1,1) rotate(-2deg)}35%{transform:scale(1.04,1.09) rotate(1.5deg)}70%{transform:scale(0.98,1.03) rotate(-1deg)}}
+.flame-live{animation:flick 1.4s ease-in-out infinite;transform-origin:50% 92%}
+@media (prefers-reduced-motion: reduce){.flame-live{animation:none}}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F3F3F1; font-family: Poppins, sans-serif; color: #151515; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+  <div style="flex: 1 1 240px; min-width: 0; max-width: 100%">
+    <dc-import name="Sidebar" active="history" hint-size="100%,860px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px">
+      <div>
+        <h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.6px">Work history</h1>
+        <p style="margin: 0; font-size: 14px; color: #5F5F5F">Every task you finished, every day you showed up.</p>
+      </div>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <div role="group" aria-label="Range" style="display: flex; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 12px; padding: 3px">
+          <button type="button" style="height: 34px; padding: 0 14px; background: transparent; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">Week</button>
+          <button type="button" style="height: 34px; padding: 0 14px; background: transparent; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">Month</button>
+          <button type="button" aria-pressed="true" style="height: 34px; padding: 0 14px; background: #FFF3D1; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">Year</button>
+        </div>
+        <button type="button" style="height: 40px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 12px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">
+          <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>Export CSV</button>
+      </div>
+    </header>
+
+    <!-- Streak + KPIs -->
+    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px">
+      <div style="grid-column: span 2; min-width: 0; background: {{streakBg}}; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-wrap: wrap; align-items: center; gap: 22px">
+        <div style="flex: none; width: 104px; height: 104px; border-radius: 28px; background: #FFFFFF; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center">
+          <sc-if value="{{live}}" hint-placeholder-val="{{true}}">
+            <svg class="flame-live" width="70" height="70" sc-camel-view-box="0 0 24 24" role="img" aria-label="Streak is burning"><path d="M12 22c4.4 0 7.5-3 7.5-7.2 0-3.4-2-5.6-3.6-7.6-.4 1.6-1.3 2.7-2.4 3.2.3-3.4-1.2-6.5-4.5-8.4.3 3.1-1.4 5-3 6.9C4.6 10.8 4.5 12.6 4.5 14.8 4.5 19 7.6 22 12 22z" fill="#F47258" stroke="#151515" stroke-width="1.2" stroke-linejoin="round"></path><path d="M12 22c-2 0-3.3-1.4-3.3-3.3 0-1.8 1.4-3 2.4-4.2.3 1 .9 1.6 1.7 1.8 0-1.2.6-2.3 1.4-3 .5 1.6 2.1 2.8 2.1 5.2 0 2-1.6 3.5-4.3 3.5z" fill="#FFC94A"></path></svg>
+          </sc-if>
+          <sc-if value="{{dead}}" hint-placeholder-val="{{false}}">
+            <svg width="70" height="70" sc-camel-view-box="0 0 24 24" role="img" aria-label="Streak is out"><path d="M12 22c4.4 0 7.5-3 7.5-7.2 0-3.4-2-5.6-3.6-7.6-.4 1.6-1.3 2.7-2.4 3.2.3-3.4-1.2-6.5-4.5-8.4.3 3.1-1.4 5-3 6.9C4.6 10.8 4.5 12.6 4.5 14.8 4.5 19 7.6 22 12 22z" fill="#D6D6D1" stroke="#151515" stroke-width="1.2" stroke-linejoin="round"></path></svg>
+          </sc-if>
+        </div>
+        <div style="flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.5px">CURRENT STREAK</span>
+          <span style="font-size: 44px; line-height: 1; font-weight: 700; letter-spacing: -1px">{{streakNum}}</span>
+          <span style="font-size: 13px; color: #3A2420">{{streakMsg}}</span>
+          <div style="display: flex; gap: 8px; margin-top: 8px" aria-label="This week">
+            <sc-for list="{{week}}" as="w" hint-placeholder-count="7">
+              <span style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px">
+                <span style="width: 30px; height: 30px; border-radius: 10px; border: 1.5px solid #151515; background: {{w.bg}}; display: flex; align-items: center; justify-content: center">
+                  <svg width="14" height="14" sc-camel-view-box="0 0 24 24" aria-hidden="true"><path d="M12 22c4.4 0 7.5-3 7.5-7.2 0-3.4-2-5.6-3.6-7.6-.4 1.6-1.3 2.7-2.4 3.2.3-3.4-1.2-6.5-4.5-8.4.3 3.1-1.4 5-3 6.9C4.6 10.8 4.5 12.6 4.5 14.8 4.5 19 7.6 22 12 22z" fill="{{w.flame}}"></path></svg>
+                </span>{{w.d}}
+              </span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+      <sc-for list="{{kpis}}" as="k" hint-placeholder-count="2">
+        <div style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="font-size: 13px; color: #5F5F5F">{{k.label}}</span>
+            <span style="width: 34px; height: 34px; border-radius: 10px; background: {{k.tint}}; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center">
+              <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{k.d}}"></path></svg>
+            </span>
+          </div>
+          <span style="font-size: 34px; font-weight: 700; letter-spacing: -0.8px">{{k.value}}</span>
+          <span style="font-size: 12px; font-weight: 500; color: #1F6B67">{{k.sub}}</span>
+        </div>
+      </sc-for>
+    </section>
+
+    <!-- Contribution graph -->
+    <section style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 10px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">418 tasks completed in the last year</h2>
+        <span style="font-size: 12px; color: #5F5F5F">Longest streak: 34 days · Most active: Tuesday</span>
+      </div>
+      <div style="overflow-x: auto; padding-bottom: 4px">
+        <div style="display: flex; gap: 8px; width: max-content">
+          <div style="display: grid; grid-template-rows: 16px repeat(7, 13px); row-gap: 3px; font-size: 10px; color: #5F5F5F; padding-right: 4px">
+            <span></span><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 3px">
+            <div style="display: grid; grid-template-columns: repeat(53, 13px); column-gap: 3px; height: 16px; font-size: 10px; color: #5F5F5F">
+              <sc-for list="{{months}}" as="m" hint-placeholder-count="12">
+                <span style="grid-column: {{m.col}} / span 3; grid-row: 1">{{m.label}}</span>
+              </sc-for>
+            </div>
+            <div role="img" aria-label="Daily completed tasks over the last 53 weeks" style="display: grid; grid-template-rows: repeat(7, 13px); grid-auto-flow: column; grid-auto-columns: 13px; gap: 3px">
+              <sc-for list="{{heat}}" as="h" hint-placeholder-count="371">
+                <span title="{{h.tip}}" style="width: 13px; height: 13px; border-radius: 3px; background: {{h.c}}; outline: {{h.ring}}; outline-offset: 1px"></span>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-size: 11px; color: #5F5F5F">
+        <span>Tip: hover a square to see that day’s tasks.</span>
+        <span style="display: flex; align-items: center; gap: 4px">Less
+          <span style="width: 13px; height: 13px; border-radius: 3px; background: #E7E7E2"></span>
+          <span style="width: 13px; height: 13px; border-radius: 3px; background: #BFE9E6"></span>
+          <span style="width: 13px; height: 13px; border-radius: 3px; background: #7FD3CE"></span>
+          <span style="width: 13px; height: 13px; border-radius: 3px; background: #3FB3AD"></span>
+          <span style="width: 13px; height: 13px; border-radius: 3px; background: #1F7F7A"></span>More</span>
+      </div>
+    </section>
+
+    <!-- Charts -->
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: stretch">
+      <section style="flex: 3 1 420px; min-width: 0; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px">
+          <h2 style="margin: 0; font-size: 17px; font-weight: 600">Daily tasks overview</h2>
+          <div style="display: flex; gap: 14px; font-size: 12px">
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 4px; border-radius: 2px; background: #3FB3AD"></span>Completed</span>
+            <span style="display: flex; align-items: center; gap: 6px"><span style="width: 14px; height: 4px; border-radius: 2px; background: #E0A800"></span>Created</span>
+          </div>
+        </div>
+        <svg sc-camel-view-box="0 0 640 220" role="img" aria-label="Tasks completed versus created over the last 14 days" style="width: 100%; height: auto">
+          <g stroke="#ECECE8" stroke-width="1"><line x1="32" y1="20" x2="630" y2="20"></line><line x1="32" y1="65" x2="630" y2="65"></line><line x1="32" y1="110" x2="630" y2="110"></line><line x1="32" y1="155" x2="630" y2="155"></line><line x1="32" y1="200" x2="630" y2="200"></line></g>
+          <g font-family="Poppins, sans-serif" font-size="10" fill="#5F5F5F"><text x="4" y="24">8</text><text x="4" y="69">6</text><text x="4" y="114">4</text><text x="4" y="159">2</text><text x="4" y="204">0</text></g>
+          <polyline points="{{lineB}}" fill="none" stroke="#E0A800" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          <polyline points="{{lineA}}" fill="none" stroke="#3FB3AD" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          <circle cx="{{lastX}}" cy="{{lastY}}" r="6" fill="#FFFFFF" stroke="#151515" stroke-width="2"></circle>
+        </svg>
+        <div style="display: flex; justify-content: space-between; font-size: 10px; color: #5F5F5F; padding-left: 32px"><span>Oct 19</span><span>Oct 23</span><span>Oct 27</span><span>Today</span></div>
+      </section>
+
+      <section style="flex: 2 1 280px; min-width: 0; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Time by category</h2>
+        <sc-for list="{{cats}}" as="c" hint-placeholder-count="5">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div style="display: flex; justify-content: space-between; font-size: 13px"><span>{{c.name}}</span><span style="font-weight: 600">{{c.hours}}h</span></div>
+            <div style="height: 12px; background: #F0F0EC; border-radius: 999px; overflow: hidden"><div style="height: 100%; width: {{c.pct}}%; background: {{c.color}}; border-right: 1.5px solid #151515"></div></div>
+          </div>
+        </sc-for>
+      </section>
+    </div>
+
+    <!-- Recent + badges -->
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start">
+      <section style="flex: 3 1 420px; min-width: 0; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Recently completed</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+          <sc-for list="{{recent}}" as="r" hint-placeholder-count="5">
+            <li style="display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px dashed #D6D6D1">
+              <span style="flex: none; width: 34px; height: 34px; border-radius: 10px; background: #DDF4F3; border: 1.5px solid #151515; display: flex; align-items: center; justify-content: center">
+                <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+              </span>
+              <span style="flex: 1; min-width: 0"><span style="display: block; font-size: 14px; font-weight: 500">{{r.title}}</span><span style="font-size: 12px; color: #5F5F5F">{{r.cat}}</span></span>
+              <span style="font-size: 12px; color: #3D3D3D; white-space: nowrap">{{r.when}}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+      <section style="flex: 2 1 280px; min-width: 0; background: #FFF3D1; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 14px">
+        <h2 style="margin: 0; font-size: 17px; font-weight: 600">Achievements</h2>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{badges}}" as="b" hint-placeholder-count="6">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; opacity: {{b.op}}">
+              <span style="width: 54px; height: 54px; border-radius: 16px; background: {{b.bg}}; border: 1.5px solid #151515; box-shadow: 0 3px 0 #151515; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700">{{b.big}}</span>
+              <span style="font-size: 11px; line-height: 1.3; font-weight: 500">{{b.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;streakActive&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1320}}">
+class Component extends DCLogic {
+  renderVals() {
+    const live = this.props.streakActive ?? true;
+    const COLORS = ['#E7E7E2', '#BFE9E6', '#7FD3CE', '#3FB3AD', '#1F7F7A'];
+    const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const end = new Date(2026, 10, 1);
+    const total = 371;
+    const heat = [], months = [];
+    let seed = 7;
+    const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+    let lastMonth = -1;
+    for (let i = 0; i < total; i++) {
+      const d = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (total - 1 - i));
+      const back = total - 1 - i;
+      const dow = (d.getDay() + 6) % 7;
+      let lvl;
+      const r = rnd();
+      if (live && back < 12) lvl = 1 + Math.floor(r * 4);
+      else if (back === (live ? 12 : 0)) lvl = 0;
+      else {
+        const weekend = dow >= 5;
+        lvl = r < (weekend ? 0.45 : 0.18) ? 0 : Math.min(4, Math.floor(r * (weekend ? 3 : 5.2)));
+      }
+      const n = [0, 1 + Math.floor(r * 2), 3 + Math.floor(r * 2), 5 + Math.floor(r * 2), 7 + Math.floor(r * 3)][lvl];
+      heat.push({ c: COLORS[lvl], ring: back === 0 ? '1.5px solid #151515' : 'none', tip: n + ' tasks · ' + MN[d.getMonth()] + ' ' + d.getDate() });
+      const col = Math.floor(i / 7) + 1;
+      if (d.getDate() <= 7 && d.getMonth() !== lastMonth && dow === 0) {
+        lastMonth = d.getMonth();
+        if (col <= 51) months.push({ col, label: MN[d.getMonth()] });
+      }
+    }
+    const a = [3, 4, 2, 5, 6, 4, 7, 5, 3, 6, 7, 5, 6, 7];
+    const b = [4, 5, 4, 4, 5, 6, 5, 6, 5, 5, 6, 7, 5, 6];
+    const pt = (arr) => arr.map((v, i) => (32 + i * 46) + ',' + (200 - v * 22.5)).join(' ');
+    const wk = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+    const doneWeek = live ? [1, 1, 1, 1, 1, 1, 1] : [1, 1, 0, 0, 0, 0, 0];
+    return {
+      live, dead: !live,
+      streakBg: live ? '#F47258' : '#E9E9E5',
+      streakNum: live ? '12 days' : '0 days',
+      streakMsg: live ? 'You’re on fire! Finish 1 task today to reach 13.' : 'Streak lost on Oct 28 — complete a task today to light it again.',
+      week: wk.map((d, i) => ({ d, bg: doneWeek[i] ? '#FFF3D1' : '#FFFFFF', flame: doneWeek[i] ? '#F47258' : '#D6D6D1' })),
+      kpis: [
+        { label: 'Completion rate', value: '86%', sub: '+4% vs last month', tint: '#DDF4F3', d: 'M22 12h-4l-3 9L9 3l-3 9H2' },
+        { label: 'Focus hours', value: '312h', sub: '≈ 1h 25m per day', tint: '#E3ECFD', d: 'M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z' }
+      ],
+      heat, months,
+      lineA: pt(a), lineB: pt(b), lastX: 32 + 13 * 46, lastY: 200 - a[13] * 22.5,
+      cats: [
+        { name: 'Development', hours: 118, pct: 100, color: '#F47258' },
+        { name: 'Research', hours: 84, pct: 71, color: '#4FC1BE' },
+        { name: 'Design', hours: 62, pct: 53, color: '#FFC94A' },
+        { name: 'Meeting', hours: 31, pct: 26, color: '#5B8DEF' },
+        { name: 'Personal', hours: 17, pct: 14, color: '#B5B5B0' }
+      ],
+      recent: [
+        { title: 'Mobile app for Track.id', cat: 'Development', when: 'Today, 10:12' },
+        { title: 'Literature review', cat: 'Research', when: 'Yesterday' },
+        { title: 'Wireframes v2', cat: 'Design', when: 'Oct 30' },
+        { title: 'Fix login redirect', cat: 'Development', when: 'Oct 30' },
+        { title: 'Sprint planning', cat: 'Meeting', when: 'Oct 29' }
+      ],
+      badges: [
+        { big: '7', label: '7-day streak', bg: '#F47258', op: 1 },
+        { big: '100', label: '100 tasks', bg: '#4FC1BE', op: 1 },
+        { big: '5AM', label: 'Early bird', bg: '#5B8DEF', op: 1 },
+        { big: '30', label: '30-day streak', bg: '#FFFFFF', op: 0.45 },
+        { big: '500', label: '500 tasks', bg: '#FFFFFF', op: 0.45 },
+        { big: '0', label: 'Inbox zero', bg: '#FFC94A', op: 1 }
+      ]
+    };
+  }
+}
+</script>
+
+
+</body></html>

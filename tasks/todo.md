@@ -112,22 +112,22 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 
 ### T0.5 Tách thiết kế ra `design/screens/`
 
-**Mô tả:** Viết script Node thuần `scripts/extract-design.mjs <bundle.html> <outDir>`, chỉ dùng thư viện chuẩn. Script đọc manifest (base64 + gzip) ở 2 tầng lồng nhau, ghi template từng màn hình, bỏ CSS font nhúng và runtime của bundle, không thực thi nội dung trong file. Commit kết quả trong `design/screens/`, ESLint bỏ qua thư mục này.
+**Mô tả:** Viết script Node thuần `scripts/extract-design.mjs <bundle.html> <outDir>`, chỉ dùng thư viện chuẩn. Script đọc manifest (base64 + gzip) ở 2 tầng lồng nhau, ghi template từng màn hình, bỏ CSS font nhúng và runtime của bundle, không thực thi nội dung trong file. Commit kết quả trong `design/screens/`.
 
 Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-task-detail`, `06-calendar`, `07-history-streak`, `08-focus-mode`, `09-create-project`, `10-project-overview`, `component-sidebar` (đuôi `.html`).
 
 **Tiêu chí nghiệm thu:**
-- [ ] Chạy với `Flowday — ToDo Web App (1).html` tạo đúng 11 file, mỗi file dưới 30 KB và không còn base64.
-- [ ] Script tự kiểm tra số màn hình và thoát mã khác 0 nếu sai hoặc file đầu vào không phải bundle.
-- [ ] Chạy lại lần 2 không tạo khác biệt trong `git diff`.
+- [x] Chạy với `Flowday — ToDo Web App (1).html` tạo đúng 11 file, mỗi file dưới 30 KB và không còn base64.
+- [x] Script tự kiểm tra số màn hình và thoát mã khác 0 nếu sai hoặc file đầu vào không phải bundle.
+- [x] Chạy lại lần 2 không tạo khác biệt trong `git diff`.
 
 **Kiểm chứng:**
-- [ ] Chạy với `Flowday — ToDo Web App.html` (bản cũ) phải báo lỗi vì thiếu màn hình.
-- [ ] Mở `09-create-project.html` và `10-project-overview.html`, đọc được cấu trúc và script `DCLogic`.
+- [x] Chạy với `Flowday — ToDo Web App.html` (bản cũ) phải báo lỗi vì thiếu màn hình.
+- [x] Mở `09-create-project.html` và `10-project-overview.html`, đọc được cấu trúc và script `DCLogic`.
 
 **Phụ thuộc:** T0.1
 
-**File dự kiến:** `scripts/extract-design.mjs`, `design/screens/*.html`, `eslint.config.mjs`
+**File dự kiến:** `scripts/extract-design.mjs`, `design/screens/*.html`
 
 **Quy mô:** S
 

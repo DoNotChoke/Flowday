@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Flowday — Calendar</title>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#151515}a:hover{color:#C2412A}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; background: #F3F3F1; font-family: Poppins, sans-serif; color: #151515; padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+  <div style="flex: 1 1 240px; min-width: 0; max-width: 100%">
+    <dc-import name="Sidebar" active="calendar" hint-size="100%,860px"></dc-import>
+  </div>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <h1 style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: -0.6px">November 2026</h1>
+        <div style="display: flex; gap: 6px">
+          <button type="button" aria-label="Previous month" style="width: 40px; height: 40px; border: 1.5px solid #151515; border-radius: 12px; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg></button>
+          <button type="button" aria-label="Next month" style="width: 40px; height: 40px; border: 1.5px solid #151515; border-radius: 12px; background: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></button>
+          <button type="button" sc-camel-on-click="{{goToday}}" style="height: 40px; padding: 0 14px; border: 1.5px solid #151515; border-radius: 12px; background: #FFFFFF; font-family: Poppins, sans-serif; font-size: 13px; font-weight: 500; cursor: pointer">Today</button>
+        </div>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center">
+        <div role="group" aria-label="Calendar view" style="display: flex; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 12px; padding: 3px">
+          <button type="button" style="height: 34px; padding: 0 14px; background: transparent; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">Day</button>
+          <button type="button" style="height: 34px; padding: 0 14px; background: transparent; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">Week</button>
+          <button type="button" aria-pressed="true" style="height: 34px; padding: 0 14px; background: #FFF3D1; border: 0; border-radius: 9px; font-family: Poppins, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer">Month</button>
+        </div>
+        <button type="button" style="height: 40px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 12px; font-family: Poppins, sans-serif; font-size: 13px; cursor: pointer">
+          <svg width="16" height="16" sc-camel-view-box="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.1 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.4c-.5 2.9-2.2 5.3-4.6 7l7.4 5.7c4.3-4 6.9-9.9 6.9-17.2z"></path><path fill="#FBBC05" d="M10.6 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.6l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.7 10.7l7.9-6.1z"></path><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.1-13.4-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"></path></svg>
+          Synced with Google Calendar</button>
+      </div>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+      <!-- Month grid -->
+      <section aria-label="Month" style="flex: 3 1 560px; min-width: 0; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 18px; overflow-x: auto">
+        <div style="min-width: 640px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7">
+            <div style="text-align: center; font-size: 12px; font-weight: 600; color: #5F5F5F; padding: 4px 0 8px">{{w}}</div>
+          </sc-for>
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="42">
+            <button type="button" sc-camel-on-click="{{c.pick}}" aria-label="{{c.aria}}" aria-pressed="{{c.pressed}}" style="min-height: 104px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 8px; text-align: left; background: {{c.bg}}; border: {{c.border}}; border-radius: 14px; box-shadow: {{c.shadow}}; font-family: Poppins, sans-serif; color: {{c.fg}}; cursor: pointer">
+              <span style="display: flex; justify-content: space-between; align-items: center">
+                <span style="width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: {{c.numBg}}; color: {{c.numFg}}">{{c.day}}</span>
+                <sc-if value="{{c.streak}}" hint-placeholder-val="{{false}}">
+                  <svg width="14" height="14" sc-camel-view-box="0 0 24 24" aria-hidden="true"><path d="M12 22c4.4 0 7.5-3 7.5-7.2 0-3.4-2-5.6-3.6-7.6-.4 1.6-1.3 2.7-2.4 3.2.3-3.4-1.2-6.5-4.5-8.4.3 3.1-1.4 5-3 6.9C4.6 10.8 4.5 12.6 4.5 14.8 4.5 19 7.6 22 12 22z" fill="#F47258"></path></svg>
+                </sc-if>
+              </span>
+              <sc-for list="{{c.chips}}" as="e" hint-placeholder-count="1">
+                <span style="display: block; font-size: 11px; font-weight: 500; line-height: 1.3; padding: 3px 6px; border-radius: 6px; background: {{e.tint}}; border-left: 3px solid {{e.color}}; color: #151515; overflow: hidden; white-space: nowrap; text-overflow: ellipsis">{{e.title}}</span>
+              </sc-for>
+              <sc-if value="{{c.hasMore}}" hint-placeholder-val="{{false}}">
+                <span style="font-size: 11px; color: #5F5F5F; padding-left: 4px">+{{c.more}} more</span>
+              </sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <!-- Agenda -->
+      <aside style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 18px">
+        <section style="background: #FFFFFF; border: 1.5px solid #151515; border-radius: 24px; box-shadow: 0 5px 0 #151515; padding: 22px; display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px">
+            <div>
+              <div style="font-size: 13px; color: #5F5F5F">{{selWeekday}}</div>
+              <h2 style="margin: 0; font-size: 22px; font-weight: 700">{{selTitle}}</h2>
+            </div>
+            <a href="CreateTask.dc.html" aria-label="Add task on this day" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: #F47258; border: 1.5px solid #151515; border-radius: 12px; box-shadow: 0 3px 0 #151515">
+              <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="#151515" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            </a>
+          </div>
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+            <sc-for list="{{agenda}}" as="a" hint-placeholder-count="3">
+              <li style="display: flex; gap: 12px; align-items: stretch">
+                <span style="flex: none; width: 46px; font-size: 12px; font-weight: 600; color: #3D3D3D; padding-top: 12px">{{a.time}}</span>
+                <a href="TaskDetail.dc.html" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: {{a.tint}}; border: 1.5px solid #151515; border-radius: 14px; text-decoration: none; color: #151515">
+                  <span style="font-size: 14px; font-weight: 600">{{a.title}}</span>
+                  <span style="font-size: 12px; color: #3D3D3D">{{a.cat}} · {{a.len}}</span>
+                </a>
+              </li>
+            </sc-for>
+          </ol>
+          <sc-if value="{{agendaEmpty}}" hint-placeholder-val="{{false}}">
+            <div style="border: 1.5px dashed #9C9C96; border-radius: 14px; padding: 24px; text-align: center; font-size: 13px; color: #5F5F5F">Nothing planned. A free day — or drag a task here.</div>
+          </sc-if>
+        </section>
+
+        <section style="background: #DDF4F3; border: 1.5px solid #151515; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 15px; font-weight: 600">Unscheduled · 4</h2>
+          <p style="margin: 0; font-size: 12px; color: #2C4B4A">Drag onto a day to plan it.</p>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 13px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 10px; padding: 8px 12px">Refactor task store</span>
+            <span style="font-size: 13px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 10px; padding: 8px 12px">Read “DDIA” ch. 5</span>
+            <span style="font-size: 13px; background: #FFFFFF; border: 1.5px solid #151515; border-radius: 10px; padding: 8px 12px">Renew domain</span>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1060}}">
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { sel: '11-1' }; }
+  renderVals() {
+    const C = {
+      Meeting: ['#5B8DEF', '#E3ECFD'], Design: ['#E0A800', '#FFF3D1'], Development: ['#F47258', '#FDE3DD'],
+      Research: ['#2FA6A2', '#DDF4F3'], Personal: ['#8A8A85', '#EEEEEA']
+    };
+    const E = {
+      '11-1': [['09:00', 'Weekly planning', 'Meeting', '30m'], ['14:00', 'Dashboard for ProSavvy', 'Design', '2h'], ['16:30', 'Google OAuth sign-in', 'Development', '1h 30m'], ['20:00', 'Gym — upper body', 'Personal', '1h']],
+      '11-2': [['10:00', 'Weekly sync', 'Meeting', '45m'], ['13:00', 'OAuth edge cases', 'Development', '2h']],
+      '11-3': [['15:00', 'Thesis check-in with supervisor', 'Research', '1h']],
+      '11-5': [['17:00', 'Thesis ch.3 deadline', 'Research', 'Due']],
+      '11-6': [['17:00', 'Website for Rune.io', 'Design', 'Due'], ['19:00', 'Movie night', 'Personal', '2h']],
+      '11-9': [['09:30', 'Set up CI pipeline', 'Development', '3h']],
+      '11-11': [['14:00', 'Design review', 'Design', '1h'], ['16:00', '1:1 with lead', 'Meeting', '30m'], ['18:00', 'Run 5K', 'Personal', '40m']],
+      '11-13': [['09:00', 'AWS workshop', 'Research', '4h']],
+      '11-17': [['10:00', 'Sprint demo', 'Meeting', '1h']],
+      '11-19': [['13:30', 'Calendar drag & drop', 'Development', '3h']],
+      '11-20': [['11:00', 'Usability test #2', 'Design', '2h']],
+      '11-24': [['17:00', 'Thesis report draft', 'Research', 'Due']],
+      '11-27': [['16:00', 'Team retro', 'Meeting', '1h']]
+    };
+    const streakDays = { '10-26': 1, '10-27': 1, '10-28': 1, '10-29': 1, '10-30': 1, '10-31': 1, '11-1': 1 };
+    const cells = [];
+    const start = new Date(2026, 9, 26);
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const m = d.getMonth() + 1, day = d.getDate(), key = m + '-' + day;
+      const inMonth = m === 11, isToday = key === '11-1', isSel = key === this.state.sel;
+      const ev = E[key] || [];
+      cells.push({
+        day, aria: (inMonth ? 'November ' : (m === 10 ? 'October ' : 'December ')) + day + ', ' + ev.length + ' items',
+        pressed: isSel ? 'true' : 'false',
+        bg: isSel ? '#FFF3D1' : (inMonth ? '#FFFFFF' : '#F7F7F4'),
+        border: isSel ? '1.5px solid #151515' : '1.5px solid #E4E4DF',
+        shadow: isSel ? '0 3px 0 #151515' : 'none',
+        fg: inMonth ? '#151515' : '#8A8A85',
+        numBg: isToday ? '#151515' : 'transparent', numFg: isToday ? '#FFFFFF' : (inMonth ? '#151515' : '#767671'),
+        streak: !!streakDays[key],
+        chips: ev.slice(0, 2).map((e) => ({ title: e[1], color: C[e[2]][0], tint: C[e[2]][1] })),
+        hasMore: ev.length > 2, more: ev.length - 2,
+        pick: () => this.setState({ sel: key })
+      });
+    }
+    const [sm, sd] = this.state.sel.split('-').map(Number);
+    const sDate = new Date(2026, sm - 1, sd);
+    const ag = (E[this.state.sel] || []).map((e) => ({ time: e[0], title: e[1], cat: e[2], len: e[3], tint: C[e[2]][1] }));
+    return {
+      weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      cells,
+      agenda: ag,
+      agendaEmpty: ag.length === 0,
+      selWeekday: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][sDate.getDay()] + (this.state.sel === '11-1' ? ' · Today' : ''),
+      selTitle: ['January','February','March','April','May','June','July','August','September','October','November','December'][sm - 1] + ' ' + sd,
+      goToday: () => this.setState({ sel: '11-1' })
+    };
+  }
+}
+</script>
+
+
+</body></html>
