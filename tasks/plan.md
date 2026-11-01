@@ -73,8 +73,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint A
 
-- [ ] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile
-- [ ] Bạn đã xem Board và form tạo task
+- [x] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile
+- [x] Bạn đã xem Board và form tạo task
 
 ### Nhóm B: Di chuyển task
 

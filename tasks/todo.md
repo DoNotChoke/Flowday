@@ -120,9 +120,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile.
-- [ ] CI xanh.
-- [ ] Bạn đã xem Board và form tạo task.
+- [x] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile.
+- [x] CI xanh.
+- [x] Bạn đã xem Board và form tạo task.
 
 ---
 
