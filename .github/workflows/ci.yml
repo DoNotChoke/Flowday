@@ -14,6 +14,7 @@ jobs:
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:3000
       ALLOWED_EMAILS: e2e-desktop@flowday.test,e2e-mobile@flowday.test
+      FLOWDAY_DEV_UI: "1"
     services:
       postgres:
         image: postgres:18-alpine

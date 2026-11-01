@@ -31,7 +31,8 @@ const shadows = ["shadow-hard-3", "shadow-hard-4", "shadow-hard-5", "shadow-hard
 const textSizes = ["text-xs", "text-sm", "text-base", "text-xl", "text-3xl"];
 
 export default function DevUiPage() {
-  if (process.env.NODE_ENV === "production") notFound();
+  // Not process.env.CI: Vercel sets that too, which would publish this page.
+  if (process.env.NODE_ENV === "production" && process.env.FLOWDAY_DEV_UI !== "1") notFound();
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-8 p-4 md:p-6">

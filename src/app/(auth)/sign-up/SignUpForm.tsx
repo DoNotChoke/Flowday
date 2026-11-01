@@ -1,13 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, useSyncExternalStore, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { authClient } from "@/lib/auth/client";
 
 const strengthColors = ["bg-coral", "bg-sun", "bg-teal", "bg-heat-4"];
 const strengthLabels = ["Weak password", "Okay — add a number or symbol", "Good password", "Strong password"];
+
+const subscribeToNothing = () => () => {};
 
 function passwordScore(password: string) {
   if (!password) return 0;
@@ -21,7 +22,8 @@ function passwordScore(password: string) {
 }
 
 export function SignUpForm() {
-  const router = useRouter();
+  // A submit before hydration reloads the page and wipes the form, so the button waits.
+  const hydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
   const [score, setScore] = useState(0);
   const [pending, setPending] = useState(false);
   const [emailError, setEmailError] = useState<string>();
@@ -43,7 +45,8 @@ export function SignUpForm() {
       })
       .catch(() => ({ error: { status: 0, code: undefined, message: undefined } }));
 
-    if (!error) return router.push("/tasks");
+    // A full load: router.push could stall with the form stuck, and the session just changed anyway.
+    if (!error) return window.location.assign("/tasks");
 
     setPending(false);
     if (error.status === 403 || error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
@@ -55,7 +58,7 @@ export function SignUpForm() {
   }
 
   return (
-    // method="post": a submit before hydration would otherwise put the password in the URL.
+    // method="post" is the backstop: if a submit ever slips through, the password stays out of the URL.
     <form method="post" onSubmit={submit} className="flex w-full max-w-115 flex-col gap-4.5">
       <div className="mb-2 flex items-center gap-2.5">
         <span className="flex size-9.5 items-center justify-center rounded-[11px] bg-ink">
@@ -97,7 +100,7 @@ export function SignUpForm() {
         </p>
       )}
 
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending || !hydrated}>
         Create account
       </Button>
     </form>

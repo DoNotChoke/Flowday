@@ -2,7 +2,7 @@
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
-**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run check` và `npm run test:e2e` pass, CI xanh sau khi push, không còn code thừa và không có thay đổi ngoài phạm vi. Trước khi viết code Next, đọc guide liên quan trong `node_modules/next/dist/docs/`.
+**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run check` và `npm run test:e2e` pass trên máy, đã push (không chờ CI giữa các task, nhưng CI phải xanh trước khi qua checkpoint), không còn code thừa và không có thay đổi ngoài phạm vi. Trước khi viết code Next, đọc guide liên quan trong `node_modules/next/dist/docs/`.
 
 ---
 
@@ -54,7 +54,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T1.3 Đăng nhập, đăng xuất, chặn route
 
-**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Thêm link "Already have an account? Sign in" còn thiếu ở `/sign-up`, form đăng nhập dùng `method="post"` và đọc mật khẩu từ `FormData` như form đăng ký. Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
+**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Thêm link "Already have an account? Sign in" còn thiếu ở `/sign-up`, form đăng nhập dùng `method="post"`, đọc mật khẩu từ `FormData` và khóa nút submit tới khi hydrate xong như form đăng ký; đây là lần dùng thứ hai nên tách `useHydrated`. Đăng nhập xong dùng `window.location.assign`, không dùng `router.push`, vì `router.push` có thể bị bỏ dở và để form kẹt. Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
 
 **Tiêu chí nghiệm thu:**
 - [ ] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.

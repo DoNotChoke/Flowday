@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import { expect, test, type TestInfo } from "@playwright/test";
 import { deleteUser, expectNoHorizontalScroll } from "./helpers";
 
@@ -7,12 +8,20 @@ function emailFor(testInfo: TestInfo) {
   return `e2e-${testInfo.project.name}@flowday.test`;
 }
 
+// Production allows 3 sign-ups per IP every 10 seconds, so each test needs its own address.
+const clientIp = () => `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}`;
+
+test.beforeEach(async ({ page }) => {
+  await page.setExtraHTTPHeaders({ "x-forwarded-for": clientIp() });
+});
+
 test.afterEach(async ({}, testInfo) => {
   await deleteUser(emailFor(testInfo));
 });
 
 test("signing up with the keyboard alone opens the app", async ({ page }, testInfo) => {
   await page.goto("/sign-up");
+  await expect(page.getByRole("button", { name: "Create account" })).toBeEnabled();
 
   await page.getByLabel("Full name").focus();
   await page.keyboard.type("Nguyễn Việt");
@@ -43,6 +52,7 @@ test("an email outside the list shows the error on that field", async ({ page })
 test("an email already registered shows the error on that field", async ({ page, request }, testInfo) => {
   await request.post("/api/auth/sign-up/email", {
     data: { name: "Taken", email: emailFor(testInfo), password },
+    headers: { "x-forwarded-for": clientIp() },
   });
   await page.goto("/sign-up");
 
@@ -105,18 +115,38 @@ test("a password under 8 characters never reaches the server", async ({ page }, 
   expect(called).toBe(false);
 });
 
-test.describe("before JavaScript loads", () => {
+test("what is typed before JavaScript loads survives and can be submitted", async ({ page }, testInfo) => {
+  await page.route("**/_next/static/**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.continue();
+  });
+  await page.goto("/sign-up", { waitUntil: "commit" });
+
+  await page.getByLabel("Full name").fill("Early");
+  await page.getByLabel("Email").fill(emailFor(testInfo));
+  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password").press("Enter");
+
+  const submit = page.getByRole("button", { name: "Create account" });
+  await expect(submit).toBeEnabled({ timeout: 20_000 });
+  await expect(page.getByLabel("Full name")).toHaveValue("Early");
+  await submit.click();
+  await expect(page).toHaveURL("/tasks");
+});
+
+test.describe("without JavaScript", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("submitting keeps the password out of the URL", async ({ page }, testInfo) => {
+  test("Enter sends nothing, so the password stays out of the URL", async ({ page }, testInfo) => {
     await page.goto("/sign-up");
 
     await page.getByLabel("Full name").fill("Early");
     await page.getByLabel("Email").fill(emailFor(testInfo));
     await page.getByLabel("Password").fill(password);
-    await page.getByRole("button", { name: "Create account" }).click();
+    await page.getByLabel("Password").press("Enter");
 
     await page.waitForLoadState();
+    await expect(page.getByRole("button", { name: "Create account" })).toBeDisabled();
     expect(page.url()).not.toContain(password);
   });
 });

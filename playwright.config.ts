@@ -8,6 +8,8 @@ const baseURL = "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./e2e",
+  // next dev compiles a route on its first hit, so a cold sign-up can outlast the default 5s.
+  expect: { timeout: 15_000 },
   forbidOnly: !!process.env.CI,
   reporter: process.env.CI ? [["list"], ["github"], ["html", { open: "never" }]] : "list",
   use: { baseURL },
@@ -28,7 +30,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "npm run dev",
+    // CI runs the build from npm run check: next dev stalls on cold compiles and made e2e flaky.
+    command: process.env.CI ? "npm start" : "npm run dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
