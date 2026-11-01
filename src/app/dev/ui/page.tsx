@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { ControlsDemo } from "./ControlsDemo";
 
 const swatches = [
   "bg-ink",
@@ -37,7 +40,7 @@ export default function DevUiPage() {
         <h2 className="text-xl font-semibold">Colors</h2>
         <div className="flex flex-wrap gap-2">
           {swatches.map((swatch) => (
-            <div key={swatch} className={`size-14 rounded-control border-[1.5px] border-ink ${swatch}`} />
+            <div key={swatch} className={`size-14 rounded-control border-hard ${swatch}`} />
           ))}
         </div>
       </section>
@@ -48,7 +51,7 @@ export default function DevUiPage() {
           {shadows.map((shadow) => (
             <div
               key={shadow}
-              className={`rounded-card border-[1.5px] border-ink bg-white px-4 py-3 text-sm ${shadow}`}
+              className={`rounded-card border-hard bg-white px-4 py-3 text-sm ${shadow}`}
             >
               {shadow}
             </div>
@@ -68,6 +71,40 @@ export default function DevUiPage() {
         </p>
         <p className="font-semibold">Hoàn thành báo cáo tiến độ dự án trước thứ Sáu tuần này.</p>
         <p className="font-bold">Chuẩn bị tài liệu họp nhóm và gửi cho đội thiết kế.</p>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold">Buttons</h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <Button>Primary action</Button>
+          <Button variant="secondary">Secondary action</Button>
+          <Button variant="outline">Outline action</Button>
+          <Button variant="dark">Dark action</Button>
+          <Button href="/">Link action</Button>
+          <Button size="md">Medium action</Button>
+          <Button variant="outline" size="sm">
+            Small action
+          </Button>
+          <Button disabled>Disabled action</Button>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold">Chips and segmented</h2>
+        <ControlsDemo />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold">Cards</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="p-5">White, large shadow</Card>
+          <Card tone="sun-tint" shadow="md" className="p-5">
+            Sun tint, medium shadow
+          </Card>
+          <Card tone="teal" shadow="none" className="p-5">
+            Teal, no shadow
+          </Card>
+        </div>
       </section>
 
       <p data-testid="md-marker" className="hidden text-sm text-muted md:block">

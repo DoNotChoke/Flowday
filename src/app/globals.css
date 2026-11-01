@@ -38,3 +38,21 @@
   --radius-control: 14px;
   --radius-card: 24px;
 }
+
+@utility border-hard {
+  @apply border-[1.5px] border-ink;
+}
+
+@layer base {
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ink;
+  }
+
+  button:enabled {
+    @apply cursor-pointer;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+}

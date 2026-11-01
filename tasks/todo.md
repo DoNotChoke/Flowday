@@ -162,17 +162,17 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 **Mô tả:** Tạo 4 primitive trong `src/components/ui/`, lấy kiểu từ `design/screens/`. Button có các biến thể coral, ink, trắng, nhiều cỡ, render `<a>` khi có `href`. Chip và Segmented dùng `aria-pressed`. Card có các mức bóng và màu nền. Hiển thị tất cả trạng thái trên `/dev/ui`. Không thêm thư viện.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Trên project `mobile`, mọi phần tử bấm được cao tối thiểu 44 px.
-- [ ] Dùng Tab thấy viền focus rõ ở mọi primitive; `disabled` không bấm được.
-- [ ] Không có cuộn ngang ở `/dev/ui` trên 390 px.
+- [x] Trên project `mobile`, mọi phần tử bấm được cao tối thiểu 44 px.
+- [x] Dùng Tab thấy viền focus rõ ở mọi primitive; `disabled` không bấm được.
+- [x] Không có cuộn ngang ở `/dev/ui` trên 390 px.
 
 **Kiểm chứng:**
-- [ ] Test `e2e/primitives.spec.ts` trên 2 project.
-- [ ] Đặt `/dev/ui` cạnh `03-tasks-board` và `04-create-task` để so bằng mắt ở 1440 px.
+- [x] Test `e2e/primitives.spec.ts` trên 2 project.
+- [x] Đặt `/dev/ui` cạnh `03-tasks-board` và `04-create-task` để so bằng mắt ở 1440 px.
 
 **Phụ thuộc:** T0.6
 
-**File dự kiến:** `src/components/ui/Button.tsx`, `Card.tsx`, `Chip.tsx`, `Segmented.tsx`, `src/app/dev/ui/page.tsx`, `e2e/primitives.spec.ts`
+**File dự kiến:** `src/components/ui/Button.tsx`, `Card.tsx`, `Chip.tsx`, `Segmented.tsx`, `src/app/dev/ui/page.tsx`, `src/app/dev/ui/ControlsDemo.tsx`, `src/app/globals.css`, `e2e/primitives.spec.ts`
 
 **Quy mô:** M
 
