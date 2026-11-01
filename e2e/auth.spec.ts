@@ -48,9 +48,9 @@ test("signing up, signing out and signing in again works", async ({ page, isMobi
   await page.goto("/sign-in");
   await signIn(page, testInfo);
   await expect(page).toHaveURL("/tasks");
-  if (isMobile) await page.getByRole("button", { name: "Account" }).click();
-  await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hi, Nguyễn Việt" })).toBeVisible();
 
+  if (isMobile) await page.getByRole("button", { name: "Account" }).click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/sign-in");
 
@@ -60,8 +60,7 @@ test("signing up, signing out and signing in again works", async ({ page, isMobi
   await page.goto("/sign-in");
   await signIn(page, testInfo);
   await expect(page).toHaveURL("/tasks");
-  if (isMobile) await page.getByRole("button", { name: "Account" }).click();
-  await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hi, Nguyễn Việt" })).toBeVisible();
 });
 
 test("a signed-out visitor is sent to sign-in and returned afterwards", async ({ page, request }, testInfo) => {
