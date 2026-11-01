@@ -21,8 +21,41 @@ function passwordScore(password: string) {
   return Math.max(checks.filter(Boolean).length, 1);
 }
 
+function CheckEmail({ email }: { email: string }) {
+  const [status, setStatus] = useState<string>();
+
+  async function resend() {
+    const { error } = await authClient
+      .sendVerificationEmail({ email })
+      .catch(() => ({ error: { message: undefined } }));
+    setStatus(error ? (error.message ?? "Could not reach Flowday. Try again.") : "Sent. Check your inbox.");
+  }
+
+  return (
+    <div className="flex w-full max-w-115 flex-col gap-4.5">
+      <h1 className="text-[32px] font-bold tracking-[-0.8px]">Check your email</h1>
+      <p className="text-[15px] text-muted">
+        We sent a verification link to <span className="font-semibold break-all text-ink">{email}</span>. Open it to finish
+        creating your account.
+      </p>
+      <Button variant="secondary" onClick={resend}>
+        Send it again
+      </Button>
+      {status && (
+        <p role="status" className="text-sm font-medium">
+          {status}
+        </p>
+      )}
+      <Link href="/sign-in" className="text-center text-sm font-semibold underline hover:text-danger">
+        Back to sign in
+      </Link>
+    </div>
+  );
+}
+
 export function SignUpForm() {
   const hydrated = useHydrated();
+  const [sentTo, setSentTo] = useState<string>();
   const [score, setScore] = useState(0);
   const [pending, setPending] = useState(false);
   const [emailError, setEmailError] = useState<string>();
@@ -36,26 +69,23 @@ export function SignUpForm() {
     setEmailError(undefined);
     setFormError(undefined);
 
+    const email = String(values.get("email"));
     const { error } = await authClient.signUp
-      .email({
-        name: String(values.get("name")),
-        email: String(values.get("email")),
-        password: String(values.get("password")),
-      })
-      .catch(() => ({ error: { status: 0, code: undefined, message: undefined } }));
+      .email({ name: String(values.get("name")), email, password: String(values.get("password")) })
+      .catch(() => ({ error: { code: undefined, message: undefined } }));
 
-    // A full load drops every client cache, which the new session makes stale.
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
-    if (!error) return window.location.assign("/tasks");
+    if (!error) return setSentTo(email);
 
     setPending(false);
-    if (error.status === 403 || error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+    if (error.code === "EMAIL_NOT_ALLOWED") {
       setEmailError(error.message);
       (form.elements.namedItem("email") as HTMLInputElement).focus();
     } else {
       setFormError(error.message ?? "Could not reach Flowday. Check your connection and try again.");
     }
   }
+
+  if (sentTo) return <CheckEmail email={sentTo} />;
 
   return (
     // method="post" is the backstop: if a submit ever slips through, the password stays out of the URL.

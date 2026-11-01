@@ -7,6 +7,7 @@ import { APIError } from "better-auth/api";
 import { jwt } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
+import { sendMail } from "@/lib/mail";
 
 const baseURL = process.env.BETTER_AUTH_URL;
 if (!baseURL) throw new Error("BETTER_AUTH_URL is not set. Copy .env.example to .env.");
@@ -22,7 +23,21 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   // The jwt plugin's /token hands a session a JWT; tokens must only come from the OAuth flow.
   disabledPaths: ["/token"],
-  emailAndPassword: { enabled: true },
+  emailAndPassword: { enabled: true, requireEmailVerification: true },
+  emailVerification: {
+    sendOnSignUp: true,
+    sendOnSignIn: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      // One landing page for every link, so sign-in stays free to choose its own redirect.
+      const link = new URL(url);
+      link.searchParams.set("callbackURL", "/sign-in?verified=1");
+      await sendMail({
+        to: user.email,
+        subject: "Verify your Flowday email",
+        text: `Open this link to verify your email: ${link}`,
+      });
+    },
+  },
   session: { expiresIn: 60 * 60 * 24 * 30 },
   user: {
     additionalFields: {
@@ -45,7 +60,11 @@ export const auth = betterAuth({
       create: {
         before: async (user) => {
           if (!isAllowedEmail(user.email)) {
-            throw new APIError("FORBIDDEN", { message: "This email is not allowed to sign up." });
+            // Not 403: with email verification on, sign-up swallows that status into a fake success.
+            throw new APIError("UNPROCESSABLE_ENTITY", {
+              code: "EMAIL_NOT_ALLOWED",
+              message: "This email is not allowed to sign up.",
+            });
           }
         },
       },

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { authClient } from "@/lib/auth/client";
@@ -13,6 +14,21 @@ function returnPath() {
   const { origin } = window.location;
   const url = URL.parse(next, origin);
   return url?.origin === origin ? url.pathname + url.search : "/tasks";
+}
+
+function VerificationNotice() {
+  const query = useSearchParams();
+  if (!query.has("verified")) return null;
+
+  return query.has("error") ? (
+    <p role="alert" className="text-sm font-medium text-danger">
+      This link is invalid or has expired. Sign in and we will send you a new one.
+    </p>
+  ) : (
+    <p role="status" className="rounded-control border-hard bg-teal-tint p-3.5 text-sm font-medium">
+      Email verified. Sign in to continue.
+    </p>
+  );
 }
 
 export function SignInForm() {
@@ -33,7 +49,7 @@ export function SignInForm() {
         password: String(values.get("password")),
         rememberMe: values.get("remember") === "on",
       })
-      .catch(() => ({ data: null, error: { message: undefined } }));
+      .catch(() => ({ data: null, error: { code: undefined, message: undefined } }));
 
     // In an OAuth flow the auth client is already navigating to the consent page.
     if (data?.redirect) return;
@@ -41,7 +57,11 @@ export function SignInForm() {
     if (!error) return window.location.assign(returnPath());
 
     setPending(false);
-    setError(error.message ?? "Could not reach Flowday. Check your connection and try again.");
+    if (error.code === "EMAIL_NOT_VERIFIED") {
+      setError("Verify your email first. We just sent you a new link.");
+    } else {
+      setError(error.message ?? "Could not reach Flowday. Check your connection and try again.");
+    }
   }
 
   return (
@@ -51,6 +71,10 @@ export function SignInForm() {
         <h2 className="text-[32px] font-bold tracking-[-0.8px]">Welcome back</h2>
         <p className="text-[15px] text-muted">Sign in to continue to your workspace.</p>
       </div>
+
+      <Suspense>
+        <VerificationNotice />
+      </Suspense>
 
       <Field label="Email" name="email" type="email" autoComplete="email" placeholder="you@gmail.com" required />
       <div className="relative">

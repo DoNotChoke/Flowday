@@ -27,6 +27,10 @@ export async function deleteOAuthClient(clientId: string) {
   await db.delete(oauthClient).where(eq(oauthClient.clientId, clientId));
 }
 
+export async function verifyEmail(email: string) {
+  await db.update(user).set({ emailVerified: true }).where(eq(user.email, email));
+}
+
 export async function deleteUser(email: string) {
   await db.delete(user).where(eq(user.email, email));
 }

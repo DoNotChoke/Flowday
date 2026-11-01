@@ -3,6 +3,9 @@ import { afterAll, afterEach, expect, test, vi } from "vitest";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
+import { sendMail } from "@/lib/mail";
+
+vi.mock("@/lib/mail", () => ({ sendMail: vi.fn() }));
 
 const password = "correct-horse-battery";
 
@@ -12,6 +15,7 @@ function userRows(email: string) {
 
 afterEach(async () => {
   vi.unstubAllEnvs();
+  vi.mocked(sendMail).mockClear();
   await db.delete(user).where(eq(user.email, "owner@flowday.test"));
   await db.delete(user).where(eq(user.email, "stranger@flowday.test"));
 });
@@ -51,4 +55,55 @@ test("an empty list rejects every sign-up", async () => {
   ).rejects.toThrow("not allowed");
 
   expect(await userRows("owner@flowday.test")).toHaveLength(0);
+});
+
+function verificationLink() {
+  const { text } = vi.mocked(sendMail).mock.lastCall![0];
+  return new URL(text.match(/https?:\S+/)![0]);
+}
+
+async function signUpOwner() {
+  vi.stubEnv("ALLOWED_EMAILS", "owner@flowday.test");
+  await auth.api.signUpEmail({ body: { name: "Owner", email: "owner@flowday.test", password } });
+}
+
+function signInOwner() {
+  return auth.api.signInEmail({ body: { email: "owner@flowday.test", password } });
+}
+
+test("signing up mails a link and does not open a session", async () => {
+  await signUpOwner();
+
+  expect(vi.mocked(sendMail).mock.lastCall![0].to).toBe("owner@flowday.test");
+  await expect(signInOwner()).rejects.toThrow("not verified");
+});
+
+test("a sign-in before verifying sends a fresh link", async () => {
+  await signUpOwner();
+  vi.mocked(sendMail).mockClear();
+
+  await signInOwner().catch(() => {});
+
+  expect(sendMail).toHaveBeenCalledOnce();
+});
+
+test("the link verifies the email and lands on the sign-in page", async () => {
+  await signUpOwner();
+
+  const response = await auth.handler(new Request(verificationLink()));
+
+  expect(response.status).toBe(302);
+  expect(response.headers.get("location")).toBe("/sign-in?verified=1");
+  await expect(signInOwner()).resolves.toMatchObject({ user: { email: "owner@flowday.test" } });
+});
+
+test("a tampered link verifies nothing and says so", async () => {
+  await signUpOwner();
+  const link = verificationLink();
+  link.searchParams.set("token", `${link.searchParams.get("token")}x`);
+
+  const response = await auth.handler(new Request(link));
+
+  expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
+  await expect(signInOwner()).rejects.toThrow("not verified");
 });

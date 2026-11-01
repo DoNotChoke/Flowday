@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
-import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll } from "./helpers";
+import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
 
 const password = "correct-horse-battery";
 
@@ -27,6 +27,7 @@ async function register(request: APIRequestContext, testInfo: TestInfo) {
     data: { name: "Nguyễn Việt", email: emailFor(testInfo), password },
     headers: { "x-forwarded-for": clientIp() },
   });
+  await verifyEmail(emailFor(testInfo));
 }
 
 async function signIn(page: Page, testInfo: TestInfo, secret = password) {
@@ -41,6 +42,12 @@ test("signing up, signing out and signing in again works", async ({ page, isMobi
   await page.getByLabel("Email").fill(emailFor(testInfo));
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await verifyEmail(emailFor(testInfo));
+
+  await page.goto("/sign-in");
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
   if (isMobile) await page.getByRole("button", { name: "Account" }).click();
   await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
 
@@ -249,7 +256,7 @@ for (const width of [360, 390, 744, 1024, 1440]) {
   });
 }
 
-test("signing up with the keyboard alone opens the app", async ({ page }, testInfo) => {
+test("signing up with the keyboard alone asks to check the inbox", async ({ page }, testInfo) => {
   await page.goto("/sign-up");
   await expect(page.getByRole("button", { name: "Create account" })).toBeEnabled();
 
@@ -261,7 +268,8 @@ test("signing up with the keyboard alone opens the app", async ({ page }, testIn
   await page.keyboard.type(password);
   await page.keyboard.press("Enter");
 
-  await expect(page).toHaveURL("/tasks");
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+  await expect(page.getByText(emailFor(testInfo))).toBeVisible();
 });
 
 test("an email outside the list shows the error on that field", async ({ page }) => {
@@ -279,7 +287,7 @@ test("an email outside the list shows the error on that field", async ({ page })
   await expect(page).toHaveURL("/sign-up");
 });
 
-test("an email already registered shows the error on that field", async ({ page, request }, testInfo) => {
+test("an email already registered looks like a new sign-up, revealing nothing", async ({ page, request }, testInfo) => {
   await request.post("/api/auth/sign-up/email", {
     data: { name: "Taken", email: emailFor(testInfo), password },
     headers: { "x-forwarded-for": clientIp() },
@@ -291,8 +299,41 @@ test("an email already registered shows the error on that field", async ({ page,
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
 
-  await expect(page.getByLabel("Email")).toHaveAttribute("aria-invalid", "true");
-  await expect(page).toHaveURL("/sign-up");
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
+});
+
+test("the inbox screen can send the link again", async ({ page }, testInfo) => {
+  await page.goto("/sign-up");
+  await page.getByLabel("Full name").fill("Again");
+  await page.getByLabel("Email").fill(emailFor(testInfo));
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+
+  await page.getByRole("button", { name: "Send it again" }).click();
+
+  await expect(page.getByText("Sent. Check your inbox.")).toBeVisible();
+});
+
+test("signing in before verifying explains what to do", async ({ page, request }, testInfo) => {
+  await request.post("/api/auth/sign-up/email", {
+    data: { name: "Unverified", email: emailFor(testInfo), password },
+    headers: { "x-forwarded-for": clientIp() },
+  });
+  await page.goto("/sign-in");
+
+  await signIn(page, testInfo);
+
+  await expect(page.getByText("Verify your email first")).toBeVisible();
+  await expect(page).toHaveURL("/sign-in");
+});
+
+test("arriving from a verification link says how it went", async ({ page }) => {
+  await page.goto("/sign-in?verified=1");
+  await expect(page.getByText("Email verified. Sign in to continue.")).toBeVisible();
+
+  await page.goto("/sign-in?verified=1&error=TOKEN_EXPIRED");
+  await expect(page.getByText("This link is invalid or has expired")).toBeVisible();
+  await expect(page.getByText("Email verified")).toHaveCount(0);
 });
 
 test("a dropped connection shows an error and keeps what was typed", async ({ page }, testInfo) => {
@@ -361,7 +402,7 @@ test("what is typed before JavaScript loads survives and can be submitted", asyn
   await expect(submit).toBeEnabled({ timeout: 20_000 });
   await expect(page.getByLabel("Full name")).toHaveValue("Early");
   await submit.click();
-  await expect(page).toHaveURL("/tasks");
+  await expect(page.getByRole("heading", { name: "Check your email" })).toBeVisible();
 });
 
 test.describe("without JavaScript", () => {

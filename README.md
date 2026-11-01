@@ -21,6 +21,8 @@ Mở `.env`, đặt `DATABASE_URL` là connection string của branch `dev`, dù
 
 Đặt tiếp `BETTER_AUTH_SECRET` (tạo bằng `openssl rand -base64 32`) và `ALLOWED_EMAILS` là email của bạn, kèm các địa chỉ e2e như trong `.env.example` để `npm run test:e2e` chạy được. Email ngoài danh sách không đăng ký được.
 
+Để nhận email thật, đặt `RESEND_API_KEY` của tài khoản [Resend](https://resend.com) trùng email của bạn. Không có key thì link xác minh được in ra terminal đang chạy `npm run dev`.
+
 ```bash
 npm run db:migrate
 npm run dev

@@ -15,6 +15,7 @@ jobs:
       BETTER_AUTH_URL: http://localhost:3000
       ALLOWED_EMAILS: e2e-desktop@flowday.test,e2e-mobile@flowday.test,e2e-shell-desktop@flowday.test,e2e-shell-mobile@flowday.test
       FLOWDAY_DEV_UI: "1"
+      FLOWDAY_DEV_MAIL: "1"
     services:
       postgres:
         image: postgres:18-alpine

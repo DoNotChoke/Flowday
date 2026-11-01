@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { deleteUser, expectNoHorizontalScroll } from "./helpers";
+import { deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
 
 const sections = [
   { name: "My tasks", path: "/tasks" },
@@ -15,11 +15,12 @@ function emailFor(testInfo: TestInfo) {
 }
 
 async function signUp(page: Page, testInfo: TestInfo) {
-  const ip = `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}`;
-  await page.request.post("/api/auth/sign-up/email", {
-    data: { name: "Nguyễn Việt", email: emailFor(testInfo), password: "correct-horse-battery" },
-    headers: { "x-forwarded-for": ip },
-  });
+  const email = emailFor(testInfo);
+  const password = "correct-horse-battery";
+  const headers = { "x-forwarded-for": `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}` };
+  await page.request.post("/api/auth/sign-up/email", { data: { name: "Nguyễn Việt", email, password }, headers });
+  await verifyEmail(email);
+  await page.request.post("/api/auth/sign-in/email", { data: { email, password }, headers });
 }
 
 test.afterEach(async ({}, testInfo) => {

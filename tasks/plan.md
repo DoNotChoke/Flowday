@@ -110,7 +110,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Checkpoint hoàn thành Phase 1
 
 - [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile
-- [ ] Bạn đã xem khung app ở 390, 820 và 1440 px
+- [x] Bạn đã xem khung app ở 390, 820 và 1440 px
 - [ ] `PLAN.md` đã đánh dấu xong Phase 1
 - [ ] Sẵn sàng sang T2.1
 

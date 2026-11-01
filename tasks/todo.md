@@ -199,7 +199,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 **Kiểm chứng:**
 - [x] `e2e/shell.spec.ts` chạy thêm các viewport trên.
-- [ ] Bạn xem ở 390, 820 và 1440 px.
+- [x] Bạn xem ở 390, 820 và 1440 px.
 
 **Phụ thuộc:** T1.7
 
@@ -216,14 +216,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** `src/lib/mail.ts` gọi API Resend bằng `fetch`, không thêm dependency. Không có `RESEND_API_KEY` thì in link ra console ở dev, và báo lỗi ở production. Bật `requireEmailVerification` và `sendOnSignUp`. Đăng ký xong hiện màn hình "Check your email", có nút gửi lại. Sửa E2E của T1.2 và T1.3: helper đánh dấu `email_verified` trực tiếp trong DB.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Chưa xác minh thì không đăng nhập được, form báo rõ cách xử lý.
-- [ ] Bấm link xác minh thì đăng nhập được; link đã dùng hoặc hết hạn bị từ chối.
-- [ ] Không có API key ở production thì báo lỗi, không âm thầm bỏ qua.
+- [x] Chưa xác minh thì không đăng nhập được, form báo rõ cách xử lý.
+- [x] Bấm link xác minh thì đăng nhập được; link bị sửa bị từ chối, có test; link hết hạn đi cùng nhánh xử lý nhưng chưa có test riêng; link đã dùng không có tác dụng thêm.
+- [x] Không có API key ở production thì báo lỗi, không âm thầm bỏ qua.
 
 **Kiểm chứng:**
-- [ ] Vitest thay `lib/mail` bằng spy, chạy đủ luồng qua `auth.api`.
+- [x] Vitest thay `lib/mail` bằng spy, chạy đủ luồng qua `auth.api`.
 - [ ] Bạn đặt key, đăng ký thử và nhận email thật từ `onboarding@resend.dev`.
-- [ ] Không có token nào bị in vào log ở production.
+- [x] Không có token nào bị in vào log ở production.
 
 **Phụ thuộc:** T1.6
 
@@ -280,6 +280,6 @@ Tổng quan và quyết định: `tasks/plan.md`.
 ## Checkpoint hoàn thành Phase 1
 
 - [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile.
-- [ ] Bạn đã xem khung app ở 390, 820 và 1440 px.
+- [x] Bạn đã xem khung app ở 390, 820 và 1440 px.
 - [ ] `PLAN.md` đã đánh dấu xong Phase 1.
 - [ ] Sẵn sàng sang T2.1.
