@@ -26,7 +26,7 @@ Xây **Flowday**: web app quản lý công việc, dùng đúng UI đã thiết 
 | Cập nhật dữ liệu | Refetch khi quay lại tab, không poll | Để Neon được ngủ. `shortcut: chưa có realtime, thêm poll hoặc SSE nếu cần thấy task ngay khi đang nhìn Board` |
 | Kiểm thử | Vitest (Postgres thật) + Playwright (project desktop và mobile) | Service, MCP và luồng UI đều chạy được trong CI |
 | Người dùng | Một người; `ALLOWED_EMAILS` chặn đăng ký từ email khác | App công khai trên internet nhưng chỉ phục vụ chủ sở hữu; tránh người lạ dùng hết quota |
-| Hạ tầng | Vercel (`sin1`), Neon Postgres (`aws-ap-southeast-1`), Upstash QStash, Resend | Không phải quản lý server, $0/tháng khi còn là dự án cá nhân. App và DB cùng ở Singapore nên nhanh cho người dùng Việt Nam. Không dùng Docker: dev và test chạy trên project Neon riêng `flowday-dev`, tách quota với production |
+| Hạ tầng | Vercel (`sin1`), Neon Postgres (`aws-ap-southeast-1`), Upstash QStash, Resend | Không phải quản lý server, $0/tháng khi còn là dự án cá nhân. App và DB cùng ở Singapore nên nhanh cho người dùng Việt Nam. Không dùng Docker: dev và test chạy trên branch `dev` của project Neon `flowday`, dùng chung quota với branch `production` |
 
 Phiên bản tham chiếu ngày 2026-11-01: `next` 16.4, `react` 19.3, `tailwindcss` 4.3, `drizzle-orm` 0.45, `better-auth` 1.7.14, `zod` 4.6, `vitest` 5, `@playwright/test` 1.64. Khóa bằng lockfile.
 
@@ -205,8 +205,8 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 - [x] **T0.1 Khởi tạo repo và app Next.js (M).** *Xong khi:* lint, typecheck, build pass; các thư mục không liên quan được ignore.
 - [x] **T0.2 Playwright smoke (S).** *Xong khi:* test chạy trên Chromium desktop và WebKit mobile.
-- [x] **T0.3 Postgres và migration đầu tiên (M).** *Xong khi:* `unaccent` được cài qua migration trên DB mới của project Neon `flowday-dev`.
-- [ ] **T0.4 DB client, Vitest và README (M).** *Xong khi:* test `unaccent()` đi qua `src/lib/db`; README đủ để chạy dự án.
+- [x] **T0.3 Postgres và migration đầu tiên (M).** *Xong khi:* `unaccent` được cài qua migration trên DB mới của Neon.
+- [x] **T0.4 DB client, Vitest và README (M).** *Xong khi:* test `unaccent()` đi qua `src/lib/db`; README đủ để chạy dự án.
 - [ ] **T0.5 Tách thiết kế (S).** *Xong khi:* đủ 10 màn hình và Sidebar trong `design/screens/`, đọc được bằng mắt thường.
 - [ ] **T0.6 Design token và font (M).** *Xong khi:* token, breakpoint 744 px và font tiếng Việt đúng trên `/dev/ui`; trang này trả 404 trong production.
 - [ ] **T0.7 Primitive hành động (M).** *Xong khi:* Button, Card, Chip, Segmented đạt vùng chạm 44 px và có focus rõ.
@@ -300,7 +300,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [ ] **T9.1 Kiểm tra responsive (M).** Playwright quét mọi route ở 360/390/744/820/1024/1180/1440 px. *Xong khi:* `scrollWidth <= clientWidth` trên tất cả route, kèm kiểm tra tay trên iPhone, Android và iPad thật (dọc, ngang, Split View).
 - [ ] **T9.2 Accessibility (S).** Bàn phím, focus, nhãn form, tương phản với axe. *Xong khi:* không còn lỗi axe mức serious trở lên.
 - [ ] **T9.3 Bảo mật (M).** Security headers, rate limit trang đăng nhập, rà quyền trên mọi service, trang Terms và Privacy. *Xong khi:* `npm audit` sạch mức high; test IDOR pass.
-- [ ] **T9.4 Triển khai (M).** Vercel Hobby region `sin1`, Neon Singapore qua connection string pooled, Resend gửi từ `onboarding@resend.dev` tới email của chính tài khoản Resend, QStash, Google OAuth production, migrate trong CI, `pg_dump` hằng đêm bằng GitHub Actions vì gói Free của Neon chỉ giữ 6 giờ lịch sử. *Xong khi:* đã thử restore từ backup; deploy lại không mất dữ liệu; `/tasks` tải dưới 2 giây từ Việt Nam kể cả khi DB vừa thức.
+- [ ] **T9.4 Triển khai (M).** Vercel Hobby region `sin1`, Neon branch `production` qua connection string pooled, Resend gửi từ `onboarding@resend.dev` tới email của chính tài khoản Resend, QStash, Google OAuth production, migrate trong CI, `pg_dump` hằng đêm bằng GitHub Actions vì gói Free của Neon chỉ giữ 6 giờ lịch sử. *Xong khi:* đã thử restore từ backup; deploy lại không mất dữ liệu; `/tasks` tải dưới 2 giây từ Việt Nam kể cả khi DB vừa thức.
 - [ ] **T9.5 Nghiệm thu production (S).** Kết nối Claude bằng URL thật, chạy lại T3.6 và E2E. *Xong khi:* 3 tiêu chí ở mục 1 đều đạt.
 
 ## 7. Rủi ro
@@ -313,7 +313,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 | claude.ai không gọi được localhost | TB | Dev bằng tunnel HTTPS; Claude Code thử trực tiếp trên máy |
 | Prompt injection khiến Claude tạo hoặc sửa task ngoài ý muốn | TB | Không có xóa cứng, activity ghi rõ "via Claude", rate limit, thu hồi được trong Settings |
 | Sai ngày do múi giờ | TB | Server tự quy đổi; test bảng cho Calendar, streak, nhắc hạn |
-| Vượt quota gói miễn phí: Vercel Hobby có thể dừng tính năng đến 30 ngày, Neon Free có 100 CU-giờ/tháng | TB | Không polling DB, theo dõi Usage và nâng gói trước khi chạm ngưỡng |
+| Vượt quota gói miễn phí: Vercel Hobby có thể dừng tính năng đến 30 ngày, Neon Free có 100 CU-giờ/tháng chung cho mọi branch | TB | Không polling DB, theo dõi Usage và nâng gói trước khi chạm ngưỡng |
 | Phạm vi lớn | TB | Sau Phase 3 đã dùng được; Phase 4–8 có thể cắt độc lập |
 
 ## 8. Câu hỏi cần chốt

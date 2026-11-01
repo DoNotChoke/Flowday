@@ -15,7 +15,7 @@ Phase 0 dựng nền để Phase 1 bắt đầu viết tính năng ngay: app Nex
 | Repo | Chưa có git, chưa có code; có `.venv`, `.idea`, `.jbeval`, 2 file HTML, `PLAN.md` | Scaffold không chạy thẳng tại gốc được |
 | Node / npm | 24.22 / 11.19 | Đạt yêu cầu của Next 16 (≥ 20.9) |
 | Git | Có tên và email; chưa đặt nhánh mặc định | Dùng `git init -b main` |
-| Neon | Chưa có project | Phải tạo `flowday-dev` trước T0.3 |
+| Neon | Project `flowday`, branch `production` và `dev` | `.env` dùng branch `dev` |
 | Playwright | Chỉ có Chromium | Cần cài thêm WebKit |
 | GitHub CLI | Chưa cài | Repo GitHub phải tạo thủ công (T0.9) |
 | Cổng 3000 | Đang trống | Không xung đột |
@@ -33,7 +33,7 @@ Chạy thử `create-next-app@16.4.3` trong thư mục tạm cho thấy:
 - **Scaffold trong thư mục tạm tên `flowday` rồi chép về gốc.** Thư mục gốc có file không liên quan và tên `ToDoApp` có chữ hoa, không hợp với tên package npm.
 - **Giữ nguyên phiên bản scaffold sinh ra.** TypeScript 5 và ESLint 9 là tổ hợp Next 16.4 đã chọn; không tự nâng lên 7 và 10. Chỉ nâng `@types/node` lên 24 cho khớp runtime.
 - **Bản Next ghim `16.4.3`**, các gói khác khóa bằng lockfile.
-- **Không dùng Docker.** Dev và test chạy trên project Neon riêng `flowday-dev` (Postgres 18, Singapore), production là project `flowday`. Neon Free cho 100 project, mỗi project có 100 CU-giờ riêng, nên việc dev không ăn quota production. CI dùng Postgres có sẵn trên máy của GitHub. Code dùng một driver `pg` cho mọi môi trường.
+- **Không dùng Docker.** Dev và test chạy trên branch `dev` của project Neon `flowday` (Postgres 18, Singapore), bản thật chạy trên branch `production`. Thay đổi ở `dev` không ảnh hưởng `production`, nhưng hai branch dùng chung 100 CU-giờ mỗi tháng. CI dùng Postgres có sẵn trên máy của GitHub. Code dùng một driver `pg` cho mọi môi trường.
 - **Migration đầu tiên là `CREATE EXTENSION unaccent`**, thay cho migration trống. T2.9 cần extension này, và test `unaccent()` chứng minh toàn bộ đường đi app → DB hoạt động.
 - **Test đầu tiên là test thật.** Vitest vào cùng task với DB client để khỏi phải viết test giả; Playwright có smoke test ngay từ T0.2.
 - **Playwright 2 project:** `desktop` (Chromium, 1440×900) và `mobile` (WebKit, 390×844). Các khổ iPad để lại cho T9.1.
@@ -67,12 +67,12 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 - [x] T0.1 Khởi tạo repo và app Next.js (M)
 - [x] T0.2 Playwright smoke trên desktop và mobile (S)
 - [x] T0.3 Postgres và migration đầu tiên (M)
-- [ ] T0.4 DB client, Vitest và README (M)
+- [x] T0.4 DB client, Vitest và README (M)
 
 ### Checkpoint A
 
-- [ ] Bản clone sạch chạy được theo README
-- [ ] Lint, typecheck, test, e2e, build đều pass
+- [x] Bản clone sạch chạy được theo README
+- [x] Lint, typecheck, test, e2e, build đều pass
 
 ### Nhóm B: Thiết kế và UI
 
@@ -104,7 +104,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Chạy nhầm lệnh dev hoặc test vào DB production | Cao | `.env` trên máy chỉ chứa URL của `flowday-dev`; URL production chỉ nằm trong biến môi trường của Vercel |
+| Chạy nhầm lệnh dev hoặc test vào DB production | Cao | `.env` trên máy chỉ chứa URL của branch `dev`; URL production chỉ nằm trong biến môi trường của Vercel |
+| `dev` và `production` dùng chung quota, hết thì cả hai dừng | Thấp | Theo dõi Usage; nếu dev tốn nhiều thì tách `dev` sang project riêng |
 | Dev và test cần mạng, test chậm hơn DB trên máy | Thấp | Chấp nhận được với một người dùng. Test có ghi dữ liệu phải tự dọn sau khi chạy |
 | Chữ tiếng Việt lệch nét vì trong cùng một từ có ký tự từ Poppins và Be Vietnam Pro | TB | Xem bằng mắt ở T0.6 với câu tiếng Việt dài. Nếu xấu, dùng riêng Be Vietnam Pro cho nội dung do người dùng nhập |
 | Next 16 khác kiến thức có sẵn | TB | Đọc `node_modules/next/dist/docs/` theo `AGENTS.md` trước khi viết `layout.tsx` và `globals.css` |
@@ -114,4 +115,4 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ## Open Questions
 
 - **Repo GitHub:** `gh` chưa được cài, nên T0.9 cần một repo trống do bạn tạo (mặc định: private, tên `flowday`) và lời đồng ý push. Các task khác không phụ thuộc vào câu này.
-- **Neon:** trước T0.3, bạn tạo project `flowday-dev` (AWS Singapore, Postgres 18) và dán connection string vào file `.env` trên máy. Không gửi chuỗi này vào chat vì nó chứa mật khẩu.
+- **Neon:** xác nhận `DATABASE_URL` trong `.env` lấy từ branch `dev`. Không gửi chuỗi này vào chat vì nó chứa mật khẩu.

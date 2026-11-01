@@ -58,12 +58,12 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 
 ### T0.3 Postgres và migration đầu tiên
 
-**Mô tả:** Kết nối project Neon dành riêng cho dev, cấu hình Drizzle Kit và tạo migration custom `CREATE EXTENSION IF NOT EXISTS unaccent;`. Thêm script `db:generate`, `db:migrate`. `drizzle.config.ts` đọc `.env` bằng `process.loadEnvFile`, không thêm `dotenv`. `.env.example` chỉ mô tả dạng `DATABASE_URL`, không chứa giá trị thật.
+**Mô tả:** Kết nối branch `dev` của project Neon `flowday`, cấu hình Drizzle Kit và tạo migration custom `CREATE EXTENSION IF NOT EXISTS unaccent;`. Thêm script `db:generate`, `db:migrate`. `drizzle.config.ts` đọc `.env` bằng `process.loadEnvFile`, không thêm `dotenv`. `.env.example` chỉ mô tả dạng `DATABASE_URL`, không chứa giá trị thật.
 
-**Tiền đề:** Đã có project Neon `flowday-dev` (AWS Singapore, Postgres 18) và connection string nằm trong `.env` trên máy.
+**Tiền đề:** Đã có branch `dev` của project Neon `flowday` (AWS Singapore, Postgres 18) và connection string nằm trong `.env` trên máy.
 
 **Tiêu chí nghiệm thu:**
-- [x] `npm run db:migrate` chạy được trên DB mới tạo của `flowday-dev`.
+- [x] `npm run db:migrate` chạy được trên DB mới tạo.
 - [x] Chạy `npm run db:migrate` lần 2 không lỗi và không áp dụng lại.
 - [x] `.env` không xuất hiện trong `git status`.
 
@@ -84,17 +84,17 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 **Mô tả:** Tạo `src/lib/db` dùng `drizzle-orm/node-postgres` với một `Pool` duy nhất qua `globalThis` để không rò kết nối khi hot reload. Cài Vitest (môi trường node, alias `@`, đọc `.env`) và viết test thật đầu tiên. Viết lại `README.md` với các bước chạy dự án.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `npm test` pass với test `select unaccent('Việt Đồ án')` trả về `Viet Do an` qua `src/lib/db`.
-- [ ] Sai `DATABASE_URL` thì test fail rõ ràng, không treo.
-- [ ] `README.md` đủ các bước từ clone đến chạy app, migration và test.
+- [x] `npm test` pass với test `select unaccent('Việt Đồ án')` trả về `Viet Do an` qua `src/lib/db`.
+- [x] Sai `DATABASE_URL` thì test fail rõ ràng, không treo.
+- [x] `README.md` đủ các bước từ clone đến chạy app, migration và test.
 
 **Kiểm chứng:**
-- [ ] Tạm đặt `DATABASE_URL` sai rồi chạy `npm test` để xem lỗi, sau đó trả lại.
-- [ ] Sửa giá trị mong đợi của test, test phải fail, rồi trả lại.
+- [x] Tạm đặt `DATABASE_URL` sai rồi chạy `npm test` để xem lỗi, sau đó trả lại.
+- [x] Sửa giá trị mong đợi của test, test phải fail, rồi trả lại.
 
 **Phụ thuộc:** T0.3
 
-**File dự kiến:** `src/lib/db/index.ts`, `src/lib/db/db.test.ts`, `vitest.config.ts`, `package.json`, `README.md`
+**File dự kiến:** `src/lib/db/index.ts`, `src/lib/db/db.test.ts`, `vitest.config.mts`, `package.json`, `README.md`
 
 **Quy mô:** M
 
@@ -102,9 +102,9 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 
 ## Checkpoint A: Sau T0.1–T0.4
 
-- [ ] `git clone` sang thư mục tạm, làm đúng theo `README.md`, mọi lệnh chạy được.
-- [ ] `npm run lint`, `typecheck`, `test`, `test:e2e`, `build` đều pass.
-- [ ] Không có secret nào được commit.
+- [x] `git clone` sang thư mục tạm, làm đúng theo `README.md`, mọi lệnh chạy được.
+- [x] `npm run lint`, `typecheck`, `test`, `test:e2e`, `build` đều pass.
+- [x] Không có secret nào được commit.
 
 ---
 
