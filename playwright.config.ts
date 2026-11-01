@@ -5,6 +5,7 @@ const baseURL = "http://localhost:3000";
 export default defineConfig({
   testDir: "./e2e",
   forbidOnly: !!process.env.CI,
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: { baseURL },
   projects: [
     {

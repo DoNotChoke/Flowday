@@ -34,6 +34,7 @@ App chạy tại <http://localhost:3000>.
 | `npm run build` | Build production |
 | `npm run lint` | Chạy ESLint |
 | `npm run typecheck` | Kiểm tra kiểu TypeScript |
+| `npm run check` | Chạy lint, typecheck, Vitest và build như CI |
 | `npm test` | Chạy Vitest, cần `DATABASE_URL` |
 | `npm run test:e2e` | Chạy Playwright trên desktop và mobile, tự bật app |
 | `npm run db:generate` | Tạo migration từ `src/lib/db/schema.ts` |
