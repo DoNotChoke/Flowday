@@ -91,7 +91,7 @@ Quy tắc nghiệp vụ:
 |---|---|---|
 | 01 Sign in | `/sign-in` | Bỏ link "Skip to app (prototype)" |
 | 02 Sign up | `/sign-up` | Giữ thanh đo độ mạnh mật khẩu |
-| Sidebar | layout `(app)` | Số liệu lấy từ DB, mobile đổi sang bottom nav. **Thêm** highlight project đang mở (bản mẫu chưa có) |
+| Sidebar | layout `(app)` | Khác thiết kế theo yêu cầu của bạn: cao bằng màn hình, tài khoản ghim đáy, phần giữa tự cuộn. Số liệu lấy từ DB, mobile đổi sang bottom nav. **Thêm** highlight project đang mở (bản mẫu chưa có) |
 | 03 Tasks board | `/tasks` | Trang chính sau đăng nhập |
 | 04 Create task | `/tasks/new` | Đã có Project và Time estimate. Nhận `?project=` khi đi từ trang project |
 | 05 Task detail | `/tasks/[id]` | Thiết kế chưa đổi: **thêm** mã task, Project, Milestone và ô sửa Estimate |

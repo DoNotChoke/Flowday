@@ -26,7 +26,7 @@ test.afterEach(async ({}, testInfo) => {
   await deleteUser(emailFor(testInfo));
 });
 
-for (const path of [...sections.map((section) => section.path), "/tasks/new"]) {
+for (const path of [...sections.map((section) => section.path), "/tasks/new", "/projects/new"]) {
   test(`${path} sends a signed-out visitor to sign-in`, async ({ page }) => {
     await page.goto(path);
 
@@ -65,13 +65,39 @@ test.describe("signed in on a wide screen", () => {
     await expect(nav.getByText("Nguyễn Việt")).toBeVisible();
     await expect(nav.getByText(emailFor(testInfo))).toBeVisible();
     await expect(nav.getByText("Current streak")).toHaveCount(0);
-    await expect(nav.getByText("PROJECTS")).toHaveCount(0);
+  });
+
+  test("the projects section starts empty and leads to creating one", async ({ page }) => {
+    const nav = page.getByRole("navigation", { name: "Main" });
+
+    await expect(nav.getByText("PROJECTS", { exact: true })).toBeVisible();
+    await expect(nav.getByText("No projects yet")).toBeVisible();
+
+    await nav.getByRole("link", { name: "New project" }).click();
+    await expect(page).toHaveURL("/projects/new");
+  });
+
+  test("the sidebar fills the screen height", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const box = await page.getByRole("navigation", { name: "Main" }).boundingBox();
+
+    expect(box!.y).toBe(24);
+    expect(box!.y + box!.height).toBe(876);
+  });
+
+  test("on a short screen the account stays visible and the sidebar scrolls inside", async ({ page }) => {
+    await page.setViewportSize({ width: 1366, height: 480 });
+    const signOut = page.getByRole("button", { name: "Sign out" });
+
+    await expect(signOut).toBeInViewport({ ratio: 1 });
+    await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
+    await expect(page.getByText("No projects yet")).not.toBeInViewport();
   });
 
   test("every sidebar control shows focus from the keyboard", async ({ page }) => {
     await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
 
-    for (let stop = 0; stop < 8; stop++) {
+    for (let stop = 0; stop < 9; stop++) {
       await page.keyboard.press("Tab");
       await expect(page.locator(":focus")).toHaveCSS("outline-style", "solid");
     }
