@@ -98,7 +98,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm C: Khung app
 
-- [ ] T1.7 Sidebar và layout `(app)` trên desktop (M)
+- [x] T1.7 Sidebar và layout `(app)` trên desktop (M)
 - [ ] T1.8 Khung phone và tablet (M)
 
 ### Nhóm D: Hoàn thiện đăng nhập

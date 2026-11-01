@@ -41,7 +41,7 @@ test("signing up, signing out and signing in again works", async ({ page }, test
   await page.getByLabel("Email").fill(emailFor(testInfo));
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page.getByText("Nguyễn Việt")).toBeVisible();
+  await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page).toHaveURL("/sign-in");
@@ -52,7 +52,7 @@ test("signing up, signing out and signing in again works", async ({ page }, test
   await page.goto("/sign-in");
   await signIn(page, testInfo);
   await expect(page).toHaveURL("/tasks");
-  await expect(page.getByText("Nguyễn Việt")).toBeVisible();
+  await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
 });
 
 test("a signed-out visitor is sent to sign-in and returned afterwards", async ({ page, request }, testInfo) => {

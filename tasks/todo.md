@@ -169,15 +169,15 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Layout `(app)` với Sidebar 260 px từ `lg`: logo, nút New task, 5 mục điều hướng có trạng thái active, tên và email người dùng, nút Sign out. Phần đọc phiên nằm trong `<Suspense>`, không `await` ở cấp layout. Thêm trang tạm `/tasks/new`, `/calendar`, `/history`, `/focus`, `/settings`, và thêm các đường dẫn này vào matcher của proxy. Chưa có badge, danh sách project hay thẻ streak.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Giống `design/screens/component-sidebar.html` ở 1440 px, phần đã lùi được ẩn hẳn.
-- [ ] Mục đang mở có `aria-current="page"`.
-- [ ] Khung Sidebar và nội dung tĩnh hiện ngay; chỉ khối người dùng chờ phiên.
-- [ ] Mọi trang trong app đều chặn người chưa đăng nhập.
+- [x] Giống `design/screens/component-sidebar.html` ở 1440 px, phần đã lùi được ẩn hẳn.
+- [x] Mục đang mở có `aria-current="page"`.
+- [x] Khung Sidebar và nội dung tĩnh hiện ngay; chỉ khối người dùng chờ phiên.
+- [x] Mọi trang trong app đều chặn người chưa đăng nhập.
 
 **Kiểm chứng:**
-- [ ] E2E bấm qua 5 mục ở 1440 px.
-- [ ] Không có cuộn ngang ở 1024 và 1440 px.
-- [ ] Tab qua toàn bộ Sidebar, focus nhìn rõ.
+- [x] E2E bấm qua 5 mục ở 1440 px.
+- [x] Không có cuộn ngang ở 1024 và 1440 px.
+- [x] Tab qua toàn bộ Sidebar, focus nhìn rõ.
 
 **Phụ thuộc:** T1.6, T1.3
 

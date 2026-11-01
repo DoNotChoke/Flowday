@@ -10,4 +10,6 @@ export function proxy(request: NextRequest) {
   return NextResponse.redirect(signIn);
 }
 
-export const config = { matcher: ["/tasks/:path*"] };
+export const config = {
+  matcher: ["/tasks/:path*", "/calendar/:path*", "/history/:path*", "/focus/:path*", "/settings/:path*"],
+};

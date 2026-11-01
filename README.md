@@ -19,7 +19,7 @@ cp .env.example .env
 
 Mở `.env`, đặt `DATABASE_URL` là connection string của branch `dev`, dùng kết nối trực tiếp (không pooled) và `sslmode=verify-full`. Không dùng URL của branch `production` trên máy.
 
-Đặt tiếp `BETTER_AUTH_SECRET` (tạo bằng `openssl rand -base64 32`) và `ALLOWED_EMAILS` là email của bạn, kèm hai địa chỉ e2e như trong `.env.example` để `npm run test:e2e` chạy được. Email ngoài danh sách không đăng ký được.
+Đặt tiếp `BETTER_AUTH_SECRET` (tạo bằng `openssl rand -base64 32`) và `ALLOWED_EMAILS` là email của bạn, kèm các địa chỉ e2e như trong `.env.example` để `npm run test:e2e` chạy được. Email ngoài danh sách không đăng ký được.
 
 ```bash
 npm run db:migrate
