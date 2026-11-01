@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useSyncExternalStore, type FormEvent } from "react";
+import Link from "next/link";
+import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
 import { authClient } from "@/lib/auth/client";
+import { useHydrated } from "@/lib/useHydrated";
 
 const strengthColors = ["bg-coral", "bg-sun", "bg-teal", "bg-heat-4"];
 const strengthLabels = ["Weak password", "Okay — add a number or symbol", "Good password", "Strong password"];
-
-const subscribeToNothing = () => () => {};
 
 function passwordScore(password: string) {
   if (!password) return 0;
@@ -22,8 +22,7 @@ function passwordScore(password: string) {
 }
 
 export function SignUpForm() {
-  // A submit before hydration reloads the page and wipes the form, so the button waits.
-  const hydrated = useSyncExternalStore(subscribeToNothing, () => true, () => false);
+  const hydrated = useHydrated();
   const [score, setScore] = useState(0);
   const [pending, setPending] = useState(false);
   const [emailError, setEmailError] = useState<string>();
@@ -45,7 +44,8 @@ export function SignUpForm() {
       })
       .catch(() => ({ error: { status: 0, code: undefined, message: undefined } }));
 
-    // A full load: router.push could stall with the form stuck, and the session just changed anyway.
+    // A full load drops every client cache, which the new session makes stale.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     if (!error) return window.location.assign("/tasks");
 
     setPending(false);
@@ -103,6 +103,12 @@ export function SignUpForm() {
       <Button type="submit" disabled={pending || !hydrated}>
         Create account
       </Button>
+      <p className="text-center text-sm text-muted">
+        Already have an account?{" "}
+        <Link href="/sign-in" className="font-semibold text-ink underline hover:text-danger">
+          Sign in
+        </Link>
+      </p>
     </form>
   );
 }

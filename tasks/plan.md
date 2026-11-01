@@ -77,7 +77,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T1.1 Auth server và `ALLOWED_EMAILS` (M)
 - [x] T1.2 Trang đăng ký (M)
-- [ ] T1.3 Đăng nhập, đăng xuất, chặn route (M)
+- [x] T1.3 Đăng nhập, đăng xuất, chặn route (M)
 
 ### Checkpoint A
 

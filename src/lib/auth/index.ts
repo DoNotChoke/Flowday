@@ -12,6 +12,7 @@ function isAllowedEmail(email: string) {
 export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   emailAndPassword: { enabled: true },
+  session: { expiresIn: 60 * 60 * 24 * 30 },
   user: {
     additionalFields: {
       timezone: { type: "string", required: false, defaultValue: "Asia/Ho_Chi_Minh", input: false },

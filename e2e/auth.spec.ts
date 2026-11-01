@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { expect, test, type TestInfo } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
 import { deleteUser, expectNoHorizontalScroll } from "./helpers";
 
 const password = "correct-horse-battery";
@@ -18,6 +18,129 @@ test.beforeEach(async ({ page }) => {
 test.afterEach(async ({}, testInfo) => {
   await deleteUser(emailFor(testInfo));
 });
+
+async function register(request: APIRequestContext, testInfo: TestInfo) {
+  await request.post("/api/auth/sign-up/email", {
+    data: { name: "Nguyễn Việt", email: emailFor(testInfo), password },
+    headers: { "x-forwarded-for": clientIp() },
+  });
+}
+
+async function signIn(page: Page, testInfo: TestInfo, secret = password) {
+  await page.getByLabel("Email").fill(emailFor(testInfo));
+  await page.getByLabel("Password", { exact: true }).fill(secret);
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+}
+
+test("signing up, signing out and signing in again works", async ({ page }, testInfo) => {
+  await page.goto("/sign-up");
+  await page.getByLabel("Full name").fill("Nguyễn Việt");
+  await page.getByLabel("Email").fill(emailFor(testInfo));
+  await page.getByLabel("Password").fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page.getByText("Nguyễn Việt")).toBeVisible();
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL("/sign-in");
+
+  await page.goBack();
+  await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+
+  await page.goto("/sign-in");
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
+  await expect(page.getByText("Nguyễn Việt")).toBeVisible();
+});
+
+test("a signed-out visitor is sent to sign-in and returned afterwards", async ({ page, request }, testInfo) => {
+  await register(request, testInfo);
+
+  await page.goto("/tasks?view=list");
+  await expect(page).toHaveURL(/\/sign-in\?next=/);
+
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks?view=list");
+});
+
+for (const next of ["https://evil.example/", "//evil.example/", "/\\evil.example/"]) {
+  test(`next=${next} cannot send the user off the site`, async ({ page, request }, testInfo) => {
+    await register(request, testInfo);
+
+    await page.goto(`/sign-in?next=${encodeURIComponent(next)}`);
+    await signIn(page, testInfo);
+
+    await expect(page).toHaveURL("/tasks");
+  });
+}
+
+test("a wrong password and an unknown email get the same message", async ({ page, request }, testInfo) => {
+  await register(request, testInfo);
+  await page.goto("/sign-in");
+  const message = page.getByText("Invalid email or password");
+
+  await signIn(page, testInfo, "wrong-password");
+  await expect(message).toBeVisible();
+
+  await page.getByLabel("Email").fill("nobody@flowday.test");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(message).toBeVisible();
+  await expect(page).toHaveURL("/sign-in");
+});
+
+test("keeping the session lasts 30 days, otherwise it ends with the browser", async ({ page, request, context }, testInfo) => {
+  await register(request, testInfo);
+  const sessionCookie = async () =>
+    (await context.cookies()).find((cookie) => cookie.name.endsWith("session_token"));
+
+  await page.goto("/sign-in");
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
+  const days = ((await sessionCookie())!.expires - Date.now() / 1000) / 86_400;
+  expect(Math.round(days)).toBe(30);
+
+  await context.clearCookies();
+  await page.goto("/sign-in");
+  await page.getByLabel("Keep me signed in for 30 days").uncheck();
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
+  expect((await sessionCookie())!.expires).toBe(-1);
+});
+
+test("a forged session cookie gets past the proxy but not into the app", async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: "better-auth.session_token", value: "forged", url: baseURL }]);
+
+  await page.goto("/tasks");
+
+  await expect(page).toHaveURL(/\/sign-in/);
+});
+
+test("the proxy leaves API and well-known paths alone", async ({ request }) => {
+  for (const path of ["/api/mcp", "/.well-known/oauth-protected-resource"]) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status(), path).toBe(404);
+  }
+});
+
+test("the password can be shown and hidden", async ({ page }) => {
+  await page.goto("/sign-in");
+  const field = page.getByLabel("Password", { exact: true });
+  await expect(field).toHaveAttribute("type", "password");
+
+  await expect(async () => {
+    await page.getByRole("button", { name: "Show password" }).click({ timeout: 500 });
+    await expect(field).toHaveAttribute("type", "text", { timeout: 500 });
+  }).toPass();
+});
+
+for (const width of [360, 390, 744, 1024, 1440]) {
+  test(`sign-in has no horizontal scroll at ${width} px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/sign-in");
+
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
+    await expectNoHorizontalScroll(page);
+  });
+}
 
 test("signing up with the keyboard alone opens the app", async ({ page }, testInfo) => {
   await page.goto("/sign-up");

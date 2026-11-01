@@ -57,16 +57,16 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Thêm link "Already have an account? Sign in" còn thiếu ở `/sign-up`, form đăng nhập dùng `method="post"`, đọc mật khẩu từ `FormData` và khóa nút submit tới khi hydrate xong như form đăng ký; đây là lần dùng thứ hai nên tách `useHydrated`. Đăng nhập xong dùng `window.location.assign`, không dùng `router.push`, vì `router.push` có thể bị bỏ dở và để form kẹt. Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.
-- [ ] Sai mật khẩu hiện lỗi chung, không tiết lộ email có tồn tại hay không.
-- [ ] Sau đăng xuất, nút Back không xem lại được trang trong app.
-- [ ] Tham số quay lại chỉ nhận đường dẫn nội bộ; URL ngoài bị bỏ qua.
+- [x] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.
+- [x] Sai mật khẩu hiện lỗi chung, không tiết lộ email có tồn tại hay không.
+- [x] Sau đăng xuất, nút Back không xem lại được trang trong app.
+- [x] Tham số quay lại chỉ nhận đường dẫn nội bộ; URL ngoài bị bỏ qua.
 
 **Kiểm chứng:**
-- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên cả 2 project.
-- [ ] Test cookie giả mạo: proxy cho qua nhưng `getCurrentUser()` vẫn chuyển về `/sign-in`.
-- [ ] `curl -I` tới `/api/mcp` và `/.well-known/x` không bị proxy chuyển hướng.
-- [ ] `npm run build` không có lỗi đọc phiên ngoài `<Suspense>`.
+- [x] E2E đăng ký → đăng xuất → đăng nhập pass trên cả 2 project.
+- [x] Test cookie giả mạo: proxy cho qua nhưng `getCurrentUser()` vẫn chuyển về `/sign-in`.
+- [x] `curl -I` tới `/api/mcp` và `/.well-known/x` không bị proxy chuyển hướng.
+- [x] `npm run build` không có lỗi đọc phiên ngoài `<Suspense>`.
 
 **Phụ thuộc:** T1.2
 
@@ -78,8 +78,8 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile.
-- [ ] CI xanh, migration chạy trên DB trống.
+- [x] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile.
+- [x] CI xanh, migration chạy trên DB trống.
 
 ---
 
