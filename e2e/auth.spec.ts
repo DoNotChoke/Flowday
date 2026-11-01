@@ -35,12 +35,13 @@ async function signIn(page: Page, testInfo: TestInfo, secret = password) {
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
 }
 
-test("signing up, signing out and signing in again works", async ({ page }, testInfo) => {
+test("signing up, signing out and signing in again works", async ({ page, isMobile }, testInfo) => {
   await page.goto("/sign-up");
   await page.getByLabel("Full name").fill("Nguyễn Việt");
   await page.getByLabel("Email").fill(emailFor(testInfo));
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
+  if (isMobile) await page.getByRole("button", { name: "Account" }).click();
   await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
@@ -52,6 +53,7 @@ test("signing up, signing out and signing in again works", async ({ page }, test
   await page.goto("/sign-in");
   await signIn(page, testInfo);
   await expect(page).toHaveURL("/tasks");
+  if (isMobile) await page.getByRole("button", { name: "Account" }).click();
   await expect(page.getByText("Nguyễn Việt").filter({ visible: true })).toBeVisible();
 });
 

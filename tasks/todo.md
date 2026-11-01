@@ -192,13 +192,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Dưới `lg`: top bar và bottom nav 5 mục (Tasks, Calendar, nút New, History, Focus), tôn trọng `safe-area-inset-bottom`. Settings và tài khoản nằm trong drawer dùng lại `Sheet`. Layout chọn theo chiều rộng, không theo loại thiết bị.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Không có cuộn ngang ở 360, 390, 744 và 820 px.
-- [ ] Đúng breakpoint: 1023 px có bottom nav, 1024 px có Sidebar.
-- [ ] Drawer đóng bằng Esc và trả focus về nút đã mở nó.
-- [ ] Mọi vùng chạm đạt 44 px trên cảm ứng; bottom nav không che nội dung cuối trang.
+- [x] Không có cuộn ngang ở 360, 390, 744 và 820 px.
+- [x] Đúng breakpoint: 1023 px có bottom nav, 1024 px có Sidebar.
+- [x] Drawer đóng bằng Esc và trả focus về nút đã mở nó.
+- [x] Mọi vùng chạm đạt 44 px trên cảm ứng; bottom nav không che nội dung cuối trang.
 
 **Kiểm chứng:**
-- [ ] `e2e/shell.spec.ts` chạy thêm các viewport trên.
+- [x] `e2e/shell.spec.ts` chạy thêm các viewport trên.
 - [ ] Bạn xem ở 390, 820 và 1440 px.
 
 **Phụ thuộc:** T1.7

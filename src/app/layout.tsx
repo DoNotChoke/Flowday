@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, Poppins } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,9 @@ export const metadata: Metadata = {
   title: "Flowday",
   description: "Plan tasks, keep your streak alive and see every hour of work add up.",
 };
+
+// Lets the bottom nav reach the screen edge and use the safe-area insets on iPhone.
+export const viewport: Viewport = { viewportFit: "cover" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
