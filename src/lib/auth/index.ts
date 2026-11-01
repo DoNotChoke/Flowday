@@ -23,7 +23,18 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, { provider: "pg", schema }),
   // The jwt plugin's /token hands a session a JWT; tokens must only come from the OAuth flow.
   disabledPaths: ["/token"],
-  emailAndPassword: { enabled: true, requireEmailVerification: true },
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendMail({
+        to: user.email,
+        subject: "Reset your Flowday password",
+        text: `Open this link to choose a new password: ${url}`,
+      });
+    },
+  },
   emailVerification: {
     sendOnSignUp: true,
     sendOnSignIn: true,

@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, expect, test, vi } from "vitest";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { session, user } from "@/lib/db/schema";
 import { sendMail } from "@/lib/mail";
 
 vi.mock("@/lib/mail", () => ({ sendMail: vi.fn() }));
@@ -106,4 +106,55 @@ test("a tampered link verifies nothing and says so", async () => {
 
   expect(response.headers.get("location")).toContain("error=INVALID_TOKEN");
   await expect(signInOwner()).rejects.toThrow("not verified");
+});
+
+async function verifiedOwner() {
+  await signUpOwner();
+  await db.update(user).set({ emailVerified: true }).where(eq(user.email, "owner@flowday.test"));
+  vi.mocked(sendMail).mockClear();
+}
+
+async function resetToken() {
+  await auth.api.requestPasswordReset({ body: { email: "owner@flowday.test", redirectTo: "/reset-password" } });
+  return verificationLink().pathname.split("/").pop()!;
+}
+
+test("a reset link changes the password and the old one stops working", async () => {
+  await verifiedOwner();
+
+  await auth.api.resetPassword({ body: { token: await resetToken(), newPassword: "a-brand-new-password" } });
+
+  await expect(signInOwner()).rejects.toThrow("Invalid email or password");
+  await expect(
+    auth.api.signInEmail({ body: { email: "owner@flowday.test", password: "a-brand-new-password" } }),
+  ).resolves.toMatchObject({ user: { email: "owner@flowday.test" } });
+});
+
+test("a reset link works only once", async () => {
+  await verifiedOwner();
+  const token = await resetToken();
+  await auth.api.resetPassword({ body: { token, newPassword: "a-brand-new-password" } });
+
+  await expect(auth.api.resetPassword({ body: { token, newPassword: "another-new-password" } })).rejects.toThrow("Invalid token");
+});
+
+test("an unknown email gets the same answer and no mail", async () => {
+  await verifiedOwner();
+
+  const known = await auth.api.requestPasswordReset({ body: { email: "owner@flowday.test", redirectTo: "/reset-password" } });
+  vi.mocked(sendMail).mockClear();
+  const unknown = await auth.api.requestPasswordReset({ body: { email: "nobody@flowday.test", redirectTo: "/reset-password" } });
+
+  expect(unknown).toEqual(known);
+  expect(sendMail).not.toHaveBeenCalled();
+});
+
+test("changing the password signs out every other device", async () => {
+  await verifiedOwner();
+  const { token: sessionToken } = await signInOwner();
+
+  await auth.api.resetPassword({ body: { token: await resetToken(), newPassword: "a-brand-new-password" } });
+
+  const rows = await db.select().from(session).where(eq(session.token, sessionToken));
+  expect(rows).toHaveLength(0);
 });

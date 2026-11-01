@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { sendMail } from "@/lib/mail";
 
-const message = { to: "owner@flowday.test", subject: "Hello", text: "Open https://flowday.test/link" };
+const message = { to: "owner@example.com", subject: "Hello", text: "Open https://flowday.test/link" };
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -39,6 +39,17 @@ test("with a key, the mail goes to Resend", async () => {
   expect(url).toBe("https://api.resend.com/emails");
   expect(new Headers(init.headers).get("authorization")).toBe("Bearer test-key");
   expect(JSON.parse(String(init.body))).toMatchObject({ to: message.to, text: message.text });
+});
+
+test("the reserved .test domain never reaches Resend", async () => {
+  vi.stubEnv("RESEND_API_KEY", "test-key");
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+  vi.spyOn(console, "log").mockImplementation(() => {});
+
+  await sendMail({ ...message, to: "e2e@flowday.test" });
+
+  expect(fetchMock).not.toHaveBeenCalled();
 });
 
 test("a rejection from Resend is an error, not a silent success", async () => {

@@ -103,8 +103,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm D: Hoàn thiện đăng nhập
 
-- [ ] T1.9 Mail và xác minh email (M)
-- [ ] T1.10 Quên mật khẩu (M)
+- [x] T1.9 Mail và xác minh email (M)
+- [x] T1.10 Quên mật khẩu (M)
 - [ ] T1.11 Đăng nhập Google (S)
 
 ### Checkpoint hoàn thành Phase 1

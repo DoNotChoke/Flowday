@@ -3,9 +3,10 @@ type Mail = { to: string; subject: string; text: string };
 export async function sendMail({ to, subject, text }: Mail) {
   const key = process.env.RESEND_API_KEY;
 
-  if (!key) {
+  // .test can never receive mail, and e2e accounts must not spend the real Resend quota.
+  if (!key || to.endsWith(".test")) {
     // FLOWDAY_DEV_MAIL is for CI, which tests a production build with no mail account.
-    if (process.env.NODE_ENV === "production" && process.env.FLOWDAY_DEV_MAIL !== "1") {
+    if (!key && process.env.NODE_ENV === "production" && process.env.FLOWDAY_DEV_MAIL !== "1") {
       throw new Error("RESEND_API_KEY is not set.");
     }
     console.log(`Mail to ${to}: ${text}`);

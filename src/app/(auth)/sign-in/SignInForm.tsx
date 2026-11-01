@@ -16,8 +16,15 @@ function returnPath() {
   return url?.origin === origin ? url.pathname + url.search : "/tasks";
 }
 
-function VerificationNotice() {
+function ArrivalNotice() {
   const query = useSearchParams();
+  if (query.has("reset")) {
+    return (
+      <p role="status" className="rounded-control border-hard bg-teal-tint p-3.5 text-sm font-medium">
+        Password changed. Sign in with your new password.
+      </p>
+    );
+  }
   if (!query.has("verified")) return null;
 
   return query.has("error") ? (
@@ -73,11 +80,14 @@ export function SignInForm() {
       </div>
 
       <Suspense>
-        <VerificationNotice />
+        <ArrivalNotice />
       </Suspense>
 
       <Field label="Email" name="email" type="email" autoComplete="email" placeholder="you@gmail.com" required />
       <div className="relative">
+        <Link href="/forgot-password" className="absolute top-0 right-0 text-[13px] font-medium underline hover:text-danger">
+          Forgot password?
+        </Link>
         <Field
           label="Password"
           name="password"

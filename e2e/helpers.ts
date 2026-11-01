@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { oauthClient, oauthClientResource, oauthResource, user } from "@/lib/db/schema";
+import { oauthClient, oauthClientResource, oauthResource, user, verification } from "@/lib/db/schema";
 
 export async function createOAuthClient(redirectUri: string) {
   const clientId = randomUUID();
@@ -29,6 +29,16 @@ export async function deleteOAuthClient(clientId: string) {
 
 export async function verifyEmail(email: string) {
   await db.update(user).set({ emailVerified: true }).where(eq(user.email, email));
+}
+
+// Reads the token of the reset link that would have gone out by mail.
+export async function resetTokenFor(email: string) {
+  const [row] = await db
+    .select({ identifier: verification.identifier })
+    .from(verification)
+    .innerJoin(user, eq(verification.value, user.id))
+    .where(eq(user.email, email));
+  return row.identifier.replace("reset-password:", "");
 }
 
 export async function deleteUser(email: string) {

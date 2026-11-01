@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
-import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
+import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll, resetTokenFor, verifyEmail } from "./helpers";
 
 const password = "correct-horse-battery";
 
@@ -438,3 +438,61 @@ test("inputs stay at 16 px on touch screens so iOS does not zoom", async ({ page
 
   await expect(page.getByLabel("Email")).toHaveCSS("font-size", "16px");
 });
+
+test("a forgotten password can be replaced through the emailed link", async ({ page, request }, testInfo) => {
+  await register(request, testInfo);
+  await page.goto("/sign-in");
+
+  await page.getByRole("link", { name: "Forgot password?" }).click();
+  await expect(page).toHaveURL("/forgot-password");
+  await page.getByRole("textbox", { name: "Email" }).fill(emailFor(testInfo));
+  await page.getByRole("button", { name: "Send reset link" }).click();
+  await expect(page.getByText("If that email has an account")).toBeVisible();
+
+  await page.goto(`/reset-password?token=${await resetTokenFor(emailFor(testInfo))}`);
+  await page.getByLabel("New password").fill("a-brand-new-password");
+  await page.getByRole("button", { name: "Change password" }).click();
+
+  await expect(page).toHaveURL("/sign-in?reset=1");
+  await expect(page.getByText("Password changed")).toBeVisible();
+  await signIn(page, testInfo, "a-brand-new-password");
+  await expect(page).toHaveURL("/tasks");
+});
+
+test("an unknown email sees the same reset message", async ({ page }) => {
+  await page.goto("/forgot-password");
+
+  await page.getByLabel("Email").fill("nobody@flowday.test");
+  await page.getByRole("button", { name: "Send reset link" }).click();
+
+  await expect(page.getByText("If that email has an account")).toBeVisible();
+});
+
+test("a bad reset link explains itself and offers a new one", async ({ page }) => {
+  await page.goto("/reset-password?error=INVALID_TOKEN");
+
+  await expect(page.getByText("This link is invalid or has expired")).toBeVisible();
+  await page.getByRole("link", { name: "Request a new link" }).click();
+  await expect(page).toHaveURL("/forgot-password");
+});
+
+test("a token that no longer works shows the error on the form", async ({ page }) => {
+  await page.goto("/reset-password?token=not-a-token");
+
+  await page.getByLabel("New password").fill("a-brand-new-password");
+  await page.getByRole("button", { name: "Change password" }).click();
+
+  await expect(page.getByText("This link is invalid or has expired")).toBeVisible();
+});
+
+for (const path of ["/forgot-password", "/reset-password?token=x"]) {
+  for (const width of [390, 1440]) {
+    test(`${path} has no horizontal scroll at ${width} px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto(path);
+
+      await expect(page.getByRole("heading").first()).toBeVisible();
+      await expectNoHorizontalScroll(page);
+    });
+  }
+}

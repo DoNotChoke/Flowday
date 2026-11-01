@@ -227,8 +227,8 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S).** Mở HTTPS bằng tunnel. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; refresh token hoạt động; đạt checklist mục 5.
 - [x] **T1.7 Sidebar và layout `(app)` (M).** Trang tạm cho các route chưa làm, không hiện số giả. *Xong khi:* giống thiết kế ở 1440 px; mọi trang trong app chặn người chưa đăng nhập.
 - [x] **T1.8 Khung phone và tablet (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360, 390, 744, 820 px; 1023 px có bottom nav, 1024 px có Sidebar; drawer đóng bằng Esc và trả focus đúng chỗ.
-- [ ] **T1.9 Mail và xác minh email (M).** `lib/mail` gọi API Resend bằng `fetch`, dev in ra console. *Xong khi:* chưa xác minh thì không đăng nhập được; nhận email thật từ `onboarding@resend.dev`.
-- [ ] **T1.10 Quên mật khẩu (M).** `/forgot-password`, `/reset-password`. *Xong khi:* đổi mật khẩu qua link email thành công; link dùng lại bị từ chối; form không tiết lộ email có tồn tại hay không.
+- [x] **T1.9 Mail và xác minh email (M).** `lib/mail` gọi API Resend bằng `fetch`, dev in ra console. *Xong khi:* chưa xác minh thì không đăng nhập được; nhận email thật từ `onboarding@resend.dev`.
+- [x] **T1.10 Quên mật khẩu (M).** `/forgot-password`, `/reset-password`. *Xong khi:* đổi mật khẩu qua link email thành công; link dùng lại bị từ chối; form không tiết lộ email có tồn tại hay không.
 - [ ] **T1.11 Đăng nhập Google (S).** *Xong khi:* đăng nhập được bằng Google; tài khoản ngoài danh sách bị từ chối; thiếu biến môi trường thì ẩn nút.
 
 **Checkpoint:** nếu T1.6 không đạt, **dừng lại** và đánh giá lại thư viện OAuth trước khi làm T1.7.

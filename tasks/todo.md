@@ -222,7 +222,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 **Kiểm chứng:**
 - [x] Vitest thay `lib/mail` bằng spy, chạy đủ luồng qua `auth.api`.
-- [ ] Bạn đặt key, đăng ký thử và nhận email thật từ `onboarding@resend.dev`.
+- [x] Bạn đặt key, đăng ký thử và nhận email thật từ `onboarding@resend.dev`.
 - [x] Không có token nào bị in vào log ở production.
 
 **Phụ thuộc:** T1.6
@@ -238,14 +238,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** `/forgot-password` và `/reset-password` dựng từ primitive cùng phong cách trang đăng nhập. Nối link "Forgot password?" ở trang 01. Đổi mật khẩu xong thì thu hồi các phiên khác.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đổi mật khẩu qua link trong email thành công, đăng nhập được bằng mật khẩu mới.
-- [ ] Link dùng lại hoặc hết hạn bị từ chối, trang báo lỗi rõ.
-- [ ] Form trả cùng thông báo dù email có tồn tại hay không.
-- [ ] Phiên cũ trên thiết bị khác hết hiệu lực.
+- [x] Đổi mật khẩu qua link trong email thành công, đăng nhập được bằng mật khẩu mới.
+- [x] Link dùng lại hoặc hết hạn bị từ chối, trang báo lỗi rõ.
+- [x] Form trả cùng thông báo dù email có tồn tại hay không.
+- [x] Phiên cũ trên thiết bị khác hết hiệu lực.
 
 **Kiểm chứng:**
-- [ ] Vitest với spy mail phủ cả 4 tiêu chí.
-- [ ] E2E mở cả hai trang ở 390 và 1440 px, không có cuộn ngang.
+- [x] Vitest với spy mail phủ cả 4 tiêu chí.
+- [x] E2E mở cả hai trang ở 390 và 1440 px, không có cuộn ngang.
 
 **Phụ thuộc:** T1.9
 
