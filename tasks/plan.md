@@ -65,7 +65,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm A: App và dữ liệu chạy được
 
 - [x] T0.1 Khởi tạo repo và app Next.js (M)
-- [ ] T0.2 Playwright smoke trên desktop và mobile (S)
+- [x] T0.2 Playwright smoke trên desktop và mobile (S)
 - [ ] T0.3 Postgres và migration đầu tiên (M)
 - [ ] T0.4 DB client, Vitest và README (M)
 

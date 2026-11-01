@@ -40,13 +40,13 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 **Mô tả:** Cài Playwright, cấu hình project `desktop` (Chromium, 1440×900) và `mobile` (WebKit, 390×844), tự chạy `npm run dev` làm webServer, viết smoke test cho trang chủ. Thêm helper kiểm tra không có cuộn ngang để T9.1 dùng lại.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `npm run test:e2e` pass trên cả 2 project.
-- [ ] Test khẳng định có tiêu đề "Flowday" và `scrollWidth <= clientWidth`.
-- [ ] `test-results/` và `playwright-report/` bị git ignore.
+- [x] `npm run test:e2e` pass trên cả 2 project.
+- [x] Test khẳng định có tiêu đề "Flowday" và `scrollWidth <= clientWidth`.
+- [x] `test-results/` và `playwright-report/` bị git ignore.
 
 **Kiểm chứng:**
-- [ ] Tạm thêm phần tử rộng 2000 px, test phải fail, rồi bỏ đi.
-- [ ] `npx playwright install chromium webkit` chạy thành công.
+- [x] Tạm thêm phần tử rộng 2000 px, test phải fail, rồi bỏ đi.
+- [x] `npx playwright install chromium webkit` chạy thành công.
 
 **Phụ thuộc:** T0.1
 
