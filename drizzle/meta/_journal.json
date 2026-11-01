@@ -15,6 +15,13 @@
       "when": 1793524276956,
       "tag": "0001_auth_core",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793530250058,
+      "tag": "0002_oauth_provider",
+      "breakpoints": true
     }
   ]
 }

@@ -90,14 +90,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Cài `@better-auth/mcp` và `@better-auth/cimd`. Thêm `jwt()`, `mcp({ loginPage: "/sign-in", consentPage: "/oauth/consent", resource: <BETTER_AUTH_URL>/api/mcp, scopes })` và `cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" })`. Scope gồm `openid`, `profile`, `offline_access`, `tasks:read`, `tasks:write`. Sinh lại schema và migration. Phục vụ metadata ở gốc domain: `/.well-known/oauth-protected-resource/api/mcp` và `/.well-known/oauth-authorization-server/api/auth`. DCR để tắt. Đối chiếu tên API với type trong `node_modules`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Protected Resource Metadata có `resource` bằng đúng URL `/api/mcp`, issuer đứng đầu `authorization_servers`.
-- [ ] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`.
-- [ ] Không có `registration_endpoint`.
+- [x] Protected Resource Metadata có `resource` bằng đúng URL `/api/mcp`, issuer đứng đầu `authorization_servers`.
+- [x] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`.
+- [x] Không có `registration_endpoint`.
 
 **Kiểm chứng:**
-- [ ] Vitest gọi handler và khẳng định từng trường ở trên.
-- [ ] `curl` cả hai URL trên server đang chạy đều trả 200 kèm JSON.
-- [ ] Migration chạy trên DB trống của CI; các bảng `oauth*` và `jwks` tồn tại.
+- [x] Vitest gọi handler và khẳng định từng trường ở trên.
+- [x] `curl` cả hai URL trên server đang chạy đều trả 200 kèm JSON.
+- [x] Migration chạy trên DB trống của CI; các bảng `oauth*` và `jwks` tồn tại.
 
 **Phụ thuộc:** T1.3
 
