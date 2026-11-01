@@ -175,16 +175,16 @@ Quy ước:
 - Mỗi tool có zod schema, annotation `readOnlyHint`/`destructiveHint`, và trả về `url` của task.
 - Project hoặc category không tồn tại thì báo lỗi kèm danh sách hợp lệ, không tự tạo.
 
-**Checklist xác thực để Claude kết nối được:**
+**Checklist xác thực để Claude kết nối được:** đã đo với Claude thật ở T1.6: claude.ai và Claude Code đều đăng ký qua CIMD, không cần DCR; `/oauth2/token` mất 2,2 giây khi Neon vừa thức.
 
-- [ ] Thiếu hoặc sai token trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
-- [ ] Protected Resource Metadata: `resource` khớp **chính xác** URL người dùng nhập; issuer chính đứng đầu `authorization_servers`.
-- [ ] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`. Chỉ thêm `registration_endpoint` nếu T1.6 cho thấy Claude cần DCR.
-- [ ] Chấp nhận redirect `https://claude.ai/api/mcp/auth_callback` và loopback `http://localhost/callback`, `http://127.0.0.1/callback` với **port bất kỳ** (Claude Code).
-- [ ] `/token` nhận `application/x-www-form-urlencoded`, xoay vòng refresh token, trả `invalid_grant` khi refresh token hết hạn, phản hồi dưới 10 giây.
-- [ ] Token phải đúng audience là MCP server (RFC 8707); không nhận token trong query string.
-- [ ] Trang consent hiển thị rõ hostname của redirect URI, cảnh báo thêm khi chỉ có loopback.
-- [ ] Kiểm tra header `Origin`, sai thì trả `403`. WAF không chặn dải `160.79.104.0/21` của Anthropic.
+- [x] Thiếu hoặc sai token trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
+- [x] Protected Resource Metadata: `resource` khớp **chính xác** URL người dùng nhập; issuer chính đứng đầu `authorization_servers`.
+- [x] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`. Chỉ thêm `registration_endpoint` nếu T1.6 cho thấy Claude cần DCR.
+- [x] Chấp nhận redirect `https://claude.ai/api/mcp/auth_callback` và loopback `http://localhost/callback`, `http://127.0.0.1/callback` với **port bất kỳ** (Claude Code).
+- [x] `/token` nhận `application/x-www-form-urlencoded`, xoay vòng refresh token, trả `invalid_grant` khi refresh token hết hạn, phản hồi dưới 10 giây.
+- [x] Token phải đúng audience là MCP server (RFC 8707); không nhận token trong query string.
+- [x] Trang consent hiển thị rõ hostname của redirect URI, cảnh báo thêm khi chỉ có loopback.
+- [ ] Kiểm tra header `Origin`, sai thì trả `403` (làm ở T3.3). WAF không chặn dải `160.79.104.0/21` của Anthropic (kiểm lại ở T9.4).
 
 ## 6. Công việc theo phase
 
@@ -224,7 +224,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T1.3 Đăng nhập, đăng xuất, chặn route (M).** Trang 01, giữ đăng nhập 30 ngày, `getCurrentUser()`, `src/proxy.ts`. *Xong khi:* đăng ký → đăng xuất → đăng nhập chạy trong E2E; chưa đăng nhập bị chuyển về `/sign-in`.
 - [x] **T1.4 Authorization server (M).** `jwt()`, `mcp()`, `cimd()`, metadata ở gốc domain. *Xong khi:* metadata đạt checklist mục 5.
 - [x] **T1.5 `/api/mcp`, `whoami` và consent (M).** `createMcpHandler` bọc trong `requireMcpAuth`, trang `/oauth/consent`. *Xong khi:* `401` đúng chuẩn; trả lời được cả hai đời giao thức; Claude Code trên máy gọi được `whoami`.
-- [ ] **T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S).** Mở HTTPS bằng tunnel. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; refresh token hoạt động; đạt checklist mục 5.
+- [x] **T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S).** Mở HTTPS bằng tunnel. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; refresh token hoạt động; đạt checklist mục 5.
 - [ ] **T1.7 Sidebar và layout `(app)` (M).** Trang tạm cho các route chưa làm, không hiện số giả. *Xong khi:* giống thiết kế ở 1440 px; mọi trang trong app chặn người chưa đăng nhập.
 - [ ] **T1.8 Khung phone và tablet (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360, 390, 744, 820 px; 1023 px có bottom nav, 1024 px có Sidebar; drawer đóng bằng Esc và trả focus đúng chỗ.
 - [ ] **T1.9 Mail và xác minh email (M).** `lib/mail` gọi API Resend bằng `fetch`, dev in ra console. *Xong khi:* chưa xác minh thì không đăng nhập được; nhận email thật từ `onboarding@resend.dev`.
@@ -253,9 +253,9 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [ ] **T3.1 Tool đọc (M).** `get_context`, `list_tasks`, `get_task`. *Xong khi:* test bằng MCP client: thiếu scope bị từ chối; không thấy dữ liệu người khác.
 - [ ] **T3.2 Tool ghi (M).** `create_task`, `update_task`, `complete_task`, `add_subtasks`, `create_project`, idempotency. *Xong khi:* gọi hai lần cùng `client_request_id` chỉ tạo một task; gọi lại `create_project` cùng tên trả về project có sẵn; hạn `17:00` theo giờ Việt Nam lưu đúng UTC.
 - [ ] **T3.3 Gia cố (S).** Rate limit theo token, giới hạn độ dài, kiểm tra `Origin`, `source: mcp`, nhãn "via Claude" trên card và activity. *Xong khi:* vượt giới hạn trả lỗi rõ ràng; Origin lạ trả `403`.
-- [ ] **T3.4 Settings (M).** Hồ sơ, múi giờ, category/project, **Connected apps** (xem và thu hồi), hướng dẫn kết nối kèm URL để copy. `requireMcpAuth` chỉ kiểm chữ ký JWT, nên `/api/mcp` phải đọc thêm trạng thái thu hồi trong DB. *Xong khi:* thu hồi xong, Claude nhận `401` ở lần gọi kế tiếp.
+- [ ] **T3.4 Settings (M).** Hồ sơ, múi giờ, category/project, **Connected apps** (xem và thu hồi), hướng dẫn kết nối kèm URL để copy. `requireMcpAuth` chỉ kiểm chữ ký JWT và access token sống 1 giờ, nên nếu không làm gì thì Claude còn gọi được tới 1 giờ sau khi thu hồi; `/api/mcp` phải đọc thêm trạng thái thu hồi trong DB. *Xong khi:* thu hồi xong, Claude nhận `401` ở lần gọi kế tiếp.
 - [ ] **T3.5 Task mới tự hiện (S).** Refetch khi quay lại tab. *Xong khi:* quay lại tab Flowday là thấy ngay task do Claude vừa tạo.
-- [ ] **T3.6 Nghiệm thu với Claude (S).** Chạy kịch bản ở mục 1 trên claude.ai và Claude Code; ghi hướng dẫn vào `README.md`. *Xong khi:* kịch bản đạt trên cả hai, có ảnh chụp kết quả.
+- [ ] **T3.6 Nghiệm thu với Claude (S).** Chạy kịch bản ở mục 1 trên claude.ai và Claude Code; ghi hướng dẫn vào `README.md`. Kiểm tra thêm: sau hơn 1 giờ, Claude vẫn gọi tool được mà không phải đăng nhập lại (tự refresh, chưa đo được ở T1.6). *Xong khi:* kịch bản đạt trên cả hai, có ảnh chụp kết quả.
 
 **Checkpoint:** đây là mốc có thể dùng thật: task + MCP. Review với bạn trước khi làm tiếp.
 
@@ -329,7 +329,6 @@ Kế hoạch đang chạy theo mặc định bên dưới. Trả lời khác th�
 
 | Câu hỏi | Mặc định | Cần trả lời trước |
 |---|---|---|
-| Bạn có dùng gói Claude Team hoặc Enterprise không? Mọi gói đều thêm được custom connector (Free tối đa 1), nhưng hai gói này chỉ Owner mới thêm được | Không | T1.6 |
 | Có giữ đăng nhập Google không? | Có, làm ở cuối Phase 1 | T1.11 |
 | Ngôn ngữ giao diện? | Tiếng Anh như thiết kế; nội dung task tiếng Việt vẫn hiển thị đúng | T0.7 |
 

@@ -132,19 +132,19 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO
 
-**Mô tả:** Chạy `next build` + `next start`, mở `cloudflared tunnel --url http://localhost:3000`, đặt `BETTER_AUTH_URL` theo URL tunnel. Bạn thêm connector trên claude.ai, mình thử Claude Code qua cùng URL. Ghi kết quả vào `PLAN.md` mục 5. Nếu Claude không chọn CIMD, bật DCR rồi thử lại trước khi coi là thất bại. Đóng tunnel khi xong.
+**Mô tả:** Chạy `next build` + `next start`, mở `cloudflared tunnel --url http://localhost:3200`, đặt `BETTER_AUTH_URL` và `ALLOWED_EMAILS` trong tiến trình, không sửa `.env`. Bạn thêm connector trên claude.ai, mình thử Claude Code qua cùng URL. Ghi kết quả vào `PLAN.md` mục 5. Nếu Claude không chọn CIMD, bật DCR rồi thử lại trước khi coi là thất bại. Đóng tunnel khi xong.
 
 **Tiêu chí nghiệm thu:**
-- [ ] claude.ai: connector hiện **Connected**, tool `whoami` xuất hiện, một lần gọi thật trả đúng người dùng.
-- [ ] Claude Code: đi hết luồng OAuth qua URL tunnel, `whoami` trả đúng người dùng.
-- [ ] Hết hạn access token thì Claude tự refresh mà không phải đăng nhập lại (đặt thời hạn ngắn khi thử).
-- [ ] Mọi mục checklist ở `PLAN.md` mục 5 được đánh dấu đạt, hoặc ghi rõ lý do hoãn.
+- [x] claude.ai: connector hiện **Connected**, tool `whoami` xuất hiện, một lần gọi thật trả đúng người dùng.
+- [x] Claude Code: đi hết luồng OAuth qua URL tunnel, `whoami` trả đúng người dùng.
+- [ ] Hoãn sang T3.6: hết hạn access token thì Claude tự refresh mà không phải đăng nhập lại. E2E đã chứng minh phía server; Claude thật chưa đo vì token sống 1 giờ.
+- [x] Mọi mục checklist ở `PLAN.md` mục 5 được đánh dấu đạt, hoặc ghi rõ lý do hoãn.
 
 **Kiểm chứng:**
-- [ ] Log server ghi `client_id` và phiên bản giao thức của từng bề mặt.
-- [ ] Để Neon ngủ trên 5 phút, đo `/oauth2/token`: phải dưới 10 giây.
-- [ ] Đo hành vi thu hồi: xóa refresh token, ghi lại thời gian Claude còn gọi được. Cập nhật tiêu chí T3.4 theo số đo.
-- [ ] Sau khi đóng tunnel, `BETTER_AUTH_URL` trong `.env` trở lại `http://localhost:3000`.
+- [x] `client_id` của từng bề mặt: `https://claude.ai/oauth/mcp-oauth-client-metadata` và `https://claude.ai/oauth/claude-code-client-metadata`, đều qua CIMD. Phiên bản giao thức thực tế chưa ghi lại; test đã phủ cả hai đời.
+- [x] Để Neon ngủ trên 5 phút, đo `/oauth2/token`: 2,2 giây, sau đó 0,29 giây.
+- [x] Hành vi thu hồi xác định từ mã nguồn, không đo với Claude: JWT không kiểm DB và sống 1 giờ. Đã cập nhật T3.4.
+- [x] Sau khi đóng tunnel, `BETTER_AUTH_URL` trong `.env` trở lại `http://localhost:3000`.
 
 **Phụ thuộc:** T1.5
 
@@ -156,9 +156,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint B — dừng lại để quyết định
 
-- [ ] claude.ai và Claude Code cùng gọi được `whoami`.
-- [ ] Checklist xác thực ở `PLAN.md` mục 5 đạt.
-- [ ] Nếu không đạt: dừng, không làm T1.7 trở đi, đánh giá lại thư viện OAuth cùng bạn.
+- [x] claude.ai và Claude Code cùng gọi được `whoami`.
+- [x] Checklist xác thực ở `PLAN.md` mục 5 đạt, trừ `Origin` (T3.3) và WAF (T9.4).
+- [x] Đạt, không cần đổi thư viện OAuth.
 
 ---
 

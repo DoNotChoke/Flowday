@@ -88,13 +88,13 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T1.4 Authorization server: JWT, `mcp()`, CIMD (M)
 - [x] T1.5 `/api/mcp`, `whoami` và trang consent (M)
-- [ ] T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S)
+- [x] T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S)
 
 ### Checkpoint B — dừng lại để quyết định
 
-- [ ] claude.ai và Claude Code cùng gọi được `whoami`
-- [ ] Checklist xác thực ở `PLAN.md` mục 5 đạt
-- [ ] Nếu không đạt: dừng, không làm T1.7 trở đi, đánh giá lại thư viện OAuth cùng bạn
+- [x] claude.ai và Claude Code cùng gọi được `whoami`
+- [x] Checklist xác thực ở `PLAN.md` mục 5 đạt, trừ `Origin` (T3.3) và WAF (T9.4)
+- [x] Đạt, không cần đổi thư viện OAuth
 
 ### Nhóm C: Khung app
 
@@ -150,4 +150,3 @@ Những việc này cần tài khoản của bạn. Secret chỉ đặt vào `.e
 Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
 
 - **Google có còn cần không?** Mặc định giữ theo thiết kế, làm ở cuối. App một người dùng nên bỏ T1.11 cũng được, khi đó ẩn nút Google.
-- **Tài khoản Claude của bạn thuộc gói Team hay Enterprise?** Nếu có, chỉ Owner thêm được connector, và bạn cần quyền đó trước T1.6.
