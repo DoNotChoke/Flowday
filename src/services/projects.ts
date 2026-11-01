@@ -16,6 +16,7 @@ const createSchema = z
     startDate: z.iso.date().nullable().optional(),
     targetDate: z.iso.date().nullable().optional(),
     budgetHours: z.number().int().min(0).max(100_000).nullable().optional(),
+    withStarterTasks: z.boolean().default(true),
   })
   .refine(({ startDate, targetDate }) => !startDate || !targetDate || targetDate >= startDate, {
     path: ["targetDate"],
@@ -25,9 +26,10 @@ const createSchema = z
 export type CreateProjectInput = z.input<typeof createSchema>;
 
 export async function createProject(userId: string, input: CreateProjectInput) {
-  const values = parseInput(createSchema, input);
+  const { withStarterTasks, ...values } = parseInput(createSchema, input);
   const base = projectKey(values.name);
-  const starter = projectTemplates.find((template) => template.id === values.template)?.starter ?? [];
+  const template = projectTemplates.find((option) => option.id === values.template);
+  const starter = withStarterTasks && template ? template.starter : [];
 
   return db.transaction(async (tx) => {
     const taken = await tx
@@ -43,15 +45,17 @@ export async function createProject(userId: string, input: CreateProjectInput) {
       .values({ ...values, userId, key, taskSeq: starter.length })
       .returning();
     const start = await endOfColumn(tx, userId, "ongoing");
-    await tx.insert(task).values(
-      starter.map((title, index) => ({
-        userId,
-        title,
-        projectId: row.id,
-        number: index + 1,
-        position: start + index * POSITION_GAP,
-      })),
-    );
+    if (starter.length > 0) {
+      await tx.insert(task).values(
+        starter.map((title, index) => ({
+          userId,
+          title,
+          projectId: row.id,
+          number: index + 1,
+          position: start + index * POSITION_GAP,
+        })),
+      );
+    }
     return row;
   });
 }

@@ -75,17 +75,17 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T2.3 Create task
 
-**Mô tả:** Trang 04 tại `/tasks/new`, nhận `?project=`: tên, mô tả, priority, category nhiều lựa chọn, tạo category mới tại chỗ, project, time estimate (giờ, phút, chip nhanh, số phiên focus), status, ngày giờ, nhắc hạn, Live preview. Sửa dòng mô tả nhắc hạn cho khớp phạm vi V1. "+ New project" mở sheet để không mất nội dung đang nhập, hoặc lưu nháp trong `sessionStorage`. Ẩn Assignee, Break into subtasks.
+**Mô tả:** Trang 04 tại `/tasks/new`, nhận `?project=`: tên, mô tả, priority, category nhiều lựa chọn, tạo category mới tại chỗ, project, time estimate (giờ, phút, chip nhanh, số phiên focus), status, ngày giờ, nhắc hạn, Live preview. Sửa dòng mô tả nhắc hạn cho khớp phạm vi V1. "+ New project" mở `Sheet` tạo nhanh tại chỗ để không mất nội dung đang nhập. Ẩn Assignee, Break into subtasks.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Tạo task xong về `/tasks` và thấy task đó.
-- [ ] Lỗi validation hiện tại đúng trường, không mất nội dung đã nhập.
-- [ ] Bấm "+ New project" rồi quay lại vẫn còn nội dung.
-- [ ] Hạn `17:00` lưu đúng theo múi giờ của người dùng.
+- [x] Tạo task xong về `/tasks` và thấy task đó.
+- [x] Lỗi validation hiện tại đúng trường, không mất nội dung đã nhập.
+- [x] Bấm "+ New project" rồi quay lại vẫn còn nội dung.
+- [x] Hạn `17:00` lưu đúng theo múi giờ của người dùng.
 
 **Kiểm chứng:**
-- [ ] E2E tạo task đủ trường trên desktop và mobile, tải lại vẫn còn.
-- [ ] So ảnh với `design/screens/04-create-task.html` ở 390 và 1440 px.
+- [x] E2E tạo task đủ trường trên desktop và mobile, tải lại vẫn còn.
+- [x] So ảnh với `design/screens/04-create-task.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** T2.1, T2.2
 

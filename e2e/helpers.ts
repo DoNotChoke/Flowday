@@ -1,8 +1,8 @@
-import { randomUUID } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { oauthClient, oauthClientResource, oauthResource, project, user, verification } from "@/lib/db/schema";
+import { oauthClient, oauthClientResource, oauthResource, project, task, user, verification } from "@/lib/db/schema";
 
 export async function createOAuthClient(redirectUri: string) {
   const clientId = randomUUID();
@@ -46,6 +46,30 @@ export async function createProjects(email: string, names: string[]) {
   await db.insert(project).values(
     names.map((name, index) => ({ userId: owner.id, name, key: `K${index}`, color: "#f47258", icon: "code" })),
   );
+}
+
+export async function signInNewUser(page: Page, email: string) {
+  const password = "correct-horse-battery";
+  const headers = { "x-forwarded-for": `10.${randomInt(256)}.${randomInt(256)}.${randomInt(256)}` };
+  await page.request.post("/api/auth/sign-up/email", { data: { name: "Việt", email, password }, headers });
+  await verifyEmail(email);
+  await page.request.post("/api/auth/sign-in/email", { data: { email, password }, headers });
+}
+
+export function tasksOf(email: string) {
+  return db
+    .select({
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      status: task.status,
+      estimateMin: task.estimateMin,
+      number: task.number,
+      dueAt: task.dueAt,
+    })
+    .from(task)
+    .innerJoin(user, eq(task.userId, user.id))
+    .where(eq(user.email, email));
 }
 
 export async function deleteUser(email: string) {
