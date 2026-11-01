@@ -81,8 +81,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint A
 
-- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile
-- [ ] CI xanh, migration chạy trên DB trống
+- [x] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile
+- [x] CI xanh, migration chạy trên DB trống
 
 ### Nhóm B: Cổng rủi ro MCP
 
