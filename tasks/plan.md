@@ -77,7 +77,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm B: Thiết kế và UI
 
 - [x] T0.5 Tách thiết kế ra `design/screens/` (S)
-- [ ] T0.6 Design token và font (M)
+- [x] T0.6 Design token và font (M)
 - [ ] T0.7 Primitive hành động: Button, Card, Chip, Segmented (M)
 - [ ] T0.8 Primitive form và overlay: Field, Switch, Sheet (M)
 

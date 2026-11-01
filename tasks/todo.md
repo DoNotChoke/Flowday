@@ -140,14 +140,14 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 **Trước khi code:** đọc phần font và Tailwind trong `node_modules/next/dist/docs/`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Nền trang là `#F3F3F1`, `font-family` bắt đầu bằng Poppins.
-- [ ] Class `md:` có hiệu lực ở 744 px và chưa có hiệu lực ở 743 px.
-- [ ] Câu tiếng Việt có `ạ ấ ệ ữ ỹ` hiển thị đủ dấu, không rơi về font hệ thống.
-- [ ] Sau `npm run build && npm start`, `/dev/ui` trả 404.
+- [x] Nền trang là `#F3F3F1`, `font-family` bắt đầu bằng Poppins.
+- [x] Class `md:` có hiệu lực ở 744 px và chưa có hiệu lực ở 743 px.
+- [x] Câu tiếng Việt có `ạ ấ ệ ữ ỹ` hiển thị đủ dấu, không rơi về font hệ thống.
+- [x] Sau `npm run build && npm start`, `/dev/ui` trả 404.
 
 **Kiểm chứng:**
-- [ ] Test `e2e/dev-ui.spec.ts` kiểm tra màu, font và breakpoint.
-- [ ] Xem bằng mắt câu tiếng Việt dài ở 390 và 1440 px, ghi lại nếu nét chữ lệch.
+- [x] Test `e2e/dev-ui.spec.ts` kiểm tra màu, font và breakpoint.
+- [x] Xem bằng mắt câu tiếng Việt dài ở 390 và 1440 px, ghi lại nếu nét chữ lệch.
 
 **Phụ thuộc:** T0.5
 
