@@ -1,5 +1,6 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -46,7 +47,11 @@ export function ProjectForm() {
       startDate: String(values.get("start")) || null,
       targetDate: String(values.get("target")) || null,
       budgetHours: budget ? Number(budget) : null,
-    }).catch(() => ({ fields: { form: ["Could not reach Flowday. Check your connection and try again."] } }));
+    }).catch((error) => {
+      // A redirect from the action arrives here as a rejection.
+      unstable_rethrow(error);
+      return { fields: { form: ["Could not reach Flowday. Check your connection and try again."] } };
+    });
 
     if (result) {
       setErrors(result.fields);

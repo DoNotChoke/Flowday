@@ -1,5 +1,5 @@
 import { expect, test, type TestInfo } from "@playwright/test";
-import { createProjects, deleteUser, expectNoHorizontalScroll, signInNewUser, tasksOf } from "./helpers";
+import { createProjects, deleteUser, expectNoHorizontalScroll, expectNoUnreachableFlash, signInNewUser, tasksOf, watchForUnreachable } from "./helpers";
 
 function emailFor(testInfo: TestInfo) {
   return `e2e-tasks-${testInfo.project.name}@flowday.test`;
@@ -42,6 +42,15 @@ test("a task with every field is saved", async ({ page }, testInfo) => {
     number: 1,
   });
   expect(task.dueAt?.toISOString()).toBe("2026-11-06T10:00:00.000Z");
+});
+
+test("creating a task shows no connection error on the way to the board", async ({ page }) => {
+  await watchForUnreachable(page);
+  await page.getByLabel("Task name").fill("Không báo lỗi");
+  await page.getByRole("button", { name: "Create Task" }).click();
+
+  await expect(page).toHaveURL("/tasks");
+  await expectNoUnreachableFlash(page);
 });
 
 test("a missing name is reported on the field and nothing is lost", async ({ page }) => {

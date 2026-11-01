@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
+import { deleteUser, expectNoHorizontalScroll, expectNoUnreachableFlash, verifyEmail, watchForUnreachable } from "./helpers";
 
 function emailFor(testInfo: TestInfo) {
   return `e2e-projects-${testInfo.project.name}@flowday.test`;
@@ -37,11 +37,13 @@ test("the preview follows the form", async ({ page }) => {
 });
 
 test("creating a project opens it", async ({ page }) => {
+  await watchForUnreachable(page);
   await page.getByLabel("Project name").fill("Đồ án tốt nghiệp");
   await page.getByRole("button", { name: "Create project" }).click();
 
   await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}$/);
   await expect(page.getByRole("heading", { name: "Đồ án tốt nghiệp" })).toBeVisible();
+  await expectNoUnreachableFlash(page);
 });
 
 test("an end date before the start date shows on that field", async ({ page }) => {

@@ -1,5 +1,6 @@
 "use client";
 
+import { unstable_rethrow } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field } from "@/components/ui/Field";
@@ -12,7 +13,11 @@ type Category = { id: string; name: string };
 type Project = { id: string; name: string; color: string };
 type Errors = Record<string, string[] | undefined>;
 
-const unreachable = { fields: { form: ["Could not reach Flowday. Check your connection and try again."] } };
+function unreachable(error: unknown) {
+  // A redirect from an action arrives here as a rejection.
+  unstable_rethrow(error);
+  return { fields: { form: ["Could not reach Flowday. Check your connection and try again."] } };
+}
 
 const priorities = [
   { value: "low", label: "Low", tone: "bg-stone-tint" },
@@ -86,7 +91,7 @@ export function TaskForm({ categories: initialCategories, projects: initialProje
       dueDate: String(values.get("date")) || null,
       dueTime: String(values.get("time")) || null,
       alertEnabled: alert,
-    }).catch(() => unreachable);
+    }).catch(unreachable);
 
     if (result) {
       setErrors(result.fields);
@@ -95,7 +100,7 @@ export function TaskForm({ categories: initialCategories, projects: initialProje
   }
 
   async function addCategory() {
-    const result = await createCategoryAction(categoryName).catch(() => unreachable);
+    const result = await createCategoryAction(categoryName).catch(unreachable);
     if ("fields" in result) return setErrors(result.fields);
 
     setCategories([...categories, result.category]);
@@ -106,7 +111,7 @@ export function TaskForm({ categories: initialCategories, projects: initialProje
   }
 
   async function addProject() {
-    const result = await createProjectAction(projectName).catch(() => unreachable);
+    const result = await createProjectAction(projectName).catch(unreachable);
     if ("fields" in result) return setErrors(result.fields);
 
     setProjects([...projects, result.project]);

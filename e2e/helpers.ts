@@ -76,6 +76,19 @@ export async function deleteUser(email: string) {
   await db.delete(user).where(eq(user.email, email));
 }
 
+// The message can last a single frame, so it is caught as it enters the page.
+export async function watchForUnreachable(page: Page) {
+  await page.evaluate(() => {
+    new MutationObserver(() => {
+      if (document.body.textContent?.includes("Could not reach")) document.documentElement.dataset.unreachable = "shown";
+    }).observe(document.body, { childList: true, subtree: true, characterData: true });
+  });
+}
+
+export async function expectNoUnreachableFlash(page: Page) {
+  await expect(page.locator("html")).not.toHaveAttribute("data-unreachable");
+}
+
 export async function expectNoHorizontalScroll(page: Page) {
   const overflow = await page.evaluate(() => {
     const { scrollWidth, clientWidth } = document.documentElement;
