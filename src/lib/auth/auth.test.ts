@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, afterEach, expect, test, vi } from "vitest";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { session, user } from "@/lib/db/schema";
+import { category, session, user } from "@/lib/db/schema";
 import { sendMail } from "@/lib/mail";
 
 vi.mock("@/lib/mail", () => ({ sendMail: vi.fn() }));
@@ -157,4 +157,15 @@ test("changing the password signs out every other device", async () => {
 
   const rows = await db.select().from(session).where(eq(session.token, sessionToken));
   expect(rows).toHaveLength(0);
+});
+
+test("a new account starts with the default categories", async () => {
+  await signUpOwner();
+
+  const [owner] = await userRows("owner@flowday.test");
+  const rows = await db.select().from(category).where(eq(category.userId, owner.id));
+
+  expect(rows.map((row) => row.name).sort()).toEqual(
+    ["Coding", "Design", "Development", "Meeting", "Office Time", "Research", "User Experience"].sort(),
+  );
 });

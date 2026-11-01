@@ -8,6 +8,7 @@ import { jwt } from "better-auth/plugins";
 import { db } from "@/lib/db";
 import * as schema from "@/lib/db/schema";
 import { sendMail } from "@/lib/mail";
+import { seedCategories } from "@/services/categories";
 
 const baseURL = process.env.BETTER_AUTH_URL;
 if (!baseURL) throw new Error("BETTER_AUTH_URL is not set. Copy .env.example to .env.");
@@ -78,6 +79,7 @@ export const auth = betterAuth({
             });
           }
         },
+        after: (user) => seedCategories(user.id),
       },
     },
   },

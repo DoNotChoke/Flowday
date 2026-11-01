@@ -22,6 +22,20 @@
       "when": 1793530250058,
       "tag": "0002_oauth_provider",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793544019055,
+      "tag": "0003_app_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793544020872,
+      "tag": "0004_seed_categories",
+      "breakpoints": true
     }
   ]
 }

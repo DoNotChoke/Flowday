@@ -13,14 +13,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Chuyển bảng Better Auth sang `src/lib/db/auth-schema.ts` (sửa lệnh `auth generate` trong `README.md`), `schema.ts` re-export và thêm `project`, `category`, `task`, `task_category`, `subtask`, `activity` theo `PLAN.md` mục 3, bỏ các cột của phase sau. Hook `user.create.after` tạo 7 category mặc định, kèm migration chèn cho user đã có. `src/lib/datetime.ts` đổi `YYYY-MM-DD` + `HH:mm` theo múi giờ sang `Date` và ngược lại bằng `Intl`. `src/lib/auth/session.ts` thêm `requireUserId()` không cache. `src/services/tasks.ts` có `createTask`, `getTask`, `listTasks`, `updateTask`, `deleteTask`, validate bằng zod.
 
 **Tiêu chí nghiệm thu:**
-- [ ] User A không đọc, sửa hay xóa được task của user B; không gắn được project hay category của user B vào task.
-- [ ] `2026-11-06` + `17:00` ở `Asia/Ho_Chi_Minh` lưu thành `10:00Z`; test bảng có múi giờ âm và hạn gần nửa đêm.
-- [ ] Đăng ký xong có đủ 7 category; `(user_id, client_request_id)` unique.
-- [ ] Chạy `auth generate` không làm mất bảng của app.
+- [x] User A không đọc, sửa hay xóa được task của user B; không gắn được project hay category của user B vào task.
+- [x] `2026-11-06` + `17:00` ở `Asia/Ho_Chi_Minh` lưu thành `10:00Z`; test bảng có múi giờ âm và hạn gần nửa đêm.
+- [x] Đăng ký xong có đủ 7 category; `(user_id, client_request_id)` unique.
+- [x] Chạy `auth generate` không làm mất bảng của app.
 
 **Kiểm chứng:**
-- [ ] `npm test` và test `requireUserId()` từ chối khi không có phiên.
-- [ ] `npm run db:migrate` chạy trên `dev` và DB trống của CI; migration chỉ thêm, không xóa.
+- [x] `npm test` và test `requireUserId()` từ chối khi không có phiên.
+- [x] `npm run db:migrate` chạy trên `dev` và DB trống của CI; migration chỉ thêm, không xóa.
 
 **Phụ thuộc:** Phase 1
 
