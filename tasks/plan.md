@@ -79,7 +79,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 - [x] T0.5 Tách thiết kế ra `design/screens/` (S)
 - [x] T0.6 Design token và font (M)
 - [x] T0.7 Primitive hành động: Button, Card, Chip, Segmented (M)
-- [ ] T0.8 Primitive form và overlay: Field, Switch, Sheet (M)
+- [x] T0.8 Primitive form và overlay: Field, Switch, Sheet (M)
 
 ### Checkpoint B
 

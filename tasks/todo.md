@@ -183,18 +183,18 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 **Mô tả:** Field gồm label, input/textarea/select, hint và lỗi. Switch dùng `role="switch"`. Sheet dùng `<dialog>` gốc: trượt từ dưới trên phone, nằm giữa từ `md` trở lên. Thêm vào `/dev/ui`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Bấm label focus vào input; khi lỗi có `aria-invalid` và `aria-describedby` đúng.
-- [ ] Trên project `mobile`, input có `font-size` tối thiểu 16 px.
-- [ ] Switch đổi được bằng phím Space và cập nhật `aria-checked`.
-- [ ] Sheet đóng bằng Esc, focus trở về nút đã mở, nội dung phía sau không cuộn.
+- [x] Bấm label focus vào input; khi lỗi có `aria-invalid` và `aria-describedby` đúng.
+- [x] Trên project `mobile`, input có `font-size` tối thiểu 16 px.
+- [x] Switch đổi được bằng phím Space và cập nhật `aria-checked`.
+- [x] Sheet đóng bằng Esc, focus trở về nút đã mở, nội dung phía sau không cuộn.
 
 **Kiểm chứng:**
-- [ ] Test `e2e/primitives.spec.ts` mở rộng, chạy trên cả Chromium và WebKit.
-- [ ] So bằng mắt với form trong `01-sign-in` và `04-create-task`.
+- [x] Test `e2e/primitives.spec.ts` mở rộng, chạy trên cả Chromium và WebKit.
+- [x] So bằng mắt với form trong `01-sign-in` và `04-create-task`.
 
 **Phụ thuộc:** T0.6
 
-**File dự kiến:** `src/components/ui/Field.tsx`, `Switch.tsx`, `Sheet.tsx`, `src/app/dev/ui/page.tsx`, `e2e/primitives.spec.ts`
+**File dự kiến:** `src/components/ui/Field.tsx`, `Switch.tsx`, `Sheet.tsx`, `src/app/dev/ui/page.tsx`, `src/app/dev/ui/ControlsDemo.tsx`, `src/app/globals.css`, `e2e/primitives.spec.ts`
 
 **Quy mô:** M
 

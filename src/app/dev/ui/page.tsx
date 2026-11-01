@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { Field } from "@/components/ui/Field";
 import { ControlsDemo } from "./ControlsDemo";
 
 const swatches = [
@@ -92,6 +93,19 @@ export default function DevUiPage() {
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold">Chips and segmented</h2>
         <ControlsDemo />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-xl font-semibold">Form</h2>
+        <Card className="grid gap-5 p-5 md:grid-cols-2 md:p-7">
+          <Field label="Email" type="email" placeholder="you@gmail.com" hint="We never share your email." />
+          <Field label="Password" type="password" error="Use at least 8 characters." />
+          <Field as="textarea" label="Description" placeholder="Add your task details" />
+          <Field as="select" label="Status">
+            <option>On going</option>
+            <option>In process</option>
+          </Field>
+        </Card>
       </section>
 
       <section className="flex flex-col gap-3">
