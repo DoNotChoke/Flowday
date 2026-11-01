@@ -307,7 +307,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Phần CIMD/MCP của Better Auth còn thay đổi: tài liệu beta v1.8 có `metadataProfile`, bản ổn định 1.7 khác draft CIMD, plugin `mcp` cũ sắp bỏ | Cao | Làm sớm ở T1.5; dùng OAuth Provider + CIMD, bật DCR làm phương án dự phòng. Nếu vẫn không đạt, thử [Appwrite OAuth2 server](https://appwrite.io/blog/post/announcing-oauth2-server) làm authorization server riêng, dữ liệu vẫn ở Neon |
+| Phần CIMD/MCP của Better Auth còn thay đổi: tài liệu beta v1.8 có `metadataProfile`, bản ổn định 1.7 khác draft CIMD, plugin `mcp` cũ sắp bỏ | Cao | Làm sớm ở T1.5; dùng OAuth Provider + CIMD, bật DCR làm phương án dự phòng. Nếu vẫn không đạt, thử [OAuth Provider của Neon Managed Better Auth](https://neon.com/docs/auth/guides/plugins/oauth-provider) (có CIMD, nhưng scope cố định nên phải bỏ `tasks:read`/`tasks:write`), rồi đến [Appwrite OAuth2 server](https://appwrite.io/blog/post/announcing-oauth2-server) |
 | Claude và MCP spec dùng hai revision khác nhau | Cao | Kiểm chứng với Claude thật ở T1.5, test cả hai đời giao thức |
 | Next route handler không khớp transport của MCP SDK | TB | T1.5 quyết định; nếu cần thì dùng adapter Express cho riêng `/api/mcp` |
 | claude.ai không gọi được localhost | TB | Dev bằng tunnel HTTPS; Claude Code thử trực tiếp trên máy |
