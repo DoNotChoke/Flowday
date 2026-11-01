@@ -10,8 +10,8 @@
 ## Cài đặt
 
 ```bash
-git clone <repo-url>
-cd flowday
+git clone https://github.com/DoNotChoke/Flowday.git
+cd Flowday
 npm install
 npx playwright install chromium webkit
 cp .env.example .env

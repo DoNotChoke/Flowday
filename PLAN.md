@@ -211,7 +211,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T0.6 Design token và font (M).** *Xong khi:* token, breakpoint 744 px và font tiếng Việt đúng trên `/dev/ui`; trang này trả 404 trong production.
 - [x] **T0.7 Primitive hành động (M).** *Xong khi:* Button, Card, Chip, Segmented đạt vùng chạm 44 px và có focus rõ.
 - [x] **T0.8 Primitive form và overlay (M).** *Xong khi:* Field, Switch, Sheet dùng được bằng bàn phím trên Chromium và WebKit.
-- [ ] **T0.9 CI (S).** *Xong khi:* GitHub Actions xanh trên `main` và đỏ khi có test lỗi.
+- [x] **T0.9 CI (S).** *Xong khi:* GitHub Actions xanh trên `main` và đỏ khi có test lỗi.
 
 **Checkpoint:** bản clone sạch chạy được theo README; CI chạy trên mỗi push; bạn đã duyệt `/dev/ui`.
 

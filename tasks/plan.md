@@ -87,12 +87,12 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm C: Tự động hóa
 
-- [ ] T0.9 CI trên GitHub Actions (S)
+- [x] T0.9 CI trên GitHub Actions (S)
 
 ### Checkpoint hoàn thành Phase 0
 
-- [ ] CI xanh trên GitHub
-- [ ] Sẵn sàng sang Phase 1
+- [x] CI xanh trên GitHub
+- [x] Sẵn sàng sang Phase 1
 
 ## Parallelization
 
@@ -114,5 +114,5 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ## Open Questions
 
-- **Repo GitHub:** `gh` chưa được cài, nên T0.9 cần một repo trống do bạn tạo (mặc định: private, tên `flowday`) và lời đồng ý push. Các task khác không phụ thuộc vào câu này.
+- **Repo GitHub:** đã chốt `DoNotChoke/Flowday`, public.
 - **Neon:** xác nhận `DATABASE_URL` trong `.env` lấy từ branch `dev`. Không gửi chuỗi này vào chat vì nó chứa mật khẩu.

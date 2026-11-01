@@ -212,18 +212,18 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 
 ### T0.9 CI trên GitHub Actions
 
-**Mô tả:** Thêm script `check` chạy lint, typecheck, test và build. Workflow chạy trên mỗi push và pull request: service `postgres:18` trên máy của GitHub (DB trống mỗi lần chạy, máy bạn không cần cài gì), `npm ci`, `db:migrate`, `check`, cài trình duyệt Playwright, chạy `test:e2e`, tải báo cáo lên khi e2e fail.
+**Mô tả:** Thêm script `check` chạy lint, typecheck, test và build. Workflow chạy trên mỗi push (nhánh của PR cũng được push nên không cần trigger riêng): service `postgres:18-alpine` trên máy của GitHub (DB trống mỗi lần chạy, máy bạn không cần cài gì), `npm ci`, `db:migrate`, `check`, cài trình duyệt Playwright, chạy `test:e2e`, tải báo cáo lên khi e2e fail.
 
 **Tiền đề:** Có repo GitHub trống và bạn đồng ý push.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `npm run check` pass trên máy.
-- [ ] Workflow xanh trên GitHub ở lần push đầu.
-- [ ] Commit cố tình làm lỗi một test khiến workflow đỏ.
+- [x] `npm run check` pass trên máy.
+- [x] Workflow xanh trên GitHub ở lần push đầu.
+- [x] Commit cố tình làm lỗi một test khiến workflow đỏ.
 
 **Kiểm chứng:**
-- [ ] Xem log GitHub Actions thấy migration và test DB thật sự chạy.
-- [ ] Không có giá trị bí mật nào trong workflow, ngoài mật khẩu dev của Postgres trong CI.
+- [x] Xem log GitHub Actions thấy migration và test DB thật sự chạy. Log thô cần đăng nhập, nên kiểm chứng qua trạng thái từng bước và annotation của run đỏ: test `unaccent` nhận `Viet Do an` từ Postgres trên CI.
+- [x] Không có giá trị bí mật nào trong workflow, ngoài mật khẩu dev của Postgres trong CI.
 
 **Phụ thuộc:** T0.2, T0.4, T0.7, T0.8
 
@@ -235,7 +235,7 @@ Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-t
 
 ## Checkpoint hoàn thành Phase 0
 
-- [ ] CI xanh trên `main`.
-- [ ] Bản clone sạch chạy được theo `README.md`.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 0.
-- [ ] Sẵn sàng sang T1.1.
+- [x] CI xanh trên `main`.
+- [x] Bản clone sạch chạy được theo `README.md`.
+- [x] `PLAN.md` đã đánh dấu xong Phase 0.
+- [x] Sẵn sàng sang T1.1.
