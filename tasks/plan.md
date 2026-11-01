@@ -66,7 +66,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T0.1 Khởi tạo repo và app Next.js (M)
 - [x] T0.2 Playwright smoke trên desktop và mobile (S)
-- [ ] T0.3 Postgres và migration đầu tiên (M)
+- [x] T0.3 Postgres và migration đầu tiên (M)
 - [ ] T0.4 DB client, Vitest và README (M)
 
 ### Checkpoint A

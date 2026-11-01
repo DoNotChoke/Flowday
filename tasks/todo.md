@@ -63,13 +63,13 @@ Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`
 **Tiền đề:** Đã có project Neon `flowday-dev` (AWS Singapore, Postgres 18) và connection string nằm trong `.env` trên máy.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `npm run db:migrate` chạy được trên DB mới tạo của `flowday-dev`.
-- [ ] Chạy `npm run db:migrate` lần 2 không lỗi và không áp dụng lại.
-- [ ] `.env` không xuất hiện trong `git status`.
+- [x] `npm run db:migrate` chạy được trên DB mới tạo của `flowday-dev`.
+- [x] Chạy `npm run db:migrate` lần 2 không lỗi và không áp dụng lại.
+- [x] `.env` không xuất hiện trong `git status`.
 
 **Kiểm chứng:**
-- [ ] Truy vấn `select extname from pg_extension` thấy `unaccent`.
-- [ ] Thiếu `DATABASE_URL` thì lệnh dừng với thông báo rõ ràng, không in connection string ra log.
+- [x] Truy vấn `select extname from pg_extension` thấy `unaccent`.
+- [x] Thiếu `DATABASE_URL` thì lệnh dừng với thông báo rõ ràng, không in connection string ra log.
 
 **Phụ thuộc:** T0.1
 
