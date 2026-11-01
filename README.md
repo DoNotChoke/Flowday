@@ -19,6 +19,8 @@ cp .env.example .env
 
 Mở `.env`, đặt `DATABASE_URL` là connection string của branch `dev`, dùng kết nối trực tiếp (không pooled) và `sslmode=verify-full`. Không dùng URL của branch `production` trên máy.
 
+Đặt tiếp `BETTER_AUTH_SECRET` (tạo bằng `openssl rand -base64 32`) và `ALLOWED_EMAILS` là email của bạn. Email ngoài danh sách không đăng ký được.
+
 ```bash
 npm run db:migrate
 npm run dev
@@ -37,5 +39,6 @@ App chạy tại <http://localhost:3000>.
 | `npm run check` | Chạy lint, typecheck, Vitest và build như CI |
 | `npm test` | Chạy Vitest, cần `DATABASE_URL` |
 | `npm run test:e2e` | Chạy Playwright trên desktop và mobile, tự bật app |
+| `npx auth@1.7.14 generate --config src/lib/auth/index.ts --output src/lib/db/schema.ts --yes` | Sinh lại bảng của Better Auth sau khi đổi cấu hình; ghi đè toàn bộ `schema.ts` |
 | `npm run db:generate` | Tạo migration từ `src/lib/db/schema.ts` |
 | `npm run db:migrate` | Áp dụng migration |

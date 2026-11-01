@@ -8,6 +8,13 @@
       "when": 1793516687442,
       "tag": "0000_enable_unaccent",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793524276956,
+      "tag": "0001_auth_core",
+      "breakpoints": true
     }
   ]
 }

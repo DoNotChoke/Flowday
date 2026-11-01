@@ -13,14 +13,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Cài `better-auth`. Tạo `src/lib/auth` với `drizzleAdapter`, email/mật khẩu (tối thiểu 8 ký tự), trường `user.timezone` mặc định `Asia/Ho_Chi_Minh`, và `databaseHooks.user.create.before` từ chối email ngoài `ALLOWED_EMAILS`. Danh sách rỗng thì từ chối tất cả. Sinh schema bằng `npx auth generate` vào `src/lib/db/schema.ts`, rồi `drizzle-kit generate`. Mount tại `src/app/api/auth/[...all]/route.ts`. Thêm `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ALLOWED_EMAILS` vào `.env.example`, `README.md` và `ci.yml` (giá trị test cho CI). Tạo secret thật trong `.env` mà không in ra.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `auth.api.signUpEmail` với email trong danh sách tạo được user có `timezone` đúng, không phân biệt hoa thường.
-- [ ] Email ngoài danh sách bị từ chối và không để lại dòng nào trong DB.
-- [ ] `ALLOWED_EMAILS` rỗng thì mọi đăng ký bị từ chối.
+- [x] `auth.api.signUpEmail` với email trong danh sách tạo được user có `timezone` đúng, không phân biệt hoa thường.
+- [x] Email ngoài danh sách bị từ chối và không để lại dòng nào trong DB.
+- [x] `ALLOWED_EMAILS` rỗng thì mọi đăng ký bị từ chối.
 
 **Kiểm chứng:**
-- [ ] Viết test trước, thấy fail, rồi mới cài đặt.
-- [ ] `npm run db:migrate` chạy trên branch `dev` và trên DB trống của CI.
-- [ ] Test tự xóa user đã tạo.
+- [x] Viết test trước, thấy fail, rồi mới cài đặt.
+- [x] `npm run db:migrate` chạy trên branch `dev` và trên DB trống của CI.
+- [x] Test tự xóa user đã tạo.
 
 **Phụ thuộc:** Không
 

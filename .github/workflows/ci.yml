@@ -11,6 +11,9 @@ jobs:
     timeout-minutes: 20
     env:
       DATABASE_URL: postgresql://flowday:flowday@localhost:5432/flowday
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
+      BETTER_AUTH_URL: http://localhost:3000
+      ALLOWED_EMAILS: owner@flowday.test
     services:
       postgres:
         image: postgres:18-alpine
