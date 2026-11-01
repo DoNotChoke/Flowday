@@ -1,4 +1,4 @@
-# Phase 1 — Danh sách việc
+# Phase 2 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
@@ -6,71 +6,113 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ---
 
-## Nhóm A: Tài khoản tối thiểu
+## Nhóm A: Tạo và nhìn thấy dữ liệu
 
-### T1.1 Auth server và `ALLOWED_EMAILS`
+### T2.1 Schema, datetime và service task
 
-**Mô tả:** Cài `better-auth`. Tạo `src/lib/auth` với `drizzleAdapter`, email/mật khẩu (tối thiểu 8 ký tự), trường `user.timezone` mặc định `Asia/Ho_Chi_Minh`, và `databaseHooks.user.create.before` từ chối email ngoài `ALLOWED_EMAILS`. Danh sách rỗng thì từ chối tất cả. Sinh schema bằng `npx auth generate` vào `src/lib/db/schema.ts`, rồi `drizzle-kit generate`. Mount tại `src/app/api/auth/[...all]/route.ts`. Thêm `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ALLOWED_EMAILS` vào `.env.example`, `README.md` và `ci.yml` (giá trị test cho CI). Tạo secret thật trong `.env` mà không in ra.
+**Mô tả:** Chuyển bảng Better Auth sang `src/lib/db/auth-schema.ts` (sửa lệnh `auth generate` trong `README.md`), `schema.ts` re-export và thêm `project`, `category`, `task`, `task_category`, `subtask`, `activity` theo `PLAN.md` mục 3, bỏ các cột của phase sau. Hook `user.create.after` tạo 7 category mặc định, kèm migration chèn cho user đã có. `src/lib/datetime.ts` đổi `YYYY-MM-DD` + `HH:mm` theo múi giờ sang `Date` và ngược lại bằng `Intl`. `src/lib/auth/session.ts` thêm `requireUserId()` không cache. `src/services/tasks.ts` có `createTask`, `getTask`, `listTasks`, `updateTask`, `deleteTask`, validate bằng zod.
 
 **Tiêu chí nghiệm thu:**
-- [x] `auth.api.signUpEmail` với email trong danh sách tạo được user có `timezone` đúng, không phân biệt hoa thường.
-- [x] Email ngoài danh sách bị từ chối và không để lại dòng nào trong DB.
-- [x] `ALLOWED_EMAILS` rỗng thì mọi đăng ký bị từ chối.
+- [ ] User A không đọc, sửa hay xóa được task của user B; không gắn được project hay category của user B vào task.
+- [ ] `2026-11-06` + `17:00` ở `Asia/Ho_Chi_Minh` lưu thành `10:00Z`; test bảng có múi giờ âm và hạn gần nửa đêm.
+- [ ] Đăng ký xong có đủ 7 category; `(user_id, client_request_id)` unique.
+- [ ] Chạy `auth generate` không làm mất bảng của app.
 
 **Kiểm chứng:**
-- [x] Viết test trước, thấy fail, rồi mới cài đặt.
-- [x] `npm run db:migrate` chạy trên branch `dev` và trên DB trống của CI.
-- [x] Test tự xóa user đã tạo.
+- [ ] `npm test` và test `requireUserId()` từ chối khi không có phiên.
+- [ ] `npm run db:migrate` chạy trên `dev` và DB trống của CI; migration chỉ thêm, không xóa.
 
-**Phụ thuộc:** Không
+**Phụ thuộc:** Phase 1
 
-**File dự kiến:** `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `src/lib/db/schema.ts`, `src/app/api/auth/[...all]/route.ts`, `drizzle/0001_*.sql`, `.env.example`, `README.md`, `.github/workflows/ci.yml`
+**File dự kiến:** `src/lib/db/auth-schema.ts`, `src/lib/db/schema.ts`, `src/lib/datetime.ts`, `src/services/tasks.ts`, `src/services/tasks.test.ts`, `src/lib/auth/index.ts`, `src/lib/auth/session.ts`, `drizzle/*`, `README.md`
 
 **Quy mô:** M
 
 ---
 
-### T1.2 Trang đăng ký
+### T2.2 Create project
 
-**Mô tả:** Layout `(auth)` và trang 02 tại `/sign-up`: họ tên, email, mật khẩu, thanh đo độ mạnh, panel "Three steps to a calmer day". Tạo `src/lib/auth/client.ts`. Lỗi hiện ngay tại trường tương ứng. Tạm chưa có nút Google và checkbox Terms. Dưới `lg`, panel minh họa xếp dưới form hoặc ẩn đi, đối chiếu `design/screens/02-sign-up.html`.
+**Mô tả:** `src/services/projects.ts` với `createProject`: sinh `key` bỏ dấu tiếng Việt qua `unaccent` trong Postgres (hoặc chuẩn hóa NFD), trùng thì thêm số, tạo starter tasks theo template trong một transaction, cấp số bằng `UPDATE ... RETURNING`. Trang 09 tại `/projects/new`: 4 template, tên, prefix, mục tiêu, 6 màu, 6 icon, ngày bắt đầu và kết thúc, time budget, Live preview. Ẩn Members, Workflow statuses, Visibility. Thêm `flex-wrap` cho hàng màu và icon, `Project name` chỉ span từ `md`.
 
 **Tiêu chí nghiệm thu:**
-- [x] Đăng ký thành công thì tới `/tasks` (tạm là trang rỗng).
-- [x] Email ngoài danh sách và email đã tồn tại hiện lỗi tại form, không chuyển trang.
-- [x] Không có cuộn ngang ở 360 và 390 px; ô nhập 16 px trên cảm ứng.
+- [ ] Tạo từ template sinh đúng starter tasks, mã `FLW-1` trở đi.
+- [ ] `Đồ án tốt nghiệp` cho prefix `DAT`; prefix trùng thì thành `DAT2`; prefix sửa tay được validate.
+- [ ] Tạo đồng thời 2 task không bị trùng số.
+- [ ] Không có cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [x] `e2e/auth.spec.ts` pass trên cả 2 project, mỗi project dùng email riêng và tự dọn dữ liệu.
-- [x] Mở trang bằng tay, so ảnh với thiết kế ở 390 và 1440 px.
-- [x] Toàn bộ form dùng được bằng bàn phím.
+- [ ] Vitest chạy 10 lần tạo song song và test cô lập theo user.
+- [ ] E2E tạo project từ form và thấy Live preview cập nhật.
+- [ ] So ảnh với `design/screens/09-create-project.html` ở 390 và 1440 px.
 
-**Phụ thuộc:** T1.1
+**Phụ thuộc:** T2.1
 
-**File dự kiến:** `src/app/(auth)/layout.tsx`, `src/app/(auth)/sign-up/page.tsx`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `src/lib/auth/client.ts`, `e2e/auth.spec.ts`
+**File dự kiến:** `src/services/projects.ts`, `src/services/projects.test.ts`, `src/app/(app)/projects/new/page.tsx`, `src/app/(app)/projects/new/ProjectForm.tsx`, `src/app/(app)/projects/new/actions.ts`, `e2e/projects.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T1.3 Đăng nhập, đăng xuất, chặn route
+### T2.2b Project trên Sidebar và drawer
 
-**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Thêm link "Already have an account? Sign in" còn thiếu ở `/sign-up`, form đăng nhập dùng `method="post"`, đọc mật khẩu từ `FormData` và khóa nút submit tới khi hydrate xong như form đăng ký; đây là lần dùng thứ hai nên tách `useHydrated`. Đăng nhập xong dùng `window.location.assign`, không dùng `router.push`, vì `router.push` có thể bị bỏ dở và để form kẹt. Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
+**Mô tả:** Thay dòng "No projects yet" bằng danh sách thật: chấm màu, tên, số task. Thêm mục Projects vào drawer mobile. Mục đang mở được highlight. Trang `/projects/[id]` tạm có tiêu đề cho tới T4.1.
 
 **Tiêu chí nghiệm thu:**
-- [x] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.
-- [x] Sai mật khẩu hiện lỗi chung, không tiết lộ email có tồn tại hay không.
-- [x] Sau đăng xuất, nút Back không xem lại được trang trong app.
-- [x] Tham số quay lại chỉ nhận đường dẫn nội bộ; URL ngoài bị bỏ qua.
+- [ ] Project mới xuất hiện ngay sau khi tạo, số task khớp DB.
+- [ ] 30 project vẫn cuộn trong Sidebar, nút đăng xuất luôn thấy.
+- [ ] Tên project dài bị cắt gọn, không gây cuộn ngang.
 
 **Kiểm chứng:**
-- [x] E2E đăng ký → đăng xuất → đăng nhập pass trên cả 2 project.
-- [x] Test cookie giả mạo: proxy cho qua nhưng `getCurrentUser()` vẫn chuyển về `/sign-in`.
-- [x] `curl -I` tới `/api/mcp` và `/.well-known/x` không bị proxy chuyển hướng.
-- [x] `npm run build` không có lỗi đọc phiên ngoài `<Suspense>`.
+- [ ] `e2e/shell.spec.ts` thêm các trường hợp trên ở 1366 × 600 và 390 px.
 
-**Phụ thuộc:** T1.2
+**Phụ thuộc:** T2.2
 
-**File dự kiến:** `src/app/(auth)/sign-in/page.tsx`, `src/app/(auth)/sign-in/SignInForm.tsx`, `src/lib/auth/session.ts`, `src/proxy.ts`, `src/app/(app)/tasks/page.tsx`, `e2e/auth.spec.ts`, `e2e/smoke.spec.ts`, `next.config.ts`
+**File dự kiến:** `src/components/app/ProjectLinks.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/TopBar.tsx`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/shell.spec.ts`
+
+**Quy mô:** S
+
+---
+
+### T2.3 Create task
+
+**Mô tả:** Trang 04 tại `/tasks/new`, nhận `?project=`: tên, mô tả, priority, category nhiều lựa chọn, tạo category mới tại chỗ, project, time estimate (giờ, phút, chip nhanh, số phiên focus), status, ngày giờ, nhắc hạn, Live preview. Sửa dòng mô tả nhắc hạn cho khớp phạm vi V1. "+ New project" mở sheet để không mất nội dung đang nhập, hoặc lưu nháp trong `sessionStorage`. Ẩn Assignee, Break into subtasks.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Tạo task xong về `/tasks` và thấy task đó.
+- [ ] Lỗi validation hiện tại đúng trường, không mất nội dung đã nhập.
+- [ ] Bấm "+ New project" rồi quay lại vẫn còn nội dung.
+- [ ] Hạn `17:00` lưu đúng theo múi giờ của người dùng.
+
+**Kiểm chứng:**
+- [ ] E2E tạo task đủ trường trên desktop và mobile, tải lại vẫn còn.
+- [ ] So ảnh với `design/screens/04-create-task.html` ở 390 và 1440 px.
+
+**Phụ thuộc:** T2.1, T2.2
+
+**File dự kiến:** `src/app/(app)/tasks/new/page.tsx`, `src/app/(app)/tasks/new/TaskForm.tsx`, `src/app/(app)/tasks/new/actions.ts`, `src/services/categories.ts`, `e2e/tasks.spec.ts`
+
+**Quy mô:** M
+
+---
+
+### T2.4 Board đọc dữ liệu
+
+**Mô tả:** Trang 03 tại `/tasks`: lời chào, số task đến hạn hôm nay, 4 thẻ thống kê với delta 7 ngày, lọc category và project, sort, 4 cột, card với vòng %, trạng thái rỗng. Thêm prop bo góc cho `Card`, badge số task ở mục My tasks. Chưa có ô search (T2.9) và số streak (T7.2). Dữ liệu nằm trong `<Suspense>`, có skeleton.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Số liệu và delta khớp DB, "hôm nay" tính theo múi giờ người dùng.
+- [ ] Vòng % là subtask done/total; không có subtask thì 100% khi completed, ngược lại 0%.
+- [ ] Lọc và sort nằm trên URL, tải lại vẫn giữ.
+- [ ] Task của Claude sau này không cần thay đổi gì ở Board.
+
+**Kiểm chứng:**
+- [ ] Vitest cho service thống kê với dữ liệu biên quanh nửa đêm.
+- [ ] E2E lọc và sort; không có cuộn ngang ở 1024 và 1440 px.
+- [ ] So ảnh với `design/screens/03-tasks-board.html` ở 1440 px.
+
+**Phụ thuộc:** T2.3
+
+**File dự kiến:** `src/app/(app)/tasks/page.tsx`, `src/components/app/board/Board.tsx`, `src/components/app/board/TaskCard.tsx`, `src/components/ui/Card.tsx`, `src/services/tasks.ts`
 
 **Quy mô:** M
 
@@ -78,192 +120,176 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [x] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile.
-- [x] CI xanh, migration chạy trên DB trống.
+- [ ] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] Bạn đã xem Board và form tạo task.
 
 ---
 
-## Nhóm B: Cổng rủi ro MCP
+## Nhóm B: Di chuyển task
 
-### T1.4 Authorization server: JWT, `mcp()`, CIMD
+### T2.5 Kéo thả
 
-**Mô tả:** Cài `@better-auth/mcp` và `@better-auth/cimd`. Thêm `jwt()`, `mcp({ loginPage: "/sign-in", consentPage: "/oauth/consent", resource: <BETTER_AUTH_URL>/api/mcp, scopes })` và `cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" })`. Scope gồm `openid`, `profile`, `offline_access`, `tasks:read`, `tasks:write`. Sinh lại schema và migration. Phục vụ metadata ở gốc domain: `/.well-known/oauth-protected-resource/api/mcp` và `/.well-known/oauth-authorization-server/api/auth`. DCR để tắt. Đối chiếu tên API với type trong `node_modules`.
+**Mô tả:** Cài `@dnd-kit/core` và `@dnd-kit/sortable`. Đổi status và thứ tự, cập nhật lạc quan, `moveTask` trong service ghi `position` và `completed_at`. Hỗ trợ `KeyboardSensor` và `TouchSensor` có độ trễ. Có thông báo cho trình đọc màn hình.
 
 **Tiêu chí nghiệm thu:**
-- [x] Protected Resource Metadata có `resource` bằng đúng URL `/api/mcp`, issuer đứng đầu `authorization_servers`.
-- [x] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`.
-- [x] Không có `registration_endpoint`.
+- [ ] Kéo sang cột khác được lưu sau khi tải lại.
+- [ ] Lỗi mạng thì card quay về chỗ cũ và có thông báo.
+- [ ] Bàn phím di chuyển được card giữa các cột.
+- [ ] Vuốt dọc trên cảm ứng cuộn trang, giữ lâu mới kéo.
 
 **Kiểm chứng:**
-- [x] Vitest gọi handler và khẳng định từng trường ở trên.
-- [x] `curl` cả hai URL trên server đang chạy đều trả 200 kèm JSON.
-- [x] Migration chạy trên DB trống của CI; các bảng `oauth*` và `jwks` tồn tại.
+- [ ] Vitest cho `moveTask`: giữa hai card, đầu cột, cuối cột, cột rỗng, task của user khác.
+- [ ] E2E kéo bằng chuột, bằng bàn phím, và chặn mạng bằng `page.route`.
 
-**Phụ thuộc:** T1.3
+**Phụ thuộc:** T2.4
 
-**File dự kiến:** `src/lib/auth/index.ts`, `src/lib/auth/mcp.test.ts`, `src/lib/db/schema.ts`, `src/app/.well-known/oauth-protected-resource/api/mcp/route.ts`, `src/app/.well-known/oauth-authorization-server/api/auth/route.ts`, `drizzle/0002_*.sql`
+**File dự kiến:** `package.json`, `src/components/app/board/Board.tsx`, `src/app/(app)/tasks/actions.ts`, `src/services/tasks.ts`, `e2e/board.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T1.5 `/api/mcp`, `whoami` và trang consent
+### T2.6 Board phone/tablet và List view
 
-**Mô tả:** Cài `@modelcontextprotocol/server` và `zod`. `src/mcp/server.ts` tạo `McpServer` với tool `whoami` (scope `tasks:read`), trả tên, email và múi giờ từ `sub` của token. `src/app/api/mcp/route.ts` dùng `createMcpHandler` với `legacy` mặc định, bọc trong `requireMcpAuth`, có `challengeScopes`. Trang `/oauth/consent` dựng từ primitive: hiện tên client, hostname của redirect URI, danh sách scope, cảnh báo thêm khi redirect là loopback, nút Allow và Deny.
+**Mô tả:** Tab theo status dưới `md`, lưới 2×2 ở tablet, 4 cột từ `xl`. Menu "Move to" trên mọi thiết bị cảm ứng. Chế độ List dưới `md` là danh sách thẻ.
 
 **Tiêu chí nghiệm thu:**
-- [x] Không có token hoặc token sai trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
-- [x] Handler trả lời được cả `initialize` đời `2025-11-25` lẫn yêu cầu đời `2026-07-28`.
-- [x] Trang consent hiện hostname của redirect URI và có cảnh báo loopback; bấm Deny trả lỗi về client.
-- [x] Chưa đăng nhập mà vào luồng OAuth thì qua `/sign-in`, xong quay lại consent.
+- [ ] Đổi status được ở 390 và 820 px chỉ bằng cảm ứng.
+- [ ] Chế độ Board hoặc List giữ trên URL.
+- [ ] Không có cuộn ngang ở 360, 390, 744, 820 và 1180 px.
 
 **Kiểm chứng:**
-- [x] Vitest gọi `mcpHandler.fetch` với request của hai đời giao thức.
-- [x] `npx @modelcontextprotocol/inspector --cli http://localhost:3000/api/mcp --transport http --method tools/list` trả `401`.
-- [x] E2E đi hết luồng authorize → đăng nhập → consent → token → `whoami` → refresh với redirect loopback khác port. Thử bằng Claude Code thật chuyển sang T1.6, vì cần bạn đăng nhập trên trình duyệt.
+- [ ] E2E trên project mobile dùng "Move to".
+- [ ] Bạn thử trên điện thoại hoặc iPad thật.
 
-**Phụ thuộc:** T1.4
+**Phụ thuộc:** T2.5
 
-**File dự kiến:** `src/mcp/server.ts`, `src/mcp/server.test.ts`, `src/app/api/mcp/route.ts`, `src/app/(auth)/oauth/consent/page.tsx`, `src/app/(auth)/oauth/consent/ConsentForm.tsx`
+**File dự kiến:** `src/components/app/board/Board.tsx`, `src/components/app/board/MoveMenu.tsx`, `src/components/app/board/TaskList.tsx`, `e2e/board.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO
+## Checkpoint B
 
-**Mô tả:** Chạy `next build` + `next start`, mở `cloudflared tunnel --url http://localhost:3200`, đặt `BETTER_AUTH_URL` và `ALLOWED_EMAILS` trong tiến trình, không sửa `.env`. Bạn thêm connector trên claude.ai, mình thử Claude Code qua cùng URL. Ghi kết quả vào `PLAN.md` mục 5. Nếu Claude không chọn CIMD, bật DCR rồi thử lại trước khi coi là thất bại. Đóng tunnel khi xong.
+- [ ] Đổi status được bằng chuột, bàn phím và cảm ứng.
+- [ ] CI xanh.
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
+
+---
+
+## Nhóm C: Chi tiết task
+
+### T2.7 Task detail
+
+**Mô tả:** Trang 05 tại `/tasks/[id]`: mã task, project, sửa từng trường tại chỗ, đổi status, estimate, hủy và xóa có xác nhận bằng `Sheet`. Ẩn Team, Attachment. Khối Time tracked đợi T6.2.
 
 **Tiêu chí nghiệm thu:**
-- [x] claude.ai: connector hiện **Connected**, tool `whoami` xuất hiện, một lần gọi thật trả đúng người dùng.
-- [x] Claude Code: đi hết luồng OAuth qua URL tunnel, `whoami` trả đúng người dùng.
-- [ ] Hoãn sang T3.6: hết hạn access token thì Claude tự refresh mà không phải đăng nhập lại. E2E đã chứng minh phía server; Claude thật chưa đo vì token sống 1 giờ.
-- [x] Mọi mục checklist ở `PLAN.md` mục 5 được đánh dấu đạt, hoặc ghi rõ lý do hoãn.
+- [ ] Sửa trường nào được lưu trường đó, tải lại vẫn còn.
+- [ ] Xóa cần xác nhận, xong về Board; hủy chuyển sang Canceled và khôi phục được.
+- [ ] Task của người khác hoặc id sai trả 404.
 
 **Kiểm chứng:**
-- [x] `client_id` của từng bề mặt: `https://claude.ai/oauth/mcp-oauth-client-metadata` và `https://claude.ai/oauth/claude-code-client-metadata`, đều qua CIMD. Phiên bản giao thức thực tế chưa ghi lại; test đã phủ cả hai đời.
-- [x] Để Neon ngủ trên 5 phút, đo `/oauth2/token`: 2,2 giây, sau đó 0,29 giây.
-- [x] Hành vi thu hồi xác định từ mã nguồn, không đo với Claude: JWT không kiểm DB và sống 1 giờ. Đã cập nhật T3.4.
-- [x] Sau khi đóng tunnel, `BETTER_AUTH_URL` trong `.env` trở lại `http://localhost:3000`.
+- [ ] Vitest cho `deleteTask` và hủy.
+- [ ] E2E sửa, hủy, xóa trên desktop và mobile.
+- [ ] So ảnh với `design/screens/05-task-detail.html` ở 390 và 1440 px.
 
-**Phụ thuộc:** T1.5
+**Phụ thuộc:** T2.4
 
-**File dự kiến:** `PLAN.md`, `tasks/plan.md`
+**File dự kiến:** `src/app/(app)/tasks/[id]/page.tsx`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `src/app/(app)/tasks/[id]/actions.ts`, `e2e/task-detail.spec.ts`
+
+**Quy mô:** M
+
+---
+
+### T2.7b Checklist
+
+**Mô tả:** `src/services/subtasks.ts` thêm, tick, sửa, xóa, sắp xếp. Thanh tiến độ ở trang chi tiết, nhấn Enter để thêm.
+
+**Tiêu chí nghiệm thu:**
+- [ ] % trên Board đổi theo checklist.
+- [ ] Không đụng được subtask của task người khác.
+
+**Kiểm chứng:**
+- [ ] Vitest và E2E tick rồi xem lại trên Board.
+
+**Phụ thuộc:** T2.7
+
+**File dự kiến:** `src/services/subtasks.ts`, `src/services/subtasks.test.ts`, `src/app/(app)/tasks/[id]/Checklist.tsx`, `src/app/(app)/tasks/[id]/actions.ts`
 
 **Quy mô:** S
 
 ---
 
-## Checkpoint B — dừng lại để quyết định
+### T2.8 Comment và activity
 
-- [x] claude.ai và Claude Code cùng gọi được `whoami`.
-- [x] Checklist xác thực ở `PLAN.md` mục 5 đạt, trừ `Origin` (T3.3) và WAF (T9.4).
-- [x] Đạt, không cần đổi thư viện OAuth.
-
----
-
-## Nhóm C: Khung app
-
-### T1.7 Sidebar và layout `(app)` trên desktop
-
-**Mô tả:** Layout `(app)` với Sidebar 260 px từ `lg`: logo, nút New task, 5 mục điều hướng có trạng thái active, tên và email người dùng, nút Sign out. Phần đọc phiên nằm trong `<Suspense>`, không `await` ở cấp layout. Thêm trang tạm `/tasks/new`, `/calendar`, `/history`, `/focus`, `/settings`, và thêm các đường dẫn này vào matcher của proxy. Chưa có badge, danh sách project hay thẻ streak.
+**Mô tả:** Ghi `activity` trong cùng transaction ở mọi hàm ghi của service, có `actor` để Phase 3 ghi `mcp`. Comment là một `type`. Hiện dòng thời gian ở trang chi tiết, thời gian tương đối theo múi giờ.
 
 **Tiêu chí nghiệm thu:**
-- [x] Giống `design/screens/component-sidebar.html` ở 1440 px, phần đã lùi được ẩn hẳn.
-- [x] Mục đang mở có `aria-current="page"`.
-- [x] Khung Sidebar và nội dung tĩnh hiện ngay; chỉ khối người dùng chờ phiên.
-- [x] Mọi trang trong app đều chặn người chưa đăng nhập.
+- [ ] Mọi thay đổi có dòng activity đúng thứ tự thời gian.
+- [ ] Ghi activity lỗi thì thay đổi cũng không được lưu.
+- [ ] Comment rỗng bị từ chối; nội dung hiện đúng tiếng Việt và không chạy HTML.
 
 **Kiểm chứng:**
-- [x] E2E bấm qua 5 mục ở 1440 px.
-- [x] Không có cuộn ngang ở 1024 và 1440 px.
-- [x] Tab qua toàn bộ Sidebar, focus nhìn rõ.
+- [ ] Vitest cho từng loại thay đổi và trường hợp rollback.
+- [ ] E2E thêm comment rồi tải lại.
 
-**Phụ thuộc:** T1.6, T1.3
+**Phụ thuộc:** T2.7b
 
-**File dự kiến:** `src/app/(app)/layout.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/NavLinks.tsx`, `src/components/app/UserMenu.tsx`, `src/proxy.ts`, `e2e/shell.spec.ts`, cùng 5 trang tạm
+**File dự kiến:** `src/services/activity.ts`, `src/services/activity.test.ts`, `src/services/tasks.ts`, `src/services/subtasks.ts`, `src/app/(app)/tasks/[id]/Activity.tsx`
 
 **Quy mô:** M
 
 ---
 
-### T1.8 Khung phone và tablet
+## Nhóm D: Thao tác nhanh
 
-**Mô tả:** Dưới `lg`: top bar và bottom nav 5 mục (Tasks, Calendar, nút New, History, Focus), tôn trọng `safe-area-inset-bottom`. Settings và tài khoản nằm trong drawer dùng lại `Sheet`. Layout chọn theo chiều rộng, không theo loại thiết bị.
+### T2.9 Tìm kiếm
+
+**Mô tả:** Ô search trên Board và `⌘K`/`Ctrl+K`. `searchTasks` dùng `unaccent` theo tiêu đề và mô tả. Ẩn gợi ý phím trên thiết bị cảm ứng.
 
 **Tiêu chí nghiệm thu:**
-- [x] Không có cuộn ngang ở 360, 390, 744 và 820 px.
-- [x] Đúng breakpoint: 1023 px có bottom nav, 1024 px có Sidebar.
-- [x] Drawer đóng bằng Esc và trả focus về nút đã mở nó.
-- [x] Mọi vùng chạm đạt 44 px trên cảm ứng; bottom nav không che nội dung cuối trang.
+- [ ] Gõ `do an` tìm được `Đồ án`.
+- [ ] Ký tự `%` và `_` được hiểu là ký tự thường.
+- [ ] `Ctrl+K` không kích hoạt khi đang gõ trong ô khác nếu trình duyệt đã dùng phím đó.
 
 **Kiểm chứng:**
-- [x] `e2e/shell.spec.ts` chạy thêm các viewport trên.
-- [x] Bạn xem ở 390, 820 và 1440 px.
+- [ ] Vitest cho bỏ dấu, ký tự đặc biệt, cô lập theo user.
+- [ ] E2E tìm rồi mở task.
 
-**Phụ thuộc:** T1.7
+**Phụ thuộc:** T2.4
 
-**File dự kiến:** `src/components/app/TopBar.tsx`, `src/components/app/BottomNav.tsx`, `src/components/app/AccountSheet.tsx`, `src/app/(app)/layout.tsx`, `e2e/shell.spec.ts`
+**File dự kiến:** `src/services/tasks.ts`, `src/components/app/board/SearchBox.tsx`, `e2e/board.spec.ts`
+
+**Quy mô:** S
+
+---
+
+### T2.10 Quick-add
+
+**Mô tả:** Cài `chrono-node`. Phím `N` mở `Sheet`, `parseQuickAdd` tách `#category`, `!priority` và ngày tự nhiên theo múi giờ người dùng, hiện trước kết quả phân tích khi gõ.
+
+**Tiêu chí nghiệm thu:**
+- [ ] "Review PR tomorrow 9am #Development !high" cho đúng tên, ngày, giờ, category, priority.
+- [ ] `N` không kích hoạt khi đang gõ trong input.
+- [ ] Category không tồn tại được báo, không tự tạo.
+
+**Kiểm chứng:**
+- [ ] Test bảng cho `parseQuickAdd`, có tên tiếng Việt và câu không có ngày.
+- [ ] E2E mở bằng phím, tạo task, thấy trên Board.
+
+**Phụ thuộc:** T2.3, T2.4
+
+**File dự kiến:** `package.json`, `src/lib/quickAdd.ts`, `src/lib/quickAdd.test.ts`, `src/components/app/QuickAdd.tsx`, `src/app/(app)/layout.tsx`
 
 **Quy mô:** M
 
 ---
 
-## Nhóm D: Hoàn thiện đăng nhập
+## Checkpoint hoàn thành Phase 2
 
-### T1.9 Mail và xác minh email
-
-**Mô tả:** `src/lib/mail.ts` gọi API Resend bằng `fetch`, không thêm dependency. Không có `RESEND_API_KEY` thì in link ra console ở dev, và báo lỗi ở production. Bật `requireEmailVerification` và `sendOnSignUp`. Đăng ký xong hiện màn hình "Check your email", có nút gửi lại. Sửa E2E của T1.2 và T1.3: helper đánh dấu `email_verified` trực tiếp trong DB.
-
-**Tiêu chí nghiệm thu:**
-- [x] Chưa xác minh thì không đăng nhập được, form báo rõ cách xử lý.
-- [x] Bấm link xác minh thì đăng nhập được; link bị sửa bị từ chối, có test; link hết hạn đi cùng nhánh xử lý nhưng chưa có test riêng; link đã dùng không có tác dụng thêm.
-- [x] Không có API key ở production thì báo lỗi, không âm thầm bỏ qua.
-
-**Kiểm chứng:**
-- [x] Vitest thay `lib/mail` bằng spy, chạy đủ luồng qua `auth.api`.
-- [x] Bạn đặt key, đăng ký thử và nhận email thật từ `onboarding@resend.dev`.
-- [x] Không có token nào bị in vào log ở production.
-
-**Phụ thuộc:** T1.6
-
-**File dự kiến:** `src/lib/mail.ts`, `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `src/app/(auth)/sign-in/SignInForm.tsx`, `e2e/helpers.ts`
-
-**Quy mô:** M
-
----
-
-### T1.10 Quên mật khẩu
-
-**Mô tả:** `/forgot-password` và `/reset-password` dựng từ primitive cùng phong cách trang đăng nhập. Nối link "Forgot password?" ở trang 01. Đổi mật khẩu xong thì thu hồi các phiên khác.
-
-**Tiêu chí nghiệm thu:**
-- [x] Đổi mật khẩu qua link trong email thành công, đăng nhập được bằng mật khẩu mới.
-- [x] Link dùng lại hoặc hết hạn bị từ chối, trang báo lỗi rõ.
-- [x] Form trả cùng thông báo dù email có tồn tại hay không.
-- [x] Phiên cũ trên thiết bị khác hết hiệu lực.
-
-**Kiểm chứng:**
-- [x] Vitest với spy mail phủ cả 4 tiêu chí.
-- [x] E2E mở cả hai trang ở 390 và 1440 px, không có cuộn ngang.
-
-**Phụ thuộc:** T1.9
-
-**File dự kiến:** `src/app/(auth)/forgot-password/page.tsx`, `src/app/(auth)/reset-password/page.tsx`, `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `e2e/auth.spec.ts`
-
-**Quy mô:** M
-
----
-
-### T1.11 Đăng nhập Google
-
-Hoãn theo quyết định của bạn; xem `PLAN.md` mục 9. Mô tả gốc: `git show 8901b9f:tasks/todo.md`.
-
----
-
-## Checkpoint hoàn thành Phase 1
-
-- [x] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile. Bước xác minh trong E2E dùng helper ghi DB; link thật do Vitest phủ và bạn đã thử với email thật.
-- [x] Bạn đã xem khung app ở 390, 820 và 1440 px.
-- [x] `PLAN.md` đã đánh dấu xong Phase 1.
-- [x] Sẵn sàng sang T2.1.
+- [ ] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 2.
+- [ ] Sẵn sàng sang T3.1.

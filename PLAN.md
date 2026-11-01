@@ -235,14 +235,18 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 ### Phase 2 — Quản lý task
 
-- [ ] **T2.1 Schema và service (M).** Bảng ở mục 3 (trừ `milestone`, làm ở T4.4), seed category mặc định, `src/services` với zod. Mọi hàm nhận `userId`. *Xong khi:* test CRUD pass; test user A không đọc/sửa được task của user B.
-- [ ] **T2.2 Create project (M).** Trang 09: template và starter tasks, tên, prefix, mục tiêu, màu, icon, ngày, time budget, Live preview; danh sách project thật ở Sidebar kèm số task và nút `+`. *Xong khi:* tạo từ template sinh đúng starter tasks có mã `FLW-1` trở đi; tên tiếng Việt cho prefix không dấu; tạo đồng thời 2 task không trùng số.
+Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `tasks/plan.md`.
+
+- [ ] **T2.1 Schema và service (M).** Tách bảng Better Auth sang file riêng, thêm bảng của app (trừ `focus_session` ở T6.2 và `milestone` ở T4.4), seed category mặc định, `lib/datetime`, `src/services` với zod. Mọi hàm nhận `userId`. *Xong khi:* test CRUD pass; test user A không đọc/sửa được task của user B.
+- [ ] **T2.2 Create project (M).** Trang 09: template và starter tasks, tên, prefix, mục tiêu, màu, icon, ngày, time budget, Live preview; *Xong khi:* tạo từ template sinh đúng starter tasks có mã `FLW-1` trở đi; tên tiếng Việt cho prefix không dấu; tạo đồng thời 2 task không trùng số.
+- [ ] **T2.2b Project trên Sidebar và drawer (S).** *Xong khi:* project mới hiện ngay; 30 project vẫn cuộn trong Sidebar.
 - [ ] **T2.3 Create task (M).** Trang 04: Project, Time estimate (giờ/phút, chip nhanh, số phiên focus), category nhiều lựa chọn, tạo category mới, status, priority, ngày giờ, nhắc hạn, Live preview. Bấm "+ New project" không mất nội dung đang nhập. *Xong khi:* tạo task xong xuất hiện trên Board; lỗi validation hiển thị tại trường tương ứng.
 - [ ] **T2.4 Board đọc dữ liệu (M).** Trang 03: 4 thẻ thống kê, cột, lọc category/project, sort, trạng thái rỗng, lời chào. *Xong khi:* số liệu khớp DB; delta tính theo 7 ngày gần nhất.
 - [ ] **T2.5 Kéo thả (M).** Đổi status và thứ tự bằng `@dnd-kit`, cập nhật lạc quan, hỗ trợ bàn phím và cảm ứng (`TouchSensor` có độ trễ để vuốt cuộn không kích hoạt kéo). *Xong khi:* kéo qua cột được lưu sau khi tải lại; lỗi mạng thì card quay về chỗ cũ; trên iPad vừa cuộn được vừa kéo được.
 - [ ] **T2.6 Board phone/tablet và List view (M).** Tab theo status trên phone, 2×2 trên tablet, menu "Move to" trên mọi thiết bị cảm ứng, chế độ List. *Xong khi:* đổi status được ở 390 px và 820 px chỉ bằng cảm ứng.
-- [ ] **T2.7 Task detail (M).** Trang 05: mã task, Project, sửa trường, đổi status, checklist + thanh tiến độ, estimate, hủy/xóa có xác nhận. *Xong khi:* % trên Board đổi theo checklist; xóa cần xác nhận.
-- [ ] **T2.8 Comment và activity (S).** Ghi activity tại service, comment là `activity`. *Xong khi:* mọi thay đổi có dòng activity đúng thứ tự thời gian.
+- [ ] **T2.7 Task detail (M).** Trang 05: mã task, Project, sửa trường, đổi status, estimate, hủy/xóa có xác nhận. *Xong khi:* sửa trường nào lưu trường đó; xóa cần xác nhận.
+- [ ] **T2.7b Checklist (S).** Tách khỏi T2.7. *Xong khi:* % trên Board đổi theo checklist.
+- [ ] **T2.8 Comment và activity (M).** Ghi activity tại service, comment là `activity`. *Xong khi:* mọi thay đổi có dòng activity đúng thứ tự thời gian.
 - [ ] **T2.9 Tìm kiếm (S).** Ô search và phím `⌘K`/`Ctrl+K`. *Xong khi:* tìm được tên có dấu tiếng Việt, kể cả khi gõ không dấu.
 - [ ] **T2.10 Quick-add (M).** Phím `N`, parser `#category`, `!priority`, ngày tự nhiên bằng `chrono-node`. *Xong khi:* test bảng phủ câu mẫu "Review PR tomorrow 9am #Development !high"; `N` không kích hoạt khi đang gõ trong input.
 
