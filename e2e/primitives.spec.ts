@@ -52,6 +52,14 @@ test("keyboard focus shows an outline on every control", async ({ page, isMobile
   }
 });
 
+test("clicking a text field colours its own border instead of adding a ring", async ({ page }) => {
+  const field = page.locator("main input:not([type=checkbox]):not([type=radio]):visible").first();
+  await field.click();
+
+  await expect(field).toHaveCSS("outline-offset", /^-/);
+  await expect(field).toHaveCSS("outline-color", "rgb(244, 114, 88)");
+});
+
 test("disabled button cannot be used", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Disabled action" })).toBeDisabled();
 });

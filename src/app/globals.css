@@ -57,6 +57,13 @@
     @apply outline-2 outline-offset-2 outline-ink;
   }
 
+  /* Text fields match :focus-visible on every click, so the ring sits on their own border. */
+  input:not([type="checkbox"], [type="radio"]):focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    @apply -outline-offset-[1.5px] outline-coral;
+  }
+
   button:enabled {
     @apply cursor-pointer;
   }
