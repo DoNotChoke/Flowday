@@ -20,15 +20,15 @@ Xây **Flowday**: web app quản lý công việc, dùng đúng UI đã thiết 
 | Ngôn ngữ | TypeScript strict, Node 24 | UI mẫu là React; `.venv` trong repo đang rỗng nên không dùng Python |
 | Frontend | Next.js 16 (App Router), React 19, Tailwind CSS 4, `@dnd-kit` | Server Components + Server Actions, không cần thêm thư viện state |
 | Database | PostgreSQL 18 + Drizzle ORM | Truy vấn thống kê theo ngày và múi giờ; cùng driver `pg` cho local và Neon |
-| Đăng nhập | Better Auth: email/mật khẩu + Google | Có sẵn OAuth Provider để làm authorization server cho MCP |
-| MCP | Remote MCP (Streamable HTTP), không giữ session, tại `/api/mcp` | Một URL dùng được cho claude.ai, Desktop, mobile và Claude Code |
-| Xác thực MCP | OAuth 2.1 (PKCE S256), hỗ trợ cả CIMD và DCR | Claude dùng CIMD nếu server quảng bá, nếu không thì fallback DCR. Mỗi người dùng đăng nhập bằng tài khoản của mình |
+| Đăng nhập | Better Auth: email/mật khẩu + Google, bắt buộc xác minh email | Plugin `mcp()` của `@better-auth/mcp` làm authorization server cho MCP. Email chủ tài khoản đã công khai trong commit nên phải xác minh để người lạ không đăng ký trước |
+| MCP | Remote MCP (Streamable HTTP), không giữ session, tại `/api/mcp`, dùng `createMcpHandler` của `@modelcontextprotocol/server` 2.x | Một URL dùng được cho claude.ai, Desktop, mobile và Claude Code. Handler kiểu Web Fetch chạy thẳng trong route handler và phục vụ cả hai đời giao thức |
+| Xác thực MCP | OAuth 2.1 (PKCE S256) với CIMD; DCR tắt, chỉ bật nếu T1.6 cho thấy cần | Claude dùng CIMD khi server quảng bá. DCR cho bất kỳ ai ghi vào bảng client và đã bị MCP deprecate |
 | Cập nhật dữ liệu | Refetch khi quay lại tab, không poll | Để Neon được ngủ. `shortcut: chưa có realtime, thêm poll hoặc SSE nếu cần thấy task ngay khi đang nhìn Board` |
 | Kiểm thử | Vitest (Postgres thật) + Playwright (project desktop và mobile) | Service, MCP và luồng UI đều chạy được trong CI |
 | Người dùng | Một người; `ALLOWED_EMAILS` chặn đăng ký từ email khác | App công khai trên internet nhưng chỉ phục vụ chủ sở hữu; tránh người lạ dùng hết quota |
 | Hạ tầng | Vercel (`sin1`), Neon Postgres (`aws-ap-southeast-1`), Upstash QStash, Resend | Không phải quản lý server, $0/tháng khi còn là dự án cá nhân. App và DB cùng ở Singapore nên nhanh cho người dùng Việt Nam. Không dùng Docker: dev và test chạy trên branch `dev` của project Neon `flowday`, dùng chung quota với branch `production` |
 
-Phiên bản tham chiếu ngày 2026-11-01: `next` 16.4, `react` 19.3, `tailwindcss` 4.3, `drizzle-orm` 0.45, `better-auth` 1.7.14, `zod` 4.6, `vitest` 5, `@playwright/test` 1.64. Khóa bằng lockfile.
+Phiên bản tham chiếu ngày 2026-11-01: `next` 16.4, `react` 19.3, `tailwindcss` 4.3, `drizzle-orm` 0.45, `better-auth`, `@better-auth/mcp`, `@better-auth/cimd` 1.7.14, `@modelcontextprotocol/server` 2.4, `zod` 4.6, `vitest` 5, `@playwright/test` 1.64. Khóa bằng lockfile.
 
 ```text
  Trình duyệt (desktop/mobile)            Claude (web, Desktop, mobile, Code)
@@ -154,7 +154,7 @@ Vùng chạm tối thiểu 44 px, bottom nav tôn trọng `safe-area-inset-botto
 
 ## 5. Thiết kế MCP
 
-**Endpoint:** `POST https://<domain>/api/mcp`. Theo revision `2026-07-28`, MCP không còn session và không còn GET stream; tài liệu connector của Claude vẫn tham chiếu `2025-11-25`. Server phải không giữ trạng thái và tương thích cả hai đời giao thức. T1.5 kiểm chứng điều này với Claude thật.
+**Endpoint:** `POST https://<domain>/api/mcp`. Theo revision `2026-07-28`, MCP không còn session và không còn GET stream; tài liệu connector của Claude vẫn tham chiếu `2025-11-25`. Server phải không giữ trạng thái và tương thích cả hai đời giao thức, nên giữ `legacy` mặc định của `createMcpHandler`, không dùng `legacy: "reject"` như ví dụ trong tài liệu Better Auth. T1.6 kiểm chứng điều này với Claude thật.
 
 | Tool | Scope | Việc |
 |---|---|---|
@@ -179,7 +179,7 @@ Quy ước:
 
 - [ ] Thiếu hoặc sai token trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
 - [ ] Protected Resource Metadata: `resource` khớp **chính xác** URL người dùng nhập; issuer chính đứng đầu `authorization_servers`.
-- [ ] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true`, `"none"` trong `token_endpoint_auth_methods_supported`, và `registration_endpoint` để fallback DCR.
+- [ ] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`. Chỉ thêm `registration_endpoint` nếu T1.6 cho thấy Claude cần DCR.
 - [ ] Chấp nhận redirect `https://claude.ai/api/mcp/auth_callback` và loopback `http://localhost/callback`, `http://127.0.0.1/callback` với **port bất kỳ** (Claude Code).
 - [ ] `/token` nhận `application/x-www-form-urlencoded`, xoay vòng refresh token, trả `invalid_grant` khi refresh token hết hạn, phản hồi dưới 10 giây.
 - [ ] Token phải đúng audience là MCP server (RFC 8707); không nhận token trong query string.
@@ -192,7 +192,7 @@ Kích cỡ: **S** 1–2 file · **M** 3–5 file · **L** 5–8 file.
 
 ```text
 Phase 0 → Phase 1 → Phase 2 → Phase 3 ─┬─ Phase 4 (Project) ───────────┐
-                     ▲ cổng rủi ro T1.5 ├─ Phase 5 (Calendar) ──────────┤
+                     ▲ cổng rủi ro T1.6 ├─ Phase 5 (Calendar) ──────────┤
                                         ├─ Phase 6 (Focus) → Phase 7 ───┼→ Phase 9
                                         └─ Phase 8 (Nhắc hạn) ──────────┘
 ```
@@ -201,7 +201,7 @@ Phase 4, 5, 6 và 8 làm song song được sau Phase 3. Phase 7 cần dữ li�
 
 ### Phase 0 — Nền móng
 
-Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `tasks/plan.md`.
+Đã xong. Tiêu chí và quyết định: `git show 5c468a5:tasks/todo.md` và `git show 5c468a5:tasks/plan.md`.
 
 - [x] **T0.1 Khởi tạo repo và app Next.js (M).** *Xong khi:* lint, typecheck, build pass; các thư mục không liên quan được ignore.
 - [x] **T0.2 Playwright smoke (S).** *Xong khi:* test chạy trên Chromium desktop và WebKit mobile.
@@ -217,13 +217,21 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 ### Phase 1 — Đăng nhập, khung app, kiểm chứng MCP
 
-- [ ] **T1.1 Email/mật khẩu (M).** Better Auth, trang 01 và 02, tùy chọn giữ đăng nhập 30 ngày, `ALLOWED_EMAILS` áp dụng cho mọi cách đăng ký. *Xong khi:* đăng ký → đăng xuất → đăng nhập chạy trong E2E; email ngoài danh sách bị từ chối; lỗi hiển thị ngay tại form.
-- [ ] **T1.2 Google và quên mật khẩu (M).** Google OAuth, `/forgot-password`, `/reset-password`, `lib/mail` (SMTP, dev in ra console). *Xong khi:* đổi mật khẩu qua link email thành công; link dùng lại bị từ chối; form không tiết lộ email có tồn tại hay không.
-- [ ] **T1.3 App shell desktop (S).** Layout `(app)`, Sidebar, chặn route khi chưa đăng nhập. *Xong khi:* chưa đăng nhập bị chuyển về `/sign-in`; giống thiết kế ở 1440 px.
-- [ ] **T1.4 App shell mobile (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360 px; drawer đóng bằng Esc và trả focus đúng chỗ.
-- [ ] **T1.5 Spike OAuth + MCP — CỔNG RỦI RO (L).** OAuth Provider, JWT, CIMD, DCR; `/oauth/consent`; `/api/mcp` với một tool `whoami`; mở HTTPS bằng tunnel. Xác định SDK nào (v2 `@modelcontextprotocol/server` hay v1 `sdk`) chạy được trong Next route handler và với cả hai đời giao thức. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; đạt checklist mục 5.
+Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `tasks/plan.md`. Cổng rủi ro đứng trước khung app và mail, để nếu phải đổi thư viện OAuth thì không làm lại các phần đó.
 
-**Checkpoint:** nếu T1.5 không đạt, **dừng lại** và đánh giá lại thư viện OAuth trước khi sang Phase 2.
+- [ ] **T1.1 Auth server và `ALLOWED_EMAILS` (M).** Better Auth, Drizzle, migration, hook chặn đăng ký. *Xong khi:* email ngoài danh sách bị từ chối và không để lại dữ liệu; danh sách rỗng thì từ chối tất cả.
+- [ ] **T1.2 Trang đăng ký (M).** Trang 02, thanh đo độ mạnh mật khẩu. *Xong khi:* đăng ký xong tới `/tasks`; lỗi hiện tại form; không có cuộn ngang ở 360 px.
+- [ ] **T1.3 Đăng nhập, đăng xuất, chặn route (M).** Trang 01, giữ đăng nhập 30 ngày, `getCurrentUser()`, `src/proxy.ts`. *Xong khi:* đăng ký → đăng xuất → đăng nhập chạy trong E2E; chưa đăng nhập bị chuyển về `/sign-in`.
+- [ ] **T1.4 Authorization server (M).** `jwt()`, `mcp()`, `cimd()`, metadata ở gốc domain. *Xong khi:* metadata đạt checklist mục 5.
+- [ ] **T1.5 `/api/mcp`, `whoami` và consent (M).** `createMcpHandler` bọc trong `requireMcpAuth`, trang `/oauth/consent`. *Xong khi:* `401` đúng chuẩn; trả lời được cả hai đời giao thức; Claude Code trên máy gọi được `whoami`.
+- [ ] **T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S).** Mở HTTPS bằng tunnel. *Xong khi:* cả claude.ai và Claude Code qua hết luồng OAuth và `whoami` trả đúng người dùng; refresh token hoạt động; đạt checklist mục 5.
+- [ ] **T1.7 Sidebar và layout `(app)` (M).** Trang tạm cho các route chưa làm, không hiện số giả. *Xong khi:* giống thiết kế ở 1440 px; mọi trang trong app chặn người chưa đăng nhập.
+- [ ] **T1.8 Khung phone và tablet (M).** Top bar, bottom nav, drawer. *Xong khi:* không có cuộn ngang ở 360, 390, 744, 820 px; 1023 px có bottom nav, 1024 px có Sidebar; drawer đóng bằng Esc và trả focus đúng chỗ.
+- [ ] **T1.9 Mail và xác minh email (M).** `lib/mail` gọi API Resend bằng `fetch`, dev in ra console. *Xong khi:* chưa xác minh thì không đăng nhập được; nhận email thật từ `onboarding@resend.dev`.
+- [ ] **T1.10 Quên mật khẩu (M).** `/forgot-password`, `/reset-password`. *Xong khi:* đổi mật khẩu qua link email thành công; link dùng lại bị từ chối; form không tiết lộ email có tồn tại hay không.
+- [ ] **T1.11 Đăng nhập Google (S).** *Xong khi:* đăng nhập được bằng Google; tài khoản ngoài danh sách bị từ chối; thiếu biến môi trường thì ẩn nút.
+
+**Checkpoint:** nếu T1.6 không đạt, **dừng lại** và đánh giá lại thư viện OAuth trước khi làm T1.7.
 
 ### Phase 2 — Quản lý task
 
@@ -245,7 +253,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [ ] **T3.1 Tool đọc (M).** `get_context`, `list_tasks`, `get_task`. *Xong khi:* test bằng MCP client: thiếu scope bị từ chối; không thấy dữ liệu người khác.
 - [ ] **T3.2 Tool ghi (M).** `create_task`, `update_task`, `complete_task`, `add_subtasks`, `create_project`, idempotency. *Xong khi:* gọi hai lần cùng `client_request_id` chỉ tạo một task; gọi lại `create_project` cùng tên trả về project có sẵn; hạn `17:00` theo giờ Việt Nam lưu đúng UTC.
 - [ ] **T3.3 Gia cố (S).** Rate limit theo token, giới hạn độ dài, kiểm tra `Origin`, `source: mcp`, nhãn "via Claude" trên card và activity. *Xong khi:* vượt giới hạn trả lỗi rõ ràng; Origin lạ trả `403`.
-- [ ] **T3.4 Settings (M).** Hồ sơ, múi giờ, category/project, **Connected apps** (xem và thu hồi), hướng dẫn kết nối kèm URL để copy. *Xong khi:* thu hồi xong, Claude nhận `401` ở lần gọi kế tiếp.
+- [ ] **T3.4 Settings (M).** Hồ sơ, múi giờ, category/project, **Connected apps** (xem và thu hồi), hướng dẫn kết nối kèm URL để copy. `requireMcpAuth` chỉ kiểm chữ ký JWT, nên `/api/mcp` phải đọc thêm trạng thái thu hồi trong DB. *Xong khi:* thu hồi xong, Claude nhận `401` ở lần gọi kế tiếp.
 - [ ] **T3.5 Task mới tự hiện (S).** Refetch khi quay lại tab. *Xong khi:* quay lại tab Flowday là thấy ngay task do Claude vừa tạo.
 - [ ] **T3.6 Nghiệm thu với Claude (S).** Chạy kịch bản ở mục 1 trên claude.ai và Claude Code; ghi hướng dẫn vào `README.md`. *Xong khi:* kịch bản đạt trên cả hai, có ảnh chụp kết quả.
 
@@ -299,7 +307,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 - [ ] **T9.1 Kiểm tra responsive (M).** Playwright quét mọi route ở 360/390/744/820/1024/1180/1440 px. *Xong khi:* `scrollWidth <= clientWidth` trên tất cả route, kèm kiểm tra tay trên iPhone, Android và iPad thật (dọc, ngang, Split View).
 - [ ] **T9.2 Accessibility (S).** Bàn phím, focus, nhãn form, tương phản với axe. *Xong khi:* không còn lỗi axe mức serious trở lên.
-- [ ] **T9.3 Bảo mật (M).** Security headers, rate limit trang đăng nhập, rà quyền trên mọi service, trang Terms và Privacy. *Xong khi:* `npm audit` sạch mức high; test IDOR pass.
+- [ ] **T9.3 Bảo mật (M).** Security headers, rate limit trang đăng nhập, rà quyền trên mọi service, trang Terms và Privacy, thêm lại checkbox Terms ở trang đăng ký. *Xong khi:* `npm audit` sạch mức high; test IDOR pass.
 - [ ] **T9.4 Triển khai (M).** Vercel Hobby region `sin1`, Neon branch `production` qua connection string pooled, Resend gửi từ `onboarding@resend.dev` tới email của chính tài khoản Resend, QStash, Google OAuth production, migrate trong CI, `pg_dump` hằng đêm bằng GitHub Actions vì gói Free của Neon chỉ giữ 6 giờ lịch sử. *Xong khi:* đã thử restore từ backup; deploy lại không mất dữ liệu; `/tasks` tải dưới 2 giây từ Việt Nam kể cả khi DB vừa thức.
 - [ ] **T9.5 Nghiệm thu production (S).** Kết nối Claude bằng URL thật, chạy lại T3.6 và E2E. *Xong khi:* 3 tiêu chí ở mục 1 đều đạt.
 
@@ -307,9 +315,8 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Phần CIMD/MCP của Better Auth còn thay đổi: tài liệu beta v1.8 có `metadataProfile`, bản ổn định 1.7 khác draft CIMD, plugin `mcp` cũ sắp bỏ | Cao | Làm sớm ở T1.5; dùng OAuth Provider + CIMD, bật DCR làm phương án dự phòng. Nếu vẫn không đạt, thử [OAuth Provider của Neon Managed Better Auth](https://neon.com/docs/auth/guides/plugins/oauth-provider) (có CIMD, nhưng scope cố định nên phải bỏ `tasks:read`/`tasks:write`), rồi đến [Appwrite OAuth2 server](https://appwrite.io/blog/post/announcing-oauth2-server) |
-| Claude và MCP spec dùng hai revision khác nhau | Cao | Kiểm chứng với Claude thật ở T1.5, test cả hai đời giao thức |
-| Next route handler không khớp transport của MCP SDK | TB | T1.5 quyết định; nếu cần thì dùng adapter Express cho riêng `/api/mcp` |
+| Phần CIMD/MCP của Better Auth còn thay đổi nhanh; tài liệu web lẫn giữa bản 1.6, 1.7 và beta 1.8 | Cao | Làm sớm ở T1.6; dùng `@better-auth/mcp` + CIMD bản 1.7.14, đối chiếu type trong `node_modules`, bật DCR làm phương án dự phòng. Nếu vẫn không đạt, thử [OAuth Provider của Neon Managed Better Auth](https://neon.com/docs/auth/guides/plugins/oauth-provider) (có CIMD, nhưng scope cố định nên phải bỏ `tasks:read`/`tasks:write`), rồi đến [Appwrite OAuth2 server](https://appwrite.io/blog/post/announcing-oauth2-server) |
+| Claude và MCP spec dùng hai revision khác nhau | Cao | SDK v2 phục vụ cả hai từ một handler; test cả hai đời ở T1.5, kiểm chứng với Claude thật ở T1.6 |
 | claude.ai không gọi được localhost | TB | Dev bằng tunnel HTTPS; Claude Code thử trực tiếp trên máy |
 | Prompt injection khiến Claude tạo hoặc sửa task ngoài ý muốn | TB | Không có xóa cứng, activity ghi rõ "via Claude", rate limit, thu hồi được trong Settings |
 | Sai ngày do múi giờ | TB | Server tự quy đổi; test bảng cho Calendar, streak, nhắc hạn |
@@ -322,7 +329,8 @@ Kế hoạch đang chạy theo mặc định bên dưới. Trả lời khác th�
 
 | Câu hỏi | Mặc định | Cần trả lời trước |
 |---|---|---|
-| Gói Claude của bạn có cho thêm custom connector không? | Có | T1.5 |
+| Bạn có dùng gói Claude Team hoặc Enterprise không? Mọi gói đều thêm được custom connector (Free tối đa 1), nhưng hai gói này chỉ Owner mới thêm được | Không | T1.6 |
+| Có giữ đăng nhập Google không? | Có, làm ở cuối Phase 1 | T1.11 |
 | Ngôn ngữ giao diện? | Tiếng Anh như thiết kế; nội dung task tiếng Việt vẫn hiển thị đúng | T0.7 |
 
 ## 9. Sau V1
@@ -351,4 +359,5 @@ Chỉ làm nếu app mở cho người khác dùng:
 - [Vercel — Hobby plan](https://vercel.com/docs/plans/hobby) · [Cron limits](https://vercel.com/docs/cron-jobs/usage-and-pricing) · [Commercial usage](https://vercel.com/docs/limits/fair-use-guidelines)
 - [Neon — Pricing](https://neon.com/pricing) · [Regions](https://neon.com/docs/introduction/regions)
 - [Upstash QStash — Pricing](https://upstash.com/pricing/qstash.md)
-- [Better Auth — OAuth Provider](https://better-auth.com/docs/beta/plugins/oauth-provider.md) · [CIMD](https://better-auth.com/docs/plugins/cimd)
+- [Claude — Test your connector](https://claude.com/docs/connectors/building/testing.md) · [Custom connectors](https://support.claude.com/en/articles/11175166)
+- [Better Auth — MCP](https://better-auth.com/docs/plugins/mcp) · [OAuth Provider](https://better-auth.com/docs/plugins/oauth-provider) · [CIMD](https://better-auth.com/docs/plugins/cimd)

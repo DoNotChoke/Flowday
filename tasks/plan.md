@@ -1,118 +1,153 @@
-# Implementation Plan: Flowday — Phase 0 (Nền móng)
+# Implementation Plan: Flowday — Phase 1 (Đăng nhập, khung app, kiểm chứng MCP)
 
-> Nguồn: `PLAN.md` (mục 2, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-01.
+> Nguồn: `PLAN.md` (mục 2, 4, 5, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-01. Kế hoạch Phase 0 đã xong, xem lại bằng `git show 5c468a5:tasks/plan.md`.
 
 ## Overview
 
-Phase 0 dựng nền để Phase 1 bắt đầu viết tính năng ngay: app Next.js chạy được, Postgres có migration thật, kiểm thử chạy trên desktop và mobile, thiết kế được tách thành file đọc được, và bộ primitive UI đúng phong cách Flowday. Phase này chưa có tính năng cho người dùng cuối.
+Phase 1 trả lời câu hỏi rủi ro nhất của dự án: Claude thật có đăng nhập được vào Flowday qua OAuth và gọi được tool MCP không. Sau đó mới dựng phần còn lại của đăng nhập và khung app. Cuối phase có thể đăng ký, đăng nhập, khôi phục mật khẩu, thấy khung app trên mọi khổ màn hình, và Claude gọi được `whoami`.
 
-**Hoàn thành khi:** từ một bản clone sạch, làm theo `README.md` là chạy được app, migration và toàn bộ test; trang `/dev/ui` hiển thị đủ primitive ở 390 và 1440 px.
+**Hoàn thành khi:**
+
+1. Chỉ email trong `ALLOWED_EMAILS` đăng ký được, bằng cả mật khẩu lẫn Google. Route trong app chặn người chưa đăng nhập.
+2. claude.ai và Claude Code đi hết luồng OAuth, `whoami` trả đúng người dùng.
+3. Khung app đúng thiết kế ở 1440 px, không có cuộn ngang ở 360, 390, 744, 820, 1024 và 1440 px.
 
 ## Hiện trạng đã kiểm tra
 
 | Hạng mục | Kết quả | Ảnh hưởng |
 |---|---|---|
-| Repo | Chưa có git, chưa có code; có `.venv`, `.idea`, `.jbeval`, 2 file HTML, `PLAN.md` | Scaffold không chạy thẳng tại gốc được |
-| Node / npm | 24.22 / 11.19 | Đạt yêu cầu của Next 16 (≥ 20.9) |
-| Git | Có tên và email; chưa đặt nhánh mặc định | Dùng `git init -b main` |
-| Neon | Project `flowday`, branch `production` và `dev` | `.env` dùng branch `dev` |
-| Playwright | Chỉ có Chromium | Cần cài thêm WebKit |
-| GitHub CLI | Chưa cài | Repo GitHub phải tạo thủ công (T0.9) |
-| Cổng 3000 | Đang trống | Không xung đột |
+| Repo | `main` sạch, CI xanh ở `5c468a5` | Bắt đầu từ nền đã kiểm chứng |
+| Next | `cacheComponents` và `partialPrefetching` đang bật | Đọc phiên phải nằm trong `<Suspense>`, nếu không sẽ lỗi build |
+| `better-auth`, `@better-auth/mcp`, `@better-auth/cimd` | Đều là 1.7.14 ổn định, hỗ trợ `drizzle-orm` 0.45 và Next 16 | Không cần dùng beta 1.8 |
+| `@modelcontextprotocol/server` | 2.4.0, có sẵn `createMcpHandler` trả handler kiểu Web Fetch | Chạy trực tiếp trong route handler, không cần `mcp-handler` hay adapter Express |
+| Gói Claude | Mọi gói thêm được custom connector, gói Free tối đa 1 connector | Một connector là đủ; câu hỏi mở cũ đã có đáp án |
+| Tunnel | `cloudflared` và `ngrok` đã có trên máy | Không phải cài thêm cho T1.6 |
+| Primitive | Có Button, Card, Chip, Segmented, Field, Switch, Sheet | Chưa có checkbox; dùng `<input type="checkbox">` gốc như thiết kế |
 
-Chạy thử `create-next-app@16.4.3` trong thư mục tạm cho thấy:
+Đã đọc mã nguồn gói 1.7.14 và xác nhận:
 
-- `.gitignore` có dòng `.env*`, nên chặn cả `.env.example` nếu không thêm ngoại lệ.
-- `next-env.d.ts` bị ignore, nên `tsc` trên bản clone sạch cần `next typegen` chạy trước.
-- Scaffold ghim TypeScript 5 và ESLint 9, thấp hơn bản mới nhất trên npm (7 và 10).
-- Tailwind nối qua `@tailwindcss/turbopack`, không phải PostCSS.
-- `AGENTS.md` được sinh sẵn và `next dev` tự thêm lại. Nó yêu cầu đọc tài liệu trong `node_modules/next/dist/docs/` trước khi viết code Next.
+- Khớp redirect loopback bỏ qua port cho cả `127.0.0.1` lẫn `localhost`, đúng yêu cầu của Claude Code.
+- `client_id_metadata_document_supported` chỉ xuất hiện khi cài `cimd()`.
+- Metadata thật của Claude Code (`https://claude.ai/oauth/claude-code-client-metadata`) trả thẳng 200 và đủ trường mà profile `mcp-2026-07-28` yêu cầu.
 
 ## Architecture Decisions
 
-- **Scaffold trong thư mục tạm tên `flowday` rồi chép về gốc.** Thư mục gốc có file không liên quan và tên `ToDoApp` có chữ hoa, không hợp với tên package npm.
-- **Giữ nguyên phiên bản scaffold sinh ra.** TypeScript 5 và ESLint 9 là tổ hợp Next 16.4 đã chọn; không tự nâng lên 7 và 10. Chỉ nâng `@types/node` lên 24 cho khớp runtime.
-- **Bản Next ghim `16.4.3`**, các gói khác khóa bằng lockfile.
-- **Không dùng Docker.** Dev và test chạy trên branch `dev` của project Neon `flowday` (Postgres 18, Singapore), bản thật chạy trên branch `production`. Thay đổi ở `dev` không ảnh hưởng `production`, nhưng hai branch dùng chung 100 CU-giờ mỗi tháng. CI dùng Postgres có sẵn trên máy của GitHub. Code dùng một driver `pg` cho mọi môi trường.
-- **Migration đầu tiên là `CREATE EXTENSION unaccent`**, thay cho migration trống. T2.9 cần extension này, và test `unaccent()` chứng minh toàn bộ đường đi app → DB hoạt động.
-- **Test đầu tiên là test thật.** Vitest vào cùng task với DB client để khỏi phải viết test giả; Playwright có smoke test ngay từ T0.2.
-- **Playwright 2 project:** `desktop` (Chromium, 1440×900) và `mobile` (WebKit, 390×844). Các khổ iPad để lại cho T9.1.
-- **Không thêm thư viện component, icon hay `clsx`.** Biểu tượng là SVG inline như bản thiết kế; Sheet dùng `<dialog>` gốc của trình duyệt, nên có sẵn đóng bằng Esc và trả focus.
-- **Không dùng `jsdom` hay Testing Library.** Primitive được kiểm tra bằng Playwright trên trình duyệt thật.
-- **`/dev/ui` chỉ tồn tại ngoài production**, trả 404 khi `NODE_ENV=production`.
-- **Vùng chạm 44 px dùng `@media (pointer: coarse)`.** Thiết kế có nút 38 px; giữ nguyên trên desktop, tăng lên 44 px trên màn hình cảm ứng.
-- **Ngôn ngữ giao diện là tiếng Anh như thiết kế.** Không dựng i18n.
-- **Mỗi task một commit trên `main`.** Không push khi chưa được yêu cầu.
+- **Đưa cổng rủi ro lên trước.** Phần MCP nằm ngay sau đăng ký và đăng nhập, vì nó cần phiên đăng nhập thật. Sidebar, mail và Google làm sau cổng, để nếu phải đổi thư viện OAuth thì không làm lại những phần đó.
+- **Dùng `mcp()` của `@better-auth/mcp`, không dùng `oauthProvider()`.** `mcp()` đã là OAuth provider, và tài liệu cấm đăng ký cả hai. Plugin này gắn token với resource, phục vụ RFC 9728 và có `requireMcpAuth` trả đúng challenge `401`.
+- **Chỉ bật CIMD, tắt DCR.** Claude chọn CIMD khi metadata có `client_id_metadata_document_supported` và `"none"`. DCR cho bất kỳ ai trên internet ghi vào bảng client. Chỉ bật khi T1.6 chứng minh Claude cần nó.
+- **Giữ `legacy` mặc định (`stateless`) của `createMcpHandler`.** Ví dụ trong tài liệu Better Auth dùng `legacy: "reject"`, sẽ từ chối giao thức đời 2025 mà tài liệu connector của Claude vẫn tham chiếu. Không chép dòng đó.
+- **Schema của Better Auth đi qua Drizzle.** Dùng `npx auth generate` để sinh schema, rồi `drizzle-kit generate` và `db:migrate`. Không dùng `auth migrate`, để mọi môi trường và CI chỉ có một đường migration.
+- **Đọc phiên theo guide Cache Components.** Hàm `getCurrentUser()` là lớp truy cập dữ liệu, dùng `use cache: private`, và chỉ được gọi trong `<Suspense>`. Layout không `await` phiên ở cấp cao nhất.
+- **Hai lớp chặn route.** `src/proxy.ts` kiểm tra nhanh cookie bằng `getSessionCookie` để chuyển hướng mà không chạm DB. Kiểm tra thật nằm ở `getCurrentUser()` và trong từng Server Action. Proxy không bao giờ chạm `/api` và `/.well-known`.
+- **Form đăng nhập dùng client SDK của Better Auth.** SDK tự giữ tham số đã ký của luồng OAuth khi quay lại `/oauth/consent`. Đây là chỗ duy nhất dùng client SDK.
+- **`BETTER_AUTH_URL` là một giá trị cố định, nguồn của cả `baseURL` lẫn `resource`.** `requireMcpAuth` không hỗ trợ `baseURL` động. Đổi URL tunnel thì đổi biến này rồi khởi động lại.
+- **Tunnel cho T1.6, chưa deploy.** Tài liệu Claude khuyên dùng tunnel cho server trên máy. Deploy Vercel vẫn ở T9.4.
+- **`/api/mcp` export cả `GET` và `POST`, đều đi qua `requireMcpAuth`.** Handler tự trả `405` cho GET và DELETE ở đời 2025 theo mặc định.
+- **Xác minh email là bắt buộc.** Email chủ tài khoản đã công khai trong commit, nên nếu không xác minh, người lạ có thể đăng ký trước bằng đúng email đó trên site công khai. Resend từ `onboarding@resend.dev` gửi được tới email tài khoản Resend, vừa đúng trường hợp này.
+- **Gửi mail bằng `fetch` tới API Resend.** Không thêm dependency. Không có `RESEND_API_KEY` thì in link ra console ở dev, và báo lỗi ở production.
+- **Không hiện số giả.** Bỏ badge đếm task, danh sách project, thẻ streak và nút `+` project ở Sidebar cho tới khi có dữ liệu (T2.2, T2.4, T7.2).
+- **Bỏ checkbox Terms ở trang đăng ký.** `/terms` và `/privacy` chưa có tới T9.3, và checkbox bắt buộc với link chết còn tệ hơn là không có. T9.3 thêm lại.
+- **Route chưa làm có trang tạm.** `/tasks`, `/tasks/new`, `/calendar`, `/history`, `/focus`, `/settings` là trang rỗng để điều hướng và kiểm tra trạng thái active được.
+
+Giữ nguyên từ Phase 0: không thêm `clsx` hay thư viện component, không dùng `jsdom`, giao diện tiếng Anh, mỗi task một commit trên `main`, nội dung người dùng nhập dùng `font-content`.
 
 ## Dependency Graph
 
 ```text
-T0.1 Repo + app
-  ├── T0.2 Playwright smoke
-  ├── T0.3 Postgres + migration ── T0.4 DB client + Vitest
-  └── T0.5 Tách thiết kế ── T0.6 Token + font ─┬─ T0.7 Primitive hành động
-                                               └─ T0.8 Primitive form + Sheet
-
-T0.2 + T0.4 + T0.7 + T0.8 ── T0.9 CI
+T1.1 Auth server + ALLOWED_EMAILS
+  ├── T1.2 Đăng ký
+  │     └── T1.3 Đăng nhập, đăng xuất, chặn route ─┬─ T1.4 Authorization server
+  │                                                │     └── T1.5 /api/mcp + consent
+  │                                                │           └── T1.6 Nghiệm thu với Claude (CỔNG)
+  │                                                │                 │
+  │                                                └── T1.7 Sidebar ◄┘ (làm sau cổng)
+  │                                                      └── T1.8 Khung phone/tablet
+  └── T1.9 Mail + xác minh email (cần T1.6)
+        ├── T1.10 Quên mật khẩu
+        └── T1.11 Google
 ```
 
-Thứ tự nền móng trước, nhưng mỗi task để lại một đường chạy kiểm chứng được: trình duyệt → app, test → DB, script → file thiết kế, trang `/dev/ui` → token và primitive. Rủi ro môi trường (kết nối Neon, WebKit) được xử lý trước phần UI để lộ lỗi sớm.
+Mỗi task để lại một đường chạy kiểm chứng được: test → auth server, trình duyệt → đăng ký, Claude → tool MCP.
 
 ## Task List
 
 Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
-### Nhóm A: App và dữ liệu chạy được
+### Nhóm A: Tài khoản tối thiểu
 
-- [x] T0.1 Khởi tạo repo và app Next.js (M)
-- [x] T0.2 Playwright smoke trên desktop và mobile (S)
-- [x] T0.3 Postgres và migration đầu tiên (M)
-- [x] T0.4 DB client, Vitest và README (M)
+- [ ] T1.1 Auth server và `ALLOWED_EMAILS` (M)
+- [ ] T1.2 Trang đăng ký (M)
+- [ ] T1.3 Đăng nhập, đăng xuất, chặn route (M)
 
 ### Checkpoint A
 
-- [x] Bản clone sạch chạy được theo README
-- [x] Lint, typecheck, test, e2e, build đều pass
+- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile
+- [ ] CI xanh, migration chạy trên DB trống
 
-### Nhóm B: Thiết kế và UI
+### Nhóm B: Cổng rủi ro MCP
 
-- [x] T0.5 Tách thiết kế ra `design/screens/` (S)
-- [x] T0.6 Design token và font (M)
-- [x] T0.7 Primitive hành động: Button, Card, Chip, Segmented (M)
-- [x] T0.8 Primitive form và overlay: Field, Switch, Sheet (M)
+- [ ] T1.4 Authorization server: JWT, `mcp()`, CIMD (M)
+- [ ] T1.5 `/api/mcp`, `whoami` và trang consent (M)
+- [ ] T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO (S)
 
-### Checkpoint B
+### Checkpoint B — dừng lại để quyết định
 
-- [x] `/dev/ui` đối chiếu đạt với thiết kế ở 390 và 1440 px, người duyệt đã xem
+- [ ] claude.ai và Claude Code cùng gọi được `whoami`
+- [ ] Checklist xác thực ở `PLAN.md` mục 5 đạt
+- [ ] Nếu không đạt: dừng, không làm T1.7 trở đi, đánh giá lại thư viện OAuth cùng bạn
 
-### Nhóm C: Tự động hóa
+### Nhóm C: Khung app
 
-- [x] T0.9 CI trên GitHub Actions (S)
+- [ ] T1.7 Sidebar và layout `(app)` trên desktop (M)
+- [ ] T1.8 Khung phone và tablet (M)
 
-### Checkpoint hoàn thành Phase 0
+### Nhóm D: Hoàn thiện đăng nhập
 
-- [x] CI xanh trên GitHub
-- [x] Sẵn sàng sang Phase 1
+- [ ] T1.9 Mail và xác minh email (M)
+- [ ] T1.10 Quên mật khẩu (M)
+- [ ] T1.11 Đăng nhập Google (S)
+
+### Checkpoint hoàn thành Phase 1
+
+- [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile
+- [ ] Bạn đã xem khung app ở 390, 820 và 1440 px
+- [ ] `PLAN.md` đã đánh dấu xong Phase 1
+- [ ] Sẵn sàng sang T2.1
 
 ## Parallelization
 
-- **Song song được sau T0.1:** T0.2, T0.3 và T0.5.
-- **Song song được sau T0.6:** T0.7 và T0.8, nhưng cả hai cùng sửa `/dev/ui` nên phải gộp cẩn thận.
-- **Tuần tự:** T0.3 → T0.4 và T0.5 → T0.6.
+- **Tuần tự:** T1.1 → T1.6, vì cùng sửa `src/lib/auth` và thứ tự migration.
+- **Song song được sau cổng:** nhóm C và nhóm D.
+- **Cần phối hợp:** T1.9 đổi luồng đăng ký nên phải sửa lại E2E của T1.2 và T1.3.
 
 ## Risks and Mitigations
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Chạy nhầm lệnh dev hoặc test vào DB production | Cao | `.env` trên máy chỉ chứa URL của branch `dev`; URL production chỉ nằm trong biến môi trường của Vercel |
-| `dev` và `production` dùng chung quota, hết thì cả hai dừng | Thấp | Theo dõi Usage; nếu dev tốn nhiều thì tách `dev` sang project riêng |
-| Dev và test cần mạng, test chậm hơn DB trên máy | Thấp | Chấp nhận được với một người dùng. Test có ghi dữ liệu phải tự dọn sau khi chạy |
-| Next 16 khác kiến thức có sẵn | TB | Đọc `node_modules/next/dist/docs/` theo `AGENTS.md` trước khi viết `layout.tsx` và `globals.css` |
-| `npm test` trên Neon đã fail 1 lần rồi tự pass; mất thông báo lỗi, 8 lần thử lại quanh mốc Neon ngủ (5 và 7 phút) không tái hiện được | Thấp | Chưa rõ nguyên nhân nên chưa sửa. Nếu fail lại, giữ nguyên lỗi rồi mới xử lý. CI dùng Postgres riêng nên không bị ảnh hưởng |
-| WebKit trên Windows khác Safari thật | Thấp | CI chạy lại trên Linux; thiết bị thật kiểm tra ở T9.1 |
-| Test e2e không ổn định khi chạy `next dev` | Thấp | CI chạy e2e trên bản `next build` + `next start` nếu `next dev` gây lỗi chập chờn; khi đó `/dev/ui` cần cờ bật riêng |
+| Claude vẫn không kết nối được dù metadata đúng | Cao | T1.6 làm sớm. Bước 1: bật DCR. Bước 2: `oauthProvider()` tự cấu hình. Bước 3: các phương án ở `PLAN.md` mục 7 |
+| Luồng CIMD của claude.ai khác Claude Code; chỉ kiểm được metadata của Claude Code | TB | T1.6 thử cả hai bề mặt, ghi lại `client_id` thực tế |
+| `requireMcpAuth` chỉ kiểm chữ ký JWT, không đọc DB, nên thu hồi không có hiệu lực ngay | TB | T1.6 đo hành vi thật. T3.4 thêm kiểm tra client đã bị thu hồi chưa, vì tool nào cũng đọc DB |
+| Token endpoint chạm giới hạn 10 giây khi Neon đang ngủ | TB | T1.6 đo khi DB vừa thức. `connectionTimeoutMillis` đang là 10 giây nên cần giảm nếu thấy chậm |
+| `requireMcpAuth` tự gọi `/jwks` qua HTTP, thêm độ trễ trên serverless | Thấp | Khóa được cache trong tiến trình. T9.4 đo lại |
+| URL quick tunnel đổi mỗi lần chạy, phải xóa và thêm lại connector | Thấp | Làm liền một buổi. Nếu cần lặp nhiều lần thì dùng named tunnel |
+| `next dev` chặn origin lạ qua tunnel | Thấp | T1.6 chạy `next build` + `next start` |
+| E2E và Vitest ghi dữ liệu vào branch `dev` | Thấp | Email riêng cho từng project Playwright, tự xóa user sau khi chạy |
+| `npm test` trên Neon từng fail 1 lần rồi tự pass, chưa rõ nguyên nhân | Thấp | Test Phase 1 chạm DB nhiều hơn. Nếu fail lại, giữ nguyên lỗi rồi mới xử lý |
+| Tài liệu Better Auth lẫn giữa bản 1.6, 1.7 và beta | Thấp | Khi build, ưu tiên type trong `node_modules` hơn tài liệu web |
+
+## Việc bạn cần làm
+
+Những việc này cần tài khoản của bạn. Secret chỉ đặt vào `.env` trên máy, không gửi vào chat.
+
+| Task | Việc |
+|---|---|
+| T1.6 | Thêm connector trên claude.ai bằng URL tunnel, đăng nhập, bấm đồng ý, thử `whoami` |
+| T1.9 | Tạo tài khoản Resend bằng email của bạn, đặt `RESEND_API_KEY` vào `.env` |
+| T1.11 | Tạo OAuth client trên Google Cloud, đặt `GOOGLE_CLIENT_ID` và `GOOGLE_CLIENT_SECRET` vào `.env` |
 
 ## Open Questions
 
-- **Repo GitHub:** đã chốt `DoNotChoke/Flowday`, public.
-- **Neon:** xác nhận `DATABASE_URL` trong `.env` lấy từ branch `dev`. Không gửi chuỗi này vào chat vì nó chứa mật khẩu.
+Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
+
+- **Google có còn cần không?** Mặc định giữ theo thiết kế, làm ở cuối. App một người dùng nên bỏ T1.11 cũng được, khi đó ẩn nút Google.
+- **Tài khoản Claude của bạn thuộc gói Team hay Enterprise?** Nếu có, chỉ Owner thêm được connector, và bạn cần quyền đó trước T1.6.

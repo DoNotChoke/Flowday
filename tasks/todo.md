@@ -1,241 +1,285 @@
-# Phase 0 — Danh sách việc
+# Phase 1 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
-**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run lint` pass, không còn code thừa và không có thay đổi ngoài phạm vi. Từ T0.1 có thêm `npm run typecheck`; từ T0.4 có thêm `npm test`.
+**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run check` và `npm run test:e2e` pass, CI xanh sau khi push, không còn code thừa và không có thay đổi ngoài phạm vi. Trước khi viết code Next, đọc guide liên quan trong `node_modules/next/dist/docs/`.
 
 ---
 
-## Nhóm A: App và dữ liệu chạy được
+## Nhóm A: Tài khoản tối thiểu
 
-### T0.1 Khởi tạo repo và app Next.js
+### T1.1 Auth server và `ALLOWED_EMAILS`
 
-**Mô tả:** Tạo git repo tại `D:\ToDoApp`, đưa bản scaffold Next.js vào gốc, xóa nội dung mẫu và để lại trang tạm mang tên Flowday. Scaffold trong thư mục tạm rồi chép về, không ghi đè file sẵn có:
-
-```text
-npx create-next-app@16.4.3 flowday --ts --tailwind --eslint --app --src-dir --import-alias "@/*" --use-npm --disable-git --no-agent-feedback
-```
-
-Việc đi kèm: `git init -b main`; `.gitattributes` với `* text=auto eol=lf`; thêm `!.env.example` vào `.gitignore`; ignore `.venv/`, `.idea/`, `.jbeval/`, `/Flowday*.html`; xóa 5 file SVG mẫu; `@types/node` lên `^24`; script `typecheck` là `next typegen && tsc --noEmit`; thêm `.env.example`; giữ `AGENTS.md`.
+**Mô tả:** Cài `better-auth`. Tạo `src/lib/auth` với `drizzleAdapter`, email/mật khẩu (tối thiểu 8 ký tự), trường `user.timezone` mặc định `Asia/Ho_Chi_Minh`, và `databaseHooks.user.create.before` từ chối email ngoài `ALLOWED_EMAILS`. Danh sách rỗng thì từ chối tất cả. Sinh schema bằng `npx auth generate` vào `src/lib/db/schema.ts`, rồi `drizzle-kit generate`. Mount tại `src/app/api/auth/[...all]/route.ts`. Thêm `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `ALLOWED_EMAILS` vào `.env.example`, `README.md` và `ci.yml` (giá trị test cho CI). Tạo secret thật trong `.env` mà không in ra.
 
 **Tiêu chí nghiệm thu:**
-- [x] `npm run dev` mở `http://localhost:3000` hiện chữ "Flowday", tab tên "Flowday".
-- [x] `npm run lint`, `npm run typecheck`, `npm run build` đều pass.
-- [x] `git status` không liệt kê `.venv`, `.idea`, `.jbeval`, `.env`, 2 file HTML; có liệt kê `.env.example`.
+- [ ] `auth.api.signUpEmail` với email trong danh sách tạo được user có `timezone` đúng, không phân biệt hoa thường.
+- [ ] Email ngoài danh sách bị từ chối và không để lại dòng nào trong DB.
+- [ ] `ALLOWED_EMAILS` rỗng thì mọi đăng ký bị từ chối.
 
 **Kiểm chứng:**
-- [x] Chạy 3 lệnh trên, kiểm tra `git check-ignore .env` và `git check-ignore .env.example`.
-- [x] `PLAN.md`, 2 file HTML và `tasks/` còn nguyên.
+- [ ] Viết test trước, thấy fail, rồi mới cài đặt.
+- [ ] `npm run db:migrate` chạy trên branch `dev` và trên DB trống của CI.
+- [ ] Test tự xóa user đã tạo.
 
 **Phụ thuộc:** Không
 
-**File dự kiến:** `package.json`, `package-lock.json`, `.gitignore`, `.gitattributes`, `.env.example`, `src/app/layout.tsx`, `src/app/page.tsx`, cùng các file cấu hình do scaffold sinh
+**File dự kiến:** `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `src/lib/db/schema.ts`, `src/app/api/auth/[...all]/route.ts`, `drizzle/0001_*.sql`, `.env.example`, `README.md`, `.github/workflows/ci.yml`
 
 **Quy mô:** M
 
 ---
 
-### T0.2 Playwright smoke trên desktop và mobile
+### T1.2 Trang đăng ký
 
-**Mô tả:** Cài Playwright, cấu hình project `desktop` (Chromium, 1440×900) và `mobile` (WebKit, 390×844), tự chạy `npm run dev` làm webServer, viết smoke test cho trang chủ. Thêm helper kiểm tra không có cuộn ngang để T9.1 dùng lại.
+**Mô tả:** Layout `(auth)` và trang 02 tại `/sign-up`: họ tên, email, mật khẩu, thanh đo độ mạnh, panel "Three steps to a calmer day". Tạo `src/lib/auth/client.ts`. Lỗi hiện ngay tại trường tương ứng. Tạm chưa có nút Google và checkbox Terms. Dưới `lg`, panel minh họa xếp dưới form hoặc ẩn đi, đối chiếu `design/screens/02-sign-up.html`.
 
 **Tiêu chí nghiệm thu:**
-- [x] `npm run test:e2e` pass trên cả 2 project.
-- [x] Test khẳng định có tiêu đề "Flowday" và `scrollWidth <= clientWidth`.
-- [x] `test-results/` và `playwright-report/` bị git ignore.
+- [ ] Đăng ký thành công thì tới `/tasks` (tạm là trang rỗng).
+- [ ] Email ngoài danh sách và email đã tồn tại hiện lỗi tại form, không chuyển trang.
+- [ ] Không có cuộn ngang ở 360 và 390 px; ô nhập 16 px trên cảm ứng.
 
 **Kiểm chứng:**
-- [x] Tạm thêm phần tử rộng 2000 px, test phải fail, rồi bỏ đi.
-- [x] `npx playwright install chromium webkit` chạy thành công.
+- [ ] `e2e/auth.spec.ts` pass trên cả 2 project, mỗi project dùng email riêng và tự dọn dữ liệu.
+- [ ] Mở trang bằng tay, so ảnh với thiết kế ở 390 và 1440 px.
+- [ ] Toàn bộ form dùng được bằng bàn phím.
 
-**Phụ thuộc:** T0.1
+**Phụ thuộc:** T1.1
 
-**File dự kiến:** `playwright.config.ts`, `e2e/helpers.ts`, `e2e/smoke.spec.ts`, `package.json`, `.gitignore`
+**File dự kiến:** `src/app/(auth)/layout.tsx`, `src/app/(auth)/sign-up/page.tsx`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `src/lib/auth/client.ts`, `e2e/auth.spec.ts`
+
+**Quy mô:** M
+
+---
+
+### T1.3 Đăng nhập, đăng xuất, chặn route
+
+**Mô tả:** Trang 01 tại `/sign-in`, bỏ link "Skip to app". Tùy chọn "Keep me signed in for 30 days": bật thì phiên 30 ngày, tắt thì hết khi đóng trình duyệt. Thêm `getCurrentUser()` trong `src/lib/auth/session.ts` theo guide `authentication-with-cache-components`, `src/proxy.ts` kiểm tra cookie, trang tạm `/tasks` có nút Sign out. `/` chuyển về `/tasks`. Cập nhật `smoke.spec.ts` vì trang chủ không còn tiêu đề cũ.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Chưa đăng nhập vào `/tasks` bị chuyển về `/sign-in`; đăng nhập xong quay lại đúng trang đã định.
+- [ ] Sai mật khẩu hiện lỗi chung, không tiết lộ email có tồn tại hay không.
+- [ ] Sau đăng xuất, nút Back không xem lại được trang trong app.
+- [ ] Tham số quay lại chỉ nhận đường dẫn nội bộ; URL ngoài bị bỏ qua.
+
+**Kiểm chứng:**
+- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên cả 2 project.
+- [ ] Test cookie giả mạo: proxy cho qua nhưng `getCurrentUser()` vẫn chuyển về `/sign-in`.
+- [ ] `curl -I` tới `/api/mcp` và `/.well-known/x` không bị proxy chuyển hướng.
+- [ ] `npm run build` không có lỗi đọc phiên ngoài `<Suspense>`.
+
+**Phụ thuộc:** T1.2
+
+**File dự kiến:** `src/app/(auth)/sign-in/page.tsx`, `src/app/(auth)/sign-in/SignInForm.tsx`, `src/lib/auth/session.ts`, `src/proxy.ts`, `src/app/(app)/tasks/page.tsx`, `e2e/auth.spec.ts`, `e2e/smoke.spec.ts`, `next.config.ts`
+
+**Quy mô:** M
+
+---
+
+## Checkpoint A
+
+- [ ] E2E đăng ký → đăng xuất → đăng nhập pass trên desktop và mobile.
+- [ ] CI xanh, migration chạy trên DB trống.
+
+---
+
+## Nhóm B: Cổng rủi ro MCP
+
+### T1.4 Authorization server: JWT, `mcp()`, CIMD
+
+**Mô tả:** Cài `@better-auth/mcp` và `@better-auth/cimd`. Thêm `jwt()`, `mcp({ loginPage: "/sign-in", consentPage: "/oauth/consent", resource: <BETTER_AUTH_URL>/api/mcp, scopes })` và `cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" })`. Scope gồm `openid`, `profile`, `offline_access`, `tasks:read`, `tasks:write`. Sinh lại schema và migration. Phục vụ metadata ở gốc domain: `/.well-known/oauth-protected-resource/api/mcp` và `/.well-known/oauth-authorization-server/api/auth`. DCR để tắt. Đối chiếu tên API với type trong `node_modules`.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Protected Resource Metadata có `resource` bằng đúng URL `/api/mcp`, issuer đứng đầu `authorization_servers`.
+- [ ] AS metadata có `code_challenge_methods_supported: ["S256"]`, `client_id_metadata_document_supported: true` và `"none"` trong `token_endpoint_auth_methods_supported`.
+- [ ] Không có `registration_endpoint`.
+
+**Kiểm chứng:**
+- [ ] Vitest gọi handler và khẳng định từng trường ở trên.
+- [ ] `curl` cả hai URL trên server đang chạy đều trả 200 kèm JSON.
+- [ ] Migration chạy trên DB trống của CI; các bảng `oauth*` và `jwks` tồn tại.
+
+**Phụ thuộc:** T1.3
+
+**File dự kiến:** `src/lib/auth/index.ts`, `src/lib/auth/mcp.test.ts`, `src/lib/db/schema.ts`, `src/app/.well-known/oauth-protected-resource/api/mcp/route.ts`, `src/app/.well-known/oauth-authorization-server/api/auth/route.ts`, `drizzle/0002_*.sql`
+
+**Quy mô:** M
+
+---
+
+### T1.5 `/api/mcp`, `whoami` và trang consent
+
+**Mô tả:** Cài `@modelcontextprotocol/server` và `zod`. `src/mcp/server.ts` tạo `McpServer` với tool `whoami` (scope `tasks:read`), trả tên, email và múi giờ từ `sub` của token. `src/app/api/mcp/route.ts` dùng `createMcpHandler` với `legacy` mặc định, bọc trong `requireMcpAuth`, có `challengeScopes`. Trang `/oauth/consent` dựng từ primitive: hiện tên client, hostname của redirect URI, danh sách scope, cảnh báo thêm khi redirect là loopback, nút Allow và Deny.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Không có token hoặc token sai trả `401` kèm `WWW-Authenticate: Bearer resource_metadata="...", scope="..."`.
+- [ ] Handler trả lời được cả `initialize` đời `2025-11-25` lẫn yêu cầu đời `2026-07-28`.
+- [ ] Trang consent hiện hostname của redirect URI và có cảnh báo loopback; bấm Deny trả lỗi về client.
+- [ ] Chưa đăng nhập mà vào luồng OAuth thì qua `/sign-in`, xong quay lại consent.
+
+**Kiểm chứng:**
+- [ ] Vitest gọi `mcpHandler.fetch` với request của hai đời giao thức.
+- [ ] `npx @modelcontextprotocol/inspector --cli http://localhost:3000/api/mcp --transport http --method tools/list` trả `401`.
+- [ ] Trên máy: thêm connector vào Claude Code bằng URL `localhost`, đăng nhập, gọi `whoami` được.
+
+**Phụ thuộc:** T1.4
+
+**File dự kiến:** `src/mcp/server.ts`, `src/mcp/server.test.ts`, `src/app/api/mcp/route.ts`, `src/app/(auth)/oauth/consent/page.tsx`, `src/app/(auth)/oauth/consent/ConsentForm.tsx`
+
+**Quy mô:** M
+
+---
+
+### T1.6 Nghiệm thu với Claude thật — CỔNG RỦI RO
+
+**Mô tả:** Chạy `next build` + `next start`, mở `cloudflared tunnel --url http://localhost:3000`, đặt `BETTER_AUTH_URL` theo URL tunnel. Bạn thêm connector trên claude.ai, mình thử Claude Code qua cùng URL. Ghi kết quả vào `PLAN.md` mục 5. Nếu Claude không chọn CIMD, bật DCR rồi thử lại trước khi coi là thất bại. Đóng tunnel khi xong.
+
+**Tiêu chí nghiệm thu:**
+- [ ] claude.ai: connector hiện **Connected**, tool `whoami` xuất hiện, một lần gọi thật trả đúng người dùng.
+- [ ] Claude Code: đi hết luồng OAuth qua URL tunnel, `whoami` trả đúng người dùng.
+- [ ] Hết hạn access token thì Claude tự refresh mà không phải đăng nhập lại (đặt thời hạn ngắn khi thử).
+- [ ] Mọi mục checklist ở `PLAN.md` mục 5 được đánh dấu đạt, hoặc ghi rõ lý do hoãn.
+
+**Kiểm chứng:**
+- [ ] Log server ghi `client_id` và phiên bản giao thức của từng bề mặt.
+- [ ] Để Neon ngủ trên 5 phút, đo `/oauth2/token`: phải dưới 10 giây.
+- [ ] Đo hành vi thu hồi: xóa refresh token, ghi lại thời gian Claude còn gọi được. Cập nhật tiêu chí T3.4 theo số đo.
+- [ ] Sau khi đóng tunnel, `BETTER_AUTH_URL` trong `.env` trở lại `http://localhost:3000`.
+
+**Phụ thuộc:** T1.5
+
+**File dự kiến:** `PLAN.md`, `tasks/plan.md`
 
 **Quy mô:** S
 
 ---
 
-### T0.3 Postgres và migration đầu tiên
+## Checkpoint B — dừng lại để quyết định
 
-**Mô tả:** Kết nối branch `dev` của project Neon `flowday`, cấu hình Drizzle Kit và tạo migration custom `CREATE EXTENSION IF NOT EXISTS unaccent;`. Thêm script `db:generate`, `db:migrate`. `drizzle.config.ts` đọc `.env` bằng `process.loadEnvFile`, không thêm `dotenv`. `.env.example` chỉ mô tả dạng `DATABASE_URL`, không chứa giá trị thật.
+- [ ] claude.ai và Claude Code cùng gọi được `whoami`.
+- [ ] Checklist xác thực ở `PLAN.md` mục 5 đạt.
+- [ ] Nếu không đạt: dừng, không làm T1.7 trở đi, đánh giá lại thư viện OAuth cùng bạn.
 
-**Tiền đề:** Đã có branch `dev` của project Neon `flowday` (AWS Singapore, Postgres 18) và connection string nằm trong `.env` trên máy.
+---
+
+## Nhóm C: Khung app
+
+### T1.7 Sidebar và layout `(app)` trên desktop
+
+**Mô tả:** Layout `(app)` với Sidebar 260 px từ `lg`: logo, nút New task, 5 mục điều hướng có trạng thái active, tên và email người dùng, nút Sign out. Phần đọc phiên nằm trong `<Suspense>`, không `await` ở cấp layout. Thêm trang tạm `/tasks/new`, `/calendar`, `/history`, `/focus`, `/settings`, và thêm các đường dẫn này vào matcher của proxy. Chưa có badge, danh sách project hay thẻ streak.
 
 **Tiêu chí nghiệm thu:**
-- [x] `npm run db:migrate` chạy được trên DB mới tạo.
-- [x] Chạy `npm run db:migrate` lần 2 không lỗi và không áp dụng lại.
-- [x] `.env` không xuất hiện trong `git status`.
+- [ ] Giống `design/screens/component-sidebar.html` ở 1440 px, phần đã lùi được ẩn hẳn.
+- [ ] Mục đang mở có `aria-current="page"`.
+- [ ] Khung Sidebar và nội dung tĩnh hiện ngay; chỉ khối người dùng chờ phiên.
+- [ ] Mọi trang trong app đều chặn người chưa đăng nhập.
 
 **Kiểm chứng:**
-- [x] Truy vấn `select extname from pg_extension` thấy `unaccent`.
-- [x] Thiếu `DATABASE_URL` thì lệnh dừng với thông báo rõ ràng, không in connection string ra log.
+- [ ] E2E bấm qua 5 mục ở 1440 px.
+- [ ] Không có cuộn ngang ở 1024 và 1440 px.
+- [ ] Tab qua toàn bộ Sidebar, focus nhìn rõ.
 
-**Phụ thuộc:** T0.1
+**Phụ thuộc:** T1.6, T1.3
 
-**File dự kiến:** `drizzle.config.ts`, `src/lib/db/schema.ts`, `drizzle/0000_*.sql`, `package.json`, `.env.example`
+**File dự kiến:** `src/app/(app)/layout.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/NavLinks.tsx`, `src/components/app/UserMenu.tsx`, `src/proxy.ts`, `e2e/shell.spec.ts`, cùng 5 trang tạm
 
 **Quy mô:** M
 
 ---
 
-### T0.4 DB client, Vitest và README
+### T1.8 Khung phone và tablet
 
-**Mô tả:** Tạo `src/lib/db` dùng `drizzle-orm/node-postgres` với một `Pool` duy nhất qua `globalThis` để không rò kết nối khi hot reload. Cài Vitest (môi trường node, alias `@`, đọc `.env`) và viết test thật đầu tiên. Viết lại `README.md` với các bước chạy dự án.
+**Mô tả:** Dưới `lg`: top bar và bottom nav 5 mục (Tasks, Calendar, nút New, History, Focus), tôn trọng `safe-area-inset-bottom`. Settings và tài khoản nằm trong drawer dùng lại `Sheet`. Layout chọn theo chiều rộng, không theo loại thiết bị.
 
 **Tiêu chí nghiệm thu:**
-- [x] `npm test` pass với test `select unaccent('Việt Đồ án')` trả về `Viet Do an` qua `src/lib/db`.
-- [x] Sai `DATABASE_URL` thì test fail rõ ràng, không treo.
-- [x] `README.md` đủ các bước từ clone đến chạy app, migration và test.
+- [ ] Không có cuộn ngang ở 360, 390, 744 và 820 px.
+- [ ] Đúng breakpoint: 1023 px có bottom nav, 1024 px có Sidebar.
+- [ ] Drawer đóng bằng Esc và trả focus về nút đã mở nó.
+- [ ] Mọi vùng chạm đạt 44 px trên cảm ứng; bottom nav không che nội dung cuối trang.
 
 **Kiểm chứng:**
-- [x] Tạm đặt `DATABASE_URL` sai rồi chạy `npm test` để xem lỗi, sau đó trả lại.
-- [x] Sửa giá trị mong đợi của test, test phải fail, rồi trả lại.
+- [ ] `e2e/shell.spec.ts` chạy thêm các viewport trên.
+- [ ] Bạn xem ở 390, 820 và 1440 px.
 
-**Phụ thuộc:** T0.3
+**Phụ thuộc:** T1.7
 
-**File dự kiến:** `src/lib/db/index.ts`, `src/lib/db/db.test.ts`, `vitest.config.mts`, `package.json`, `README.md`
+**File dự kiến:** `src/components/app/TopBar.tsx`, `src/components/app/BottomNav.tsx`, `src/components/app/AccountSheet.tsx`, `src/app/(app)/layout.tsx`, `e2e/shell.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-## Checkpoint A: Sau T0.1–T0.4
+## Nhóm D: Hoàn thiện đăng nhập
 
-- [x] `git clone` sang thư mục tạm, làm đúng theo `README.md`, mọi lệnh chạy được.
-- [x] `npm run lint`, `typecheck`, `test`, `test:e2e`, `build` đều pass.
-- [x] Không có secret nào được commit.
+### T1.9 Mail và xác minh email
+
+**Mô tả:** `src/lib/mail.ts` gọi API Resend bằng `fetch`, không thêm dependency. Không có `RESEND_API_KEY` thì in link ra console ở dev, và báo lỗi ở production. Bật `requireEmailVerification` và `sendOnSignUp`. Đăng ký xong hiện màn hình "Check your email", có nút gửi lại. Sửa E2E của T1.2 và T1.3: helper đánh dấu `email_verified` trực tiếp trong DB.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Chưa xác minh thì không đăng nhập được, form báo rõ cách xử lý.
+- [ ] Bấm link xác minh thì đăng nhập được; link đã dùng hoặc hết hạn bị từ chối.
+- [ ] Không có API key ở production thì báo lỗi, không âm thầm bỏ qua.
+
+**Kiểm chứng:**
+- [ ] Vitest thay `lib/mail` bằng spy, chạy đủ luồng qua `auth.api`.
+- [ ] Bạn đặt key, đăng ký thử và nhận email thật từ `onboarding@resend.dev`.
+- [ ] Không có token nào bị in vào log ở production.
+
+**Phụ thuộc:** T1.6
+
+**File dự kiến:** `src/lib/mail.ts`, `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `src/app/(auth)/sign-in/SignInForm.tsx`, `e2e/helpers.ts`
+
+**Quy mô:** M
 
 ---
 
-## Nhóm B: Thiết kế và UI
+### T1.10 Quên mật khẩu
 
-### T0.5 Tách thiết kế ra `design/screens/`
-
-**Mô tả:** Viết script Node thuần `scripts/extract-design.mjs <bundle.html> <outDir>`, chỉ dùng thư viện chuẩn. Script đọc manifest (base64 + gzip) ở 2 tầng lồng nhau, ghi template từng màn hình, bỏ CSS font nhúng và runtime của bundle, không thực thi nội dung trong file. Commit kết quả trong `design/screens/`.
-
-Tên file: `01-sign-in`, `02-sign-up`, `03-tasks-board`, `04-create-task`, `05-task-detail`, `06-calendar`, `07-history-streak`, `08-focus-mode`, `09-create-project`, `10-project-overview`, `component-sidebar` (đuôi `.html`).
+**Mô tả:** `/forgot-password` và `/reset-password` dựng từ primitive cùng phong cách trang đăng nhập. Nối link "Forgot password?" ở trang 01. Đổi mật khẩu xong thì thu hồi các phiên khác.
 
 **Tiêu chí nghiệm thu:**
-- [x] Chạy với `Flowday — ToDo Web App (1).html` tạo đúng 11 file, mỗi file dưới 30 KB và không còn base64.
-- [x] Script tự kiểm tra số màn hình và thoát mã khác 0 nếu sai hoặc file đầu vào không phải bundle.
-- [x] Chạy lại lần 2 không tạo khác biệt trong `git diff`.
+- [ ] Đổi mật khẩu qua link trong email thành công, đăng nhập được bằng mật khẩu mới.
+- [ ] Link dùng lại hoặc hết hạn bị từ chối, trang báo lỗi rõ.
+- [ ] Form trả cùng thông báo dù email có tồn tại hay không.
+- [ ] Phiên cũ trên thiết bị khác hết hiệu lực.
 
 **Kiểm chứng:**
-- [x] Chạy với `Flowday — ToDo Web App.html` (bản cũ) phải báo lỗi vì thiếu màn hình.
-- [x] Mở `09-create-project.html` và `10-project-overview.html`, đọc được cấu trúc và script `DCLogic`.
+- [ ] Vitest với spy mail phủ cả 4 tiêu chí.
+- [ ] E2E mở cả hai trang ở 390 và 1440 px, không có cuộn ngang.
 
-**Phụ thuộc:** T0.1
+**Phụ thuộc:** T1.9
 
-**File dự kiến:** `scripts/extract-design.mjs`, `design/screens/*.html`
+**File dự kiến:** `src/app/(auth)/forgot-password/page.tsx`, `src/app/(auth)/reset-password/page.tsx`, `src/lib/auth/index.ts`, `src/lib/auth/auth.test.ts`, `e2e/auth.spec.ts`
+
+**Quy mô:** M
+
+---
+
+### T1.11 Đăng nhập Google
+
+**Mô tả:** Bật `socialProviders.google` khi có đủ biến môi trường; thiếu thì ẩn nút. Thêm nút "Continue with Google" và "Sign up with Google" ở trang 01 và 02. Chỉ liên kết tài khoản khi email phía Google đã xác minh. `ALLOWED_EMAILS` vẫn áp dụng vì hook nằm ở bước tạo user.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Bạn đăng nhập được bằng Google và vào `/tasks`.
+- [ ] Tài khoản Google ngoài danh sách bị từ chối, trang hiện lỗi dễ hiểu.
+- [ ] Thiếu biến môi trường thì không có nút, app vẫn chạy.
+
+**Kiểm chứng:**
+- [ ] E2E bấm nút và kiểm tra chuyển tới `accounts.google.com`.
+- [ ] Vitest khẳng định hook từ chối user tạo từ Google.
+- [ ] Đăng nhập Google bằng tay trên máy.
+
+**Phụ thuộc:** T1.9
+
+**File dự kiến:** `src/lib/auth/index.ts`, `src/app/(auth)/sign-in/SignInForm.tsx`, `src/app/(auth)/sign-up/SignUpForm.tsx`, `.env.example`, `README.md`
 
 **Quy mô:** S
 
 ---
 
-### T0.6 Design token và font
+## Checkpoint hoàn thành Phase 1
 
-**Mô tả:** Đưa token từ `PLAN.md` mục 4 và `design/screens/` vào `@theme` trong `globals.css`: màu, tint, bóng cứng, bo góc, `--breakpoint-md: 744px`. Nạp Poppins (400–700) và Be Vietnam Pro (subset `vietnamese`) qua `next/font/google`, stack `Poppins, "Be Vietnam Pro", sans-serif`. Tạo trang `/dev/ui` với bảng màu, cỡ chữ và câu tiếng Việt mẫu; trả 404 trong production.
-
-**Trước khi code:** đọc phần font và Tailwind trong `node_modules/next/dist/docs/`.
-
-**Tiêu chí nghiệm thu:**
-- [x] Nền trang là `#F3F3F1`, `font-family` bắt đầu bằng Poppins.
-- [x] Class `md:` có hiệu lực ở 744 px và chưa có hiệu lực ở 743 px.
-- [x] Câu tiếng Việt có `ạ ấ ệ ữ ỹ` hiển thị đủ dấu, không rơi về font hệ thống.
-- [x] Sau `npm run build && npm start`, `/dev/ui` trả 404.
-
-**Kiểm chứng:**
-- [x] Test `e2e/dev-ui.spec.ts` kiểm tra màu, font và breakpoint.
-- [x] Xem bằng mắt câu tiếng Việt dài ở 390 và 1440 px, ghi lại nếu nét chữ lệch.
-
-**Phụ thuộc:** T0.5
-
-**File dự kiến:** `src/app/globals.css`, `src/app/layout.tsx`, `src/app/dev/ui/page.tsx`, `e2e/dev-ui.spec.ts`
-
-**Quy mô:** M
-
----
-
-### T0.7 Primitive hành động: Button, Card, Chip, Segmented
-
-**Mô tả:** Tạo 4 primitive trong `src/components/ui/`, lấy kiểu từ `design/screens/`. Button có các biến thể coral, ink, trắng, nhiều cỡ, render `<a>` khi có `href`. Chip và Segmented dùng `aria-pressed`. Card có các mức bóng và màu nền. Hiển thị tất cả trạng thái trên `/dev/ui`. Không thêm thư viện.
-
-**Tiêu chí nghiệm thu:**
-- [x] Trên project `mobile`, mọi phần tử bấm được cao tối thiểu 44 px.
-- [x] Dùng Tab thấy viền focus rõ ở mọi primitive; `disabled` không bấm được.
-- [x] Không có cuộn ngang ở `/dev/ui` trên 390 px.
-
-**Kiểm chứng:**
-- [x] Test `e2e/primitives.spec.ts` trên 2 project.
-- [x] Đặt `/dev/ui` cạnh `03-tasks-board` và `04-create-task` để so bằng mắt ở 1440 px.
-
-**Phụ thuộc:** T0.6
-
-**File dự kiến:** `src/components/ui/Button.tsx`, `Card.tsx`, `Chip.tsx`, `Segmented.tsx`, `src/app/dev/ui/page.tsx`, `src/app/dev/ui/ControlsDemo.tsx`, `src/app/globals.css`, `e2e/primitives.spec.ts`
-
-**Quy mô:** M
-
----
-
-### T0.8 Primitive form và overlay: Field, Switch, Sheet
-
-**Mô tả:** Field gồm label, input/textarea/select, hint và lỗi. Switch dùng `role="switch"`. Sheet dùng `<dialog>` gốc: trượt từ dưới trên phone, nằm giữa từ `md` trở lên. Thêm vào `/dev/ui`.
-
-**Tiêu chí nghiệm thu:**
-- [x] Bấm label focus vào input; khi lỗi có `aria-invalid` và `aria-describedby` đúng.
-- [x] Trên project `mobile`, input có `font-size` tối thiểu 16 px.
-- [x] Switch đổi được bằng phím Space và cập nhật `aria-checked`.
-- [x] Sheet đóng bằng Esc, focus trở về nút đã mở, nội dung phía sau không cuộn.
-
-**Kiểm chứng:**
-- [x] Test `e2e/primitives.spec.ts` mở rộng, chạy trên cả Chromium và WebKit.
-- [x] So bằng mắt với form trong `01-sign-in` và `04-create-task`.
-
-**Phụ thuộc:** T0.6
-
-**File dự kiến:** `src/components/ui/Field.tsx`, `Switch.tsx`, `Sheet.tsx`, `src/app/dev/ui/page.tsx`, `src/app/dev/ui/ControlsDemo.tsx`, `src/app/globals.css`, `e2e/primitives.spec.ts`
-
-**Quy mô:** M
-
----
-
-## Checkpoint B: Sau T0.5–T0.8
-
-- [x] Toàn bộ lệnh kiểm tra đều pass.
-- [x] `/dev/ui` đạt yêu cầu ở 390 và 1440 px khi so với thiết kế.
-- [x] Bạn đã xem `/dev/ui` và đồng ý phong cách trước khi dựng màn hình thật.
-
----
-
-## Nhóm C: Tự động hóa
-
-### T0.9 CI trên GitHub Actions
-
-**Mô tả:** Thêm script `check` chạy lint, typecheck, test và build. Workflow chạy trên mỗi push (nhánh của PR cũng được push nên không cần trigger riêng): service `postgres:18-alpine` trên máy của GitHub (DB trống mỗi lần chạy, máy bạn không cần cài gì), `npm ci`, `db:migrate`, `check`, cài trình duyệt Playwright, chạy `test:e2e`, tải báo cáo lên khi e2e fail.
-
-**Tiền đề:** Có repo GitHub trống và bạn đồng ý push.
-
-**Tiêu chí nghiệm thu:**
-- [x] `npm run check` pass trên máy.
-- [x] Workflow xanh trên GitHub ở lần push đầu.
-- [x] Commit cố tình làm lỗi một test khiến workflow đỏ.
-
-**Kiểm chứng:**
-- [x] Xem log GitHub Actions thấy migration và test DB thật sự chạy. Log thô cần đăng nhập, nên kiểm chứng qua trạng thái từng bước và annotation của run đỏ: test `unaccent` nhận `Viet Do an` từ Postgres trên CI.
-- [x] Không có giá trị bí mật nào trong workflow, ngoài mật khẩu dev của Postgres trong CI.
-
-**Phụ thuộc:** T0.2, T0.4, T0.7, T0.8
-
-**File dự kiến:** `.github/workflows/ci.yml`, `package.json`
-
-**Quy mô:** S
-
----
-
-## Checkpoint hoàn thành Phase 0
-
-- [x] CI xanh trên `main`.
-- [x] Bản clone sạch chạy được theo `README.md`.
-- [x] `PLAN.md` đã đánh dấu xong Phase 0.
-- [x] Sẵn sàng sang T1.1.
+- [ ] E2E đăng ký → xác minh → đăng nhập → thấy khung app pass trên desktop và mobile.
+- [ ] Bạn đã xem khung app ở 390, 820 và 1440 px.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 1.
+- [ ] Sẵn sàng sang T2.1.
