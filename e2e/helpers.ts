@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { oauthClient, oauthClientResource, oauthResource, user, verification } from "@/lib/db/schema";
+import { oauthClient, oauthClientResource, oauthResource, project, user, verification } from "@/lib/db/schema";
 
 export async function createOAuthClient(redirectUri: string) {
   const clientId = randomUUID();
@@ -39,6 +39,13 @@ export async function resetTokenFor(email: string) {
     .innerJoin(user, eq(verification.value, user.id))
     .where(eq(user.email, email));
   return row.identifier.replace("reset-password:", "");
+}
+
+export async function createProjects(email: string, names: string[]) {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, email));
+  await db.insert(project).values(
+    names.map((name, index) => ({ userId: owner.id, name, key: `K${index}`, color: "#f47258", icon: "code" })),
+  );
 }
 
 export async function deleteUser(email: string) {

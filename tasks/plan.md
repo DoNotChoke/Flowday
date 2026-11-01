@@ -67,7 +67,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T2.1 Schema, datetime và service task (M)
 - [x] T2.2 Create project (M)
-- [ ] T2.2b Project trên Sidebar và drawer (S)
+- [x] T2.2b Project trên Sidebar và drawer (S)
 - [ ] T2.3 Create task (M)
 - [ ] T2.4 Board đọc dữ liệu (M)
 

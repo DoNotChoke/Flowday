@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
+import { createProjects, deleteUser, expectNoHorizontalScroll, verifyEmail } from "./helpers";
 
 const sections = [
   { name: "My tasks", path: "/tasks" },
@@ -78,6 +78,47 @@ test.describe("signed in on a wide screen", () => {
     await expect(page).toHaveURL("/projects/new");
   });
 
+  test("projects are listed with their task count and the open one is marked", async ({ page }, testInfo) => {
+    await createProjects(emailFor(testInfo), ["Đồ án tốt nghiệp"]);
+    await page.reload();
+    const nav = page.getByRole("navigation", { name: "Main" });
+
+    const link = nav.getByRole("link", { name: /Đồ án tốt nghiệp/ });
+    await expect(link).toContainText("0");
+    await expect(nav.getByText("No projects yet")).toHaveCount(0);
+
+    await link.click();
+    await expect(page).toHaveURL(/\/projects\//);
+    await expect(link).toHaveAttribute("aria-current", "page");
+  });
+
+  test("a new project appears right after creating it", async ({ page }) => {
+    await page.goto("/projects/new");
+    await page.getByLabel("Project name").fill("Brand New");
+    await page.getByRole("button", { name: "Create project" }).click();
+
+    await expect(page.getByRole("heading", { name: "Brand New" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: /Brand New/ })).toContainText("4");
+  });
+
+  test("thirty projects scroll inside the sidebar", async ({ page }, testInfo) => {
+    await createProjects(emailFor(testInfo), Array.from({ length: 30 }, (_, index) => `Project ${index}`));
+    await page.setViewportSize({ width: 1366, height: 600 });
+    await page.reload();
+
+    await expect(page.getByRole("link", { name: /Project 29/ })).toBeAttached();
+    await expect(page.getByRole("button", { name: "Sign out" })).toBeInViewport({ ratio: 1 });
+    await expectNoHorizontalScroll(page);
+  });
+
+  test("a very long project name is cut short", async ({ page }, testInfo) => {
+    await createProjects(emailFor(testInfo), ["Một cái tên project rất dài ".repeat(4)]);
+    await page.reload();
+
+    await expect(page.getByRole("link", { name: /Một cái tên/ })).toBeVisible();
+    await expectNoHorizontalScroll(page);
+  });
+
   test("the sidebar fills the screen height", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const box = await page.getByRole("navigation", { name: "Main" }).boundingBox();
@@ -92,7 +133,7 @@ test.describe("signed in on a wide screen", () => {
 
     await expect(signOut).toBeInViewport({ ratio: 1 });
     await expect(page.getByRole("link", { name: "Settings" })).toBeVisible();
-    await expect(page.getByText("No projects yet")).not.toBeInViewport();
+    await expect(page.getByRole("navigation", { name: "Main" }).getByText("No projects yet")).not.toBeInViewport();
   });
 
   test("every sidebar control shows focus from the keyboard", async ({ page }) => {
@@ -183,6 +224,18 @@ test.describe("signed in on a narrow screen", () => {
     await drawer.getByRole("link", { name: "Settings" }).click();
 
     await expect(page).toHaveURL("/settings");
+    await expect(drawer).toBeHidden();
+  });
+
+  test("the drawer lists projects and closes when one is opened", async ({ page }, testInfo) => {
+    await createProjects(emailFor(testInfo), ["Đồ án tốt nghiệp"]);
+    await page.reload();
+    await page.getByRole("button", { name: "Account" }).click();
+    const drawer = page.getByRole("dialog", { name: "Account" });
+
+    await drawer.getByRole("link", { name: /Đồ án tốt nghiệp/ }).click();
+
+    await expect(page).toHaveURL(/\/projects\//);
     await expect(drawer).toBeHidden();
   });
 

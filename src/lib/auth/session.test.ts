@@ -2,6 +2,7 @@ import { expect, test, vi } from "vitest";
 import { requireUserId } from "@/lib/auth/session";
 
 vi.mock("server-only", () => ({}));
+vi.mock("next/server", async (original) => ({ ...(await original<object>()), connection: async () => {} }));
 vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
 vi.mock("next/navigation", () => ({
   redirect: (path: string) => {

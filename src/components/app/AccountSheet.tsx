@@ -31,8 +31,9 @@ export function AccountSheet({ children }: { children: ReactNode }) {
         </svg>
       </button>
       <Sheet open={open} onClose={close} title="Account">
-        <div className="flex flex-col gap-3">
-          <Link href="/settings" onClick={close} className="flex min-h-11 items-center rounded-xl px-1.5 text-sm font-medium">
+        {/* Any link inside navigates away, so the drawer closes with it. */}
+        <div className="flex flex-col gap-3" onClick={(event) => (event.target as HTMLElement).closest("a") && close()}>
+          <Link href="/settings" className="flex min-h-11 items-center rounded-xl px-1.5 text-sm font-medium">
             Settings
           </Link>
           {children}

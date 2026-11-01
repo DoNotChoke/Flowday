@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/Button";
 import { AppLogo } from "./AppLogo";
 import { NavLinks } from "./NavLinks";
+import { ProjectsSection } from "./ProjectsSection";
 import { UserMenu } from "./UserMenu";
 
 export function Sidebar() {
@@ -21,24 +21,12 @@ export function Sidebar() {
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-1">
         <div className="flex flex-col gap-1">
           <span className="px-2.5 pb-1.5 text-[11px] font-semibold tracking-[1px] text-muted">WORKSPACE</span>
-          <NavLinks />
+          <Suspense>
+            <NavLinks />
+          </Suspense>
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center justify-between pr-1 pb-1.5 pl-2.5">
-            <span className="text-[11px] font-semibold tracking-[1px] text-muted">PROJECTS</span>
-            <Link
-              href="/projects/new"
-              aria-label="New project"
-              className="flex size-7.5 items-center justify-center rounded-lg border-hard pointer-coarse:size-11"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-                <path d="M12 5v14M5 12h14" />
-              </svg>
-            </Link>
-          </div>
-          <p className="px-2.5 text-sm text-muted">No projects yet</p>
-        </div>
+        <ProjectsSection />
       </div>
 
       <Suspense>

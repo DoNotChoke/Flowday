@@ -58,12 +58,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Thay dòng "No projects yet" bằng danh sách thật: chấm màu, tên, số task. Thêm mục Projects vào drawer mobile. Mục đang mở được highlight. Trang `/projects/[id]` tạm có tiêu đề cho tới T4.1.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Project mới xuất hiện ngay sau khi tạo, số task khớp DB.
-- [ ] 30 project vẫn cuộn trong Sidebar, nút đăng xuất luôn thấy.
-- [ ] Tên project dài bị cắt gọn, không gây cuộn ngang.
+- [x] Project mới xuất hiện ngay sau khi tạo, số task khớp DB.
+- [x] 30 project vẫn cuộn trong Sidebar, nút đăng xuất luôn thấy.
+- [x] Tên project dài bị cắt gọn, không gây cuộn ngang.
 
 **Kiểm chứng:**
-- [ ] `e2e/shell.spec.ts` thêm các trường hợp trên ở 1366 × 600 và 390 px.
+- [x] `e2e/shell.spec.ts` thêm các trường hợp trên ở 1366 × 600 và 390 px.
 
 **Phụ thuộc:** T2.2
 

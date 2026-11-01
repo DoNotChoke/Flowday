@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { BottomNav } from "@/components/app/BottomNav";
 import { Sidebar } from "@/components/app/Sidebar";
 import { TopBar } from "@/components/app/TopBar";
@@ -12,7 +13,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <main className="flex min-w-0 flex-1 flex-col gap-6 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:px-6 lg:p-0">
         {children}
       </main>
-      <BottomNav />
+      <Suspense>
+        <BottomNav />
+      </Suspense>
     </div>
   );
 }

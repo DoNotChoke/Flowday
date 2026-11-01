@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUserId } from "@/lib/auth/session";
 import { ValidationError } from "@/services/errors";
@@ -14,5 +15,7 @@ export async function createProjectAction(input: CreateProjectInput) {
     if (error instanceof ValidationError) return { fields: error.fields };
     throw error;
   }
+  // The sidebar lives in the layout, which a redirect alone leaves as it was.
+  revalidatePath("/", "layout");
   redirect(`/projects/${id}`);
 }
