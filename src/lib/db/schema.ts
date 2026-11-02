@@ -53,6 +53,18 @@ export const project = pgTable(
   (table) => [unique().on(table.userId, table.key)],
 );
 
+export const milestone = pgTable(
+  "milestone",
+  {
+    id: id(),
+    projectId: text("project_id").notNull().references(() => project.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    dueDate: date("due_date"),
+    createdAt: createdAt(),
+  },
+  (table) => [index("milestone_project_idx").on(table.projectId)],
+);
+
 export const category = pgTable(
   "category",
   {
@@ -71,6 +83,7 @@ export const task = pgTable(
     id: id(),
     userId: owner(),
     projectId: text("project_id").references(() => project.id, { onDelete: "set null" }),
+    milestoneId: text("milestone_id").references(() => milestone.id, { onDelete: "set null" }),
     number: integer("number"),
     title: text("title").notNull(),
     description: text("description"),

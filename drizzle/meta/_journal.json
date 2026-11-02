@@ -36,6 +36,13 @@
       "when": 1793544020872,
       "tag": "0004_seed_categories",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793616624238,
+      "tag": "0005_milestones",
+      "breakpoints": true
     }
   ]
 }

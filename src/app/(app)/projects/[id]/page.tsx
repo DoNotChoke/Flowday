@@ -5,8 +5,10 @@ import { Board } from "@/components/app/board/Board";
 import { columns } from "@/components/app/board/columns";
 import { requireUserId } from "@/lib/auth/session";
 import { getBoard } from "@/services/board";
+import { listMilestones } from "@/services/milestones";
 import { getProjectOverview } from "@/services/projects";
 import { RestoreButton } from "./ArchiveControls";
+import { Milestones } from "./Milestones";
 import { ProjectTasks } from "./ProjectTasks";
 
 const views = [
@@ -27,7 +29,7 @@ function Kpi({ label, value, tone = "bg-white", children }: { label: string; val
 
 async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
   const [userId, { id }, query] = await Promise.all([requireUserId(), params, searchParams]);
-  const [project, board] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id })]);
+  const [project, board, milestones] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id }), listMilestones(userId, id)]);
   if (!project) notFound();
   const status = columns.find((column) => column.status === query.status)?.status;
   const view = views.find((option) => option.value === query.view)?.value ?? "overview";
@@ -97,6 +99,8 @@ async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
               {project.daysLabel && <span className="text-xs">{project.daysLabel}</span>}
             </Kpi>
           </section>
+
+          <Milestones projectId={project.id} milestones={milestones} />
 
           <ProjectTasks projectId={project.id} projectName={project.name} tasks={board.tasks} status={status} />
         </>

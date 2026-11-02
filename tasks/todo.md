@@ -111,15 +111,15 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Bảng `milestone` (project, tên, hạn, vị trí), cột `task.milestone_id` có `on delete set null`, migration 0005. `src/services/milestones.ts` thêm, sửa, xóa, liệt kê kèm số task. Khối Milestones ở Overview và sheet "+ Milestone".
 
 **Tiêu chí nghiệm thu:**
-- [ ] Thêm, sửa, xóa milestone được lưu sau khi tải lại.
-- [ ] Xóa milestone không xóa task.
-- [ ] Project không có milestone hiện trạng thái rỗng và nút thêm.
-- [ ] Không đụng được milestone của project người khác.
+- [x] Thêm, sửa, xóa milestone được lưu sau khi tải lại.
+- [x] Xóa milestone không xóa task.
+- [x] Project không có milestone hiện trạng thái rỗng và nút thêm.
+- [x] Không đụng được milestone của project người khác.
 
 **Kiểm chứng:**
-- [ ] Vitest cho thêm, sửa, xóa, user khác, tên rỗng.
-- [ ] Migration chạy sạch trên DB rỗng ở CI.
-- [ ] E2E thêm, sửa, xóa.
+- [x] Vitest cho thêm, sửa, xóa, user khác, tên rỗng.
+- [x] Migration chạy sạch trên DB rỗng ở CI.
+- [x] E2E thêm, sửa, xóa.
 
 **Phụ thuộc:** T4.1
 

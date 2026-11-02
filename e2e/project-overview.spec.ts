@@ -252,3 +252,52 @@ test.describe("project views", () => {
     });
   }
 });
+
+test.describe("milestones", () => {
+  const block = (page: Page) => page.getByRole("region", { name: "Milestones" });
+  const dialog = (page: Page) => page.getByRole("dialog");
+
+  async function add(page: Page, name: string, date?: string) {
+    await page.getByRole("button", { name: "+ Milestone" }).click();
+    await dialog(page).getByLabel("Milestone name").fill(name);
+    if (date) await dialog(page).getByLabel("Due date").fill(date);
+    await dialog(page).getByRole("button", { name: "Save" }).click();
+    await expect(dialog(page)).toHaveCount(0);
+  }
+
+  test("a new project has none and says so", async ({ page }) => {
+    await expect(block(page).getByText("No milestones yet")).toBeVisible();
+  });
+
+  test("a milestone can be added, edited and deleted", async ({ page }) => {
+    await add(page, "Bảo vệ đề cương", "2030-03-01");
+    await add(page, "Nộp luận văn");
+
+    await page.reload();
+    await expect(block(page).getByRole("listitem")).toHaveCount(2);
+    const first = block(page).getByRole("button", { name: /Bảo vệ đề cương/ });
+    await expect(first).toContainText("Mar 1");
+    await expect(block(page).getByRole("button", { name: /Nộp luận văn/ })).toContainText("No date");
+
+    await first.click();
+    await expect(dialog(page).getByLabel("Milestone name")).toHaveValue("Bảo vệ đề cương");
+    await dialog(page).getByLabel("Milestone name").fill("Bảo vệ thử");
+    await dialog(page).getByRole("button", { name: "Save" }).click();
+    await expect(block(page).getByRole("button", { name: /Bảo vệ thử/ })).toBeVisible();
+
+    await block(page).getByRole("button", { name: /Bảo vệ thử/ }).click();
+    await dialog(page).getByRole("button", { name: "Delete milestone" }).click();
+    await expect(block(page).getByRole("listitem")).toHaveCount(1);
+
+    await page.reload();
+    await expect(block(page).getByRole("button", { name: /Bảo vệ thử/ })).toHaveCount(0);
+  });
+
+  test("a blank name is refused and the sheet stays open", async ({ page }) => {
+    await page.getByRole("button", { name: "+ Milestone" }).click();
+    await dialog(page).getByLabel("Milestone name").fill("   ");
+    await dialog(page).getByRole("button", { name: "Save" }).click();
+
+    await expect(dialog(page).getByRole("alert")).toContainText("Enter a milestone name.");
+  });
+});
