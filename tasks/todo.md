@@ -136,7 +136,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 - [x] Kéo sang cột khác được lưu sau khi tải lại.
 - [x] Lỗi mạng thì card quay về chỗ cũ và có thông báo.
 - [x] Bàn phím di chuyển được card giữa các cột.
-- [ ] Vuốt dọc trên cảm ứng cuộn trang, giữ lâu mới kéo.
+- [x] Vuốt dọc trên cảm ứng cuộn trang, giữ lâu mới kéo.
 
 **Kiểm chứng:**
 - [x] Vitest cho `moveTask`: giữa hai card, đầu cột, cuối cột, cột rỗng, task của user khác.
@@ -161,7 +161,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 **Kiểm chứng:**
 - [x] E2E trên project mobile dùng "Move to".
-- [ ] Bạn thử trên điện thoại hoặc iPad thật.
+- [x] Bạn thử trên điện thoại hoặc iPad thật.
 
 **Phụ thuộc:** T2.5
 
@@ -173,9 +173,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint B
 
-- [ ] Đổi status được bằng chuột, bàn phím và cảm ứng.
-- [ ] CI xanh.
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [x] Đổi status được bằng chuột, bàn phím và cảm ứng.
+- [x] CI xanh.
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật.
 
 ---
 

@@ -1,6 +1,6 @@
 import { useId, type ComponentProps, type ElementType, type ReactNode } from "react";
 
-type FieldProps = { label: string; hint?: string; error?: string; meter?: ReactNode } & (
+type FieldProps = { label: string; hint?: string; error?: string; meter?: ReactNode; overlay?: ReactNode } & (
   | ({ as?: "input" } & ComponentProps<"input">)
   | ({ as: "textarea" } & ComponentProps<"textarea">)
   | ({ as: "select" } & ComponentProps<"select">)
@@ -12,7 +12,7 @@ const shapes = {
   select: "select-chevron h-12.5 pe-10",
 };
 
-export function Field({ as = "input", label, hint, error, meter, id, className = "", ...props }: FieldProps) {
+export function Field({ as = "input", label, hint, error, meter, overlay, id, className = "", ...props }: FieldProps) {
   const fallbackId = useId();
   const controlId = id ?? fallbackId;
   const messageId = `${controlId}-message`;
@@ -20,17 +20,20 @@ export function Field({ as = "input", label, hint, error, meter, id, className =
   const Control = as as ElementType;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
       <label htmlFor={controlId} className="text-sm font-semibold">
         {label}
       </label>
-      <Control
-        {...props}
-        id={controlId}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={message ? messageId : undefined}
-        className={`w-full rounded-control border-hard bg-white px-4 text-[15px] shadow-hard-3 placeholder:text-muted aria-invalid:border-danger pointer-coarse:text-base ${shapes[as]} ${className}`}
-      />
+      <div className="relative">
+        <Control
+          {...props}
+          id={controlId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={message ? messageId : undefined}
+          className={`w-full min-w-0 appearance-none rounded-control border-hard bg-white px-4 text-[15px] shadow-hard-3 placeholder:text-muted aria-invalid:border-danger pointer-coarse:text-base ${shapes[as]} ${className}`}
+        />
+        {overlay}
+      </div>
       {meter}
       {message && (
         <p id={messageId} className={`text-xs ${error ? "font-medium text-danger" : "text-muted"}`}>

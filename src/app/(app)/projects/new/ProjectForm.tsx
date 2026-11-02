@@ -3,6 +3,7 @@
 import { unstable_rethrow } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { DateField } from "@/components/ui/DateField";
 import { Field } from "@/components/ui/Field";
 import { projectColors, projectIcons, projectKey, projectTemplates } from "@/lib/projects";
 import { useHydrated } from "@/lib/useHydrated";
@@ -137,9 +138,9 @@ export function ProjectForm() {
           </fieldset>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Field label="Start date" name="start" type="date" />
-          <Field label="Target end date" name="target" type="date" error={errors.targetDate?.[0]} />
+        <div className="grid items-end gap-4 md:grid-cols-3">
+          <DateField label="Start date" name="start" />
+          <DateField label="Target end date" name="target" error={errors.targetDate?.[0]} />
           <Field label="Time budget (hours)" name="budget" type="number" min={0} />
         </div>
 

@@ -83,8 +83,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint B
 
-- [ ] Đổi status được bằng chuột, bàn phím và cảm ứng
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
+- [x] Đổi status được bằng chuột, bàn phím và cảm ứng
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật
 
 ### Nhóm C: Chi tiết task
 

@@ -174,3 +174,29 @@ test.describe("the board", () => {
     });
   }
 });
+
+test("the date and time fields keep to their columns on a tablet", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 712 });
+  const status = await page.getByLabel("Status").boundingBox();
+  const date = await page.getByLabel("Due date").boundingBox();
+  const time = await page.getByLabel("Time", { exact: true }).boundingBox();
+  const form = await page.locator("form").boundingBox();
+
+  expect(status!.x + status!.width).toBeLessThanOrEqual(date!.x);
+  expect(date!.x + date!.width).toBeLessThanOrEqual(time!.x);
+  expect(time!.x + time!.width).toBeLessThanOrEqual(form!.x + form!.width);
+  await expect(page.getByLabel("Due date")).toHaveCSS("box-shadow", /rgb\(21, 21, 21\)/);
+  await expect(page.getByLabel("Due date")).toHaveCSS("appearance", "none");
+});
+
+test("a date reads as day/month/year on a touch screen, whatever the device's language", async ({ page, hasTouch }) => {
+  test.skip(!hasTouch, "touch only: a mouse keeps the browser's own field");
+  await expect(page.getByText("dd/mm/yyyy")).toBeVisible();
+
+  await page.getByLabel("Due date").fill("2026-11-06");
+  await expect(page.getByText("06/11/2026")).toBeVisible();
+  await expect(page.getByLabel("Due date")).toHaveCSS("color", "rgba(0, 0, 0, 0)");
+
+  await page.getByLabel("Due date").fill("");
+  await expect(page.getByText("dd/mm/yyyy")).toBeVisible();
+});

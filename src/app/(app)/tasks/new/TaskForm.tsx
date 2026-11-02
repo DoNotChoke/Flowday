@@ -3,6 +3,7 @@
 import { unstable_rethrow } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
+import { DateField } from "@/components/ui/DateField";
 import { Field } from "@/components/ui/Field";
 import { Sheet } from "@/components/ui/Sheet";
 import { Switch } from "@/components/ui/Switch";
@@ -271,7 +272,7 @@ export function TaskForm({ categories: initialCategories, projects: initialProje
               </option>
             ))}
           </Field>
-          <Field label="Due date" name="date" type="date" error={errors.dueDate?.[0]} />
+          <DateField label="Due date" name="date" error={errors.dueDate?.[0]} />
           <Field label="Time" name="time" type="time" />
         </div>
 

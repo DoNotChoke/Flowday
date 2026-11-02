@@ -70,3 +70,14 @@ for (const width of [360, 390, 820, 1440]) {
     await expectNoHorizontalScroll(page);
   });
 }
+
+test("the date fields and the budget line up on a tablet", async ({ page }) => {
+  await page.setViewportSize({ width: 1024, height: 712 });
+  const start = await page.getByLabel("Start date").boundingBox();
+  const target = await page.getByLabel("Target end date").boundingBox();
+  const budget = await page.getByLabel("Time budget (hours)").boundingBox();
+
+  expect(start!.x + start!.width).toBeLessThanOrEqual(target!.x);
+  expect(target!.x + target!.width).toBeLessThanOrEqual(budget!.x);
+  expect(budget!.y + budget!.height).toBe(target!.y + target!.height);
+});
