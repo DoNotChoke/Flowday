@@ -55,9 +55,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] Số liệu Overview khớp DB trên desktop và mobile.
-- [ ] CI xanh.
-- [ ] Bạn đã xem Overview và trang sửa project.
+- [x] Số liệu Overview khớp DB trên desktop và mobile.
+- [x] CI xanh.
+- [x] Bạn đã xem Overview và trang sửa project.
 
 ---
 
@@ -89,12 +89,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Tab Overview, Board, List trên URL (`?view=`). Hai tab sau dùng lại `Board` của `/tasks`, lọc theo project. Ẩn Timeline và Files.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Kéo thả và Move to trong tab Board cũng cập nhật `/tasks`.
-- [ ] Tab giữ trên URL, tải lại vẫn đúng.
-- [ ] Trên phone vẫn có tab status và Move to như `/tasks`.
+- [x] Kéo thả và Move to trong tab Board cũng cập nhật `/tasks`.
+- [x] Tab giữ trên URL, tải lại vẫn đúng.
+- [x] Trên phone vẫn có tab status và Move to như `/tasks`.
 
 **Kiểm chứng:**
-- [ ] E2E chuyển tab, đổi status, xem lại ở `/tasks` trên desktop và mobile.
+- [x] E2E chuyển tab, đổi status, xem lại ở `/tasks` trên desktop và mobile.
 
 **Phụ thuộc:** T4.2
 

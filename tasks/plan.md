@@ -72,13 +72,13 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint A
 
-- [ ] Số liệu Overview khớp DB trên desktop và mobile
-- [ ] Bạn đã xem Overview và trang sửa project
+- [x] Số liệu Overview khớp DB trên desktop và mobile
+- [x] Bạn đã xem Overview và trang sửa project
 
 ### Nhóm B: Task trong project
 
 - [x] T4.2 Bảng Project tasks (M)
-- [ ] T4.3 Tab Board và List (S)
+- [x] T4.3 Tab Board và List (S)
 
 ### Nhóm C: Milestones
 

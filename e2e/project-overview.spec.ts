@@ -177,3 +177,78 @@ test.describe("project tasks", () => {
     await expectNoHorizontalScroll(page);
   });
 });
+
+test.describe("project views", () => {
+  const views = (page: Page) => page.getByRole("navigation", { name: "Project views" });
+  const column = (page: Page, name: string) => page.getByRole("region", { name });
+
+  test("the tabs stay in the address and survive a reload", async ({ page }) => {
+    const overview = page.url();
+    await views(page).getByRole("link", { name: "Board" }).click();
+    await expect(page).toHaveURL(/\?view=board$/);
+    await expect(column(page, "On going").getByRole("link", { name: /Build auth flow/ })).toBeVisible();
+    await expect(summary(page)).toHaveCount(0);
+
+    await page.reload();
+    await expect(views(page).getByRole("link", { name: "Board" })).toHaveAttribute("aria-current", "page");
+    await expect(column(page, "On going").getByRole("link", { name: /Build auth flow/ })).toBeVisible();
+
+    await views(page).getByRole("link", { name: "List" }).click();
+    await expect(page).toHaveURL(/\?view=list$/);
+    await expect(page.getByRole("listitem").filter({ hasText: "Build auth flow" })).toBeVisible();
+
+    await views(page).getByRole("link", { name: "Overview" }).click();
+    await expect(page).toHaveURL(overview);
+    await expect(summary(page)).toBeVisible();
+  });
+
+  test("only this project's tasks are on the board", async ({ page }) => {
+    const board = page.url();
+    await page.goto("/tasks/new");
+    await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+    await page.getByLabel("Task name").fill("Ngoài project");
+    await page.getByRole("button", { name: "Create Task" }).click();
+    await expect(page).toHaveURL("/tasks");
+
+    await page.goto(`${board}?view=board`);
+    await expect(column(page, "On going").getByRole("link", { name: /Build auth flow/ })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Ngoài project/ })).toHaveCount(0);
+  });
+
+  test("moving a card here also moves it on /tasks", async ({ page, isMobile }, testInfo) => {
+    await views(page).getByRole("link", { name: "Board" }).click();
+    const card = column(page, "On going").getByRole("link", { name: /Build auth flow/ });
+    await expect(card).toBeVisible();
+    const saved = page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes("/projects/"));
+
+    if (isMobile) {
+      await page.getByRole("button", { name: "Move Build auth flow" }).click();
+      await page.getByRole("dialog").getByRole("button", { name: "Completed" }).click();
+    } else {
+      const start = (await card.boundingBox())!;
+      const target = (await column(page, "Completed").boundingBox())!;
+      await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(start.x + start.width / 2 + 12, start.y + start.height / 2 + 12, { steps: 4 });
+      await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
+      await page.mouse.up();
+    }
+    await saved;
+
+    expect((await tasksOf(emailFor(testInfo))).find((row) => row.title === "Build auth flow")?.status).toBe("completed");
+    await page.goto("/tasks");
+    if (isMobile) await page.getByRole("group", { name: "Status" }).getByRole("button", { name: /Completed/ }).click();
+    await expect(column(page, "Completed").getByRole("link", { name: /Build auth flow/ })).toBeVisible();
+  });
+
+  for (const view of ["board", "list"]) {
+    test(`the ${view} tab has no horizontal scroll at 360 px`, async ({ page }) => {
+      await page.setViewportSize({ width: 360, height: 800 });
+      await page.goto(`${page.url()}?view=${view}`);
+
+      await expect(views(page)).toBeVisible();
+      await expect(summary(page)).toHaveCount(0);
+      await expectNoHorizontalScroll(page);
+    });
+  }
+});

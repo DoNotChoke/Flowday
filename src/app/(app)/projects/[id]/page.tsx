@@ -1,12 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { Board } from "@/components/app/board/Board";
 import { columns } from "@/components/app/board/columns";
 import { requireUserId } from "@/lib/auth/session";
 import { getBoard } from "@/services/board";
 import { getProjectOverview } from "@/services/projects";
 import { RestoreButton } from "./ArchiveControls";
 import { ProjectTasks } from "./ProjectTasks";
+
+const views = [
+  { value: "overview", label: "Overview", search: "" },
+  { value: "board", label: "Board", search: "?view=board" },
+  { value: "list", label: "List", search: "?view=list" },
+] as const;
 
 function Kpi({ label, value, tone = "bg-white", children }: { label: string; value: string; tone?: string; children: ReactNode }) {
   return (
@@ -23,6 +30,7 @@ async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
   const [project, board] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id })]);
   if (!project) notFound();
   const status = columns.find((column) => column.status === query.status)?.status;
+  const view = views.find((option) => option.value === query.view)?.value ?? "overview";
 
   return (
     <>
@@ -60,23 +68,41 @@ async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
           </div>
         </div>
         {project.description && <p className="max-w-190 font-content text-sm leading-relaxed break-words whitespace-pre-wrap">{project.description}</p>}
+        <nav aria-label="Project views" className="flex flex-wrap gap-1.5">
+          {views.map((option) => (
+            <Link
+              key={option.value}
+              href={`/projects/${project.id}${option.search}`}
+              aria-current={view === option.value ? "page" : undefined}
+              className={`flex h-9.5 items-center rounded-[10px] border-hard px-4 text-[13px] font-semibold pointer-coarse:min-h-11 ${view === option.value ? "bg-ink text-white" : "bg-white"}`}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </nav>
       </header>
 
-      <section aria-label="Project summary" className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-        <Kpi label="Progress" value={`${project.percent}%`}>
-          <div aria-hidden="true" className="h-2.5 overflow-hidden rounded-full border border-ink bg-[#f0f0ec]">
-            <div style={{ width: `${project.percent}%` }} className="h-full bg-teal" />
-          </div>
-        </Kpi>
-        <Kpi label="Tasks" value={`${project.done} / ${project.total}`}>
-          <span className="text-xs text-[#3d3d3d]">{project.total ? `${project.open} open · ${project.overdue} overdue` : "No tasks yet"}</span>
-        </Kpi>
-        <Kpi label="Target date" value={project.targetLabel ?? "Not set"} tone="bg-sun-tint">
-          {project.daysLabel && <span className="text-xs">{project.daysLabel}</span>}
-        </Kpi>
-      </section>
+      {view === "overview" ? (
+        <>
+          <section aria-label="Project summary" className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
+            <Kpi label="Progress" value={`${project.percent}%`}>
+              <div aria-hidden="true" className="h-2.5 overflow-hidden rounded-full border border-ink bg-[#f0f0ec]">
+                <div style={{ width: `${project.percent}%` }} className="h-full bg-teal" />
+              </div>
+            </Kpi>
+            <Kpi label="Tasks" value={`${project.done} / ${project.total}`}>
+              <span className="text-xs text-[#3d3d3d]">{project.total ? `${project.open} open · ${project.overdue} overdue` : "No tasks yet"}</span>
+            </Kpi>
+            <Kpi label="Target date" value={project.targetLabel ?? "Not set"} tone="bg-sun-tint">
+              {project.daysLabel && <span className="text-xs">{project.daysLabel}</span>}
+            </Kpi>
+          </section>
 
-      <ProjectTasks projectId={project.id} projectName={project.name} tasks={board.tasks} status={status} />
+          <ProjectTasks projectId={project.id} projectName={project.name} tasks={board.tasks} status={status} />
+        </>
+      ) : (
+        <Board tasks={board.tasks} view={view} />
+      )}
     </>
   );
 }
