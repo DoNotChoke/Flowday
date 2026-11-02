@@ -41,7 +41,7 @@ test("the overview shows the project and its real numbers", async ({ page }, tes
 
 test("Add task starts with this project chosen, and the new task counts", async ({ page }) => {
   const overview = page.url();
-  await page.getByRole("link", { name: "Add task" }).click();
+  await page.getByRole("link", { name: "Add task", exact: true }).click();
   await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
   await expect(page.getByLabel("Project", { exact: true })).toHaveValue(/.+/);
 
@@ -115,4 +115,65 @@ test("archiving needs a confirmation, hides the project, and restoring brings it
   await page.goto(overview);
   await page.getByRole("button", { name: "Restore project" }).click();
   await expect(page.getByText("This project is archived")).toHaveCount(0);
+});
+
+test.describe("project tasks", () => {
+  const table = (page: Page) => page.getByRole("region", { name: "Project tasks" });
+  const filters = (page: Page) => page.getByRole("group", { name: "Filter by status" });
+
+  test("the status filter stays in the address, with a count on each", async ({ page }, testInfo) => {
+    await completeTask(emailFor(testInfo), "Build auth flow");
+    await page.reload();
+    await expect(filters(page).getByRole("link", { name: "All 4" })).toBeVisible();
+    await expect(filters(page).getByRole("link", { name: "Completed 1" })).toBeVisible();
+    await expect(filters(page).getByRole("link", { name: "On going 3" })).toBeVisible();
+
+    await filters(page).getByRole("link", { name: /Completed/ }).click();
+    await expect(page).toHaveURL(/\?status=completed$/);
+    await expect(table(page).getByRole("link", { name: /Build auth flow/ })).toBeVisible();
+    await expect(table(page).getByRole("link", { name: /Design data model/ })).toHaveCount(0);
+
+    await page.reload();
+    await expect(table(page).getByRole("link", { name: /Design data model/ })).toHaveCount(0);
+
+    await filters(page).getByRole("link", { name: /Canceled/ }).click();
+    await expect(table(page).getByText("No tasks here")).toBeVisible();
+  });
+
+  test("a row shows its code and opens the task", async ({ page }) => {
+    await expect(table(page).getByRole("link", { name: /Build auth flow/ })).toContainText("DAT-3");
+
+    await table(page).getByRole("link", { name: /Build auth flow/ }).click();
+    await expect(page).toHaveURL(/\/tasks\/[0-9a-f-]{36}$/);
+  });
+
+  test("an overdue task is red until it is done", async ({ page }, testInfo) => {
+    const overview = page.url();
+    await page.getByRole("link", { name: "+ Add task to" }).click();
+    await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+    await page.getByLabel("Task name").fill("Quá hạn rồi");
+    await page.getByLabel("Due date").fill("2026-01-01");
+    await page.getByRole("button", { name: "Create Task" }).click();
+    await expect(page).toHaveURL("/tasks");
+
+    await page.goto(overview);
+    const due = table(page).getByRole("row", { name: /Quá hạn rồi/ }).getByText("Jan 1");
+    await expect(due).toHaveCSS("color", "rgb(194, 65, 42)");
+
+    await completeTask(emailFor(testInfo), "Quá hạn rồi");
+    await page.reload();
+    await expect(due).not.toHaveCSS("color", "rgb(194, 65, 42)");
+  });
+
+  test("phones get cards, wider screens get a table", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await expect(table(page).locator("table")).toHaveCSS("display", "block");
+    await expect(table(page).locator("thead")).toBeHidden();
+    await expectNoHorizontalScroll(page);
+
+    await page.setViewportSize({ width: 820, height: 800 });
+    await expect(table(page).locator("table")).toHaveCSS("display", "table");
+    await expect(table(page).locator("thead")).toBeVisible();
+    await expectNoHorizontalScroll(page);
+  });
 });

@@ -27,6 +27,7 @@ function listCards(userId: string, { categoryId, projectId, sort = "manual" }: B
       status: task.status,
       priority: task.priority,
       dueAt: task.dueAt,
+      estimateMin: task.estimateMin,
       number: task.number,
       projectName: project.name,
       projectKey: project.key,
@@ -104,6 +105,7 @@ export async function getBoard(userId: string, filter: BoardFilter = {}) {
       ...card,
       code: projectKey && number ? `${projectKey}-${number}` : null,
       dueToday: Boolean(dueAt && dueAt >= dayStart && dueAt < dayEnd),
+      overdue: Boolean(dueAt && dueAt < dayStart && card.status !== "completed" && card.status !== "canceled"),
       dueLabel: !dueAt ? null : dueAt >= dayStart && dueAt < dayEnd ? "Today" : shortDate.format(dueAt),
     })),
   };

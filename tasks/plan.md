@@ -77,7 +77,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm B: Task trong project
 
-- [ ] T4.2 Bảng Project tasks (M)
+- [x] T4.2 Bảng Project tasks (M)
 - [ ] T4.3 Tab Board và List (S)
 
 ### Nhóm C: Milestones

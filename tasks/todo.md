@@ -68,13 +68,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Khối Project tasks ở Overview: lọc status kèm số đếm trên URL (`?status=`), các cột mã và tên, Priority, Estimate, Due, Status. Dưới 744 px đổi thành danh sách thẻ. Thêm `estimateMin` và cờ quá hạn vào card của `getBoard`. Nút "+ Add task to project". Ẩn cột Assignee.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Lọc giữ trên URL, số đếm đúng từng status.
-- [ ] Task quá hạn tô đỏ; task đã xong hoặc đã hủy thì không.
-- [ ] Không có cuộn ngang ở 360 px.
+- [x] Lọc giữ trên URL, số đếm đúng từng status.
+- [x] Task quá hạn tô đỏ; task đã xong hoặc đã hủy thì không.
+- [x] Không có cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [ ] Vitest cho cờ quá hạn theo múi giờ.
-- [ ] E2E lọc, tải lại, mở task.
+- [x] Vitest cho cờ quá hạn theo múi giờ.
+- [x] E2E lọc, tải lại, mở task.
 
 **Phụ thuộc:** T4.1
 

@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { columns } from "@/components/app/board/columns";
 import { requireUserId } from "@/lib/auth/session";
+import { getBoard } from "@/services/board";
 import { getProjectOverview } from "@/services/projects";
 import { RestoreButton } from "./ArchiveControls";
+import { ProjectTasks } from "./ProjectTasks";
 
 function Kpi({ label, value, tone = "bg-white", children }: { label: string; value: string; tone?: string; children: ReactNode }) {
   return (
@@ -15,10 +18,11 @@ function Kpi({ label, value, tone = "bg-white", children }: { label: string; val
   );
 }
 
-async function Overview({ params }: PageProps<"/projects/[id]">) {
-  const [userId, { id }] = await Promise.all([requireUserId(), params]);
-  const project = await getProjectOverview(userId, id);
+async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
+  const [userId, { id }, query] = await Promise.all([requireUserId(), params, searchParams]);
+  const [project, board] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id })]);
   if (!project) notFound();
+  const status = columns.find((column) => column.status === query.status)?.status;
 
   return (
     <>
@@ -71,6 +75,8 @@ async function Overview({ params }: PageProps<"/projects/[id]">) {
           {project.daysLabel && <span className="text-xs">{project.daysLabel}</span>}
         </Kpi>
       </section>
+
+      <ProjectTasks projectId={project.id} projectName={project.name} tasks={board.tasks} status={status} />
     </>
   );
 }

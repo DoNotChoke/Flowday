@@ -109,6 +109,18 @@ test("a card says Today or the short date", async () => {
   expect(label("Never")).toBeNull();
 });
 
+test("a card is overdue only after its day ended, and never once closed", async () => {
+  const yesterday = shift(today(), -1);
+  await createTask(alice, { title: "Late", dueDate: yesterday, dueTime: "23:59", estimateMin: 90 });
+  await createTask(alice, { title: "Today", dueDate: today(), dueTime: "00:01" });
+  await createTask(alice, { title: "Done", dueDate: yesterday, status: "completed" });
+  await createTask(alice, { title: "Dropped", dueDate: yesterday, status: "canceled" });
+
+  const { tasks } = await getBoard(alice);
+  expect(Object.fromEntries(tasks.map((card) => [card.title, card.overdue]))).toEqual({ Late: true, Today: false, Done: false, Dropped: false });
+  expect(tasks.find((card) => card.title === "Late")?.estimateMin).toBe(90);
+});
+
 test("a card shows its project, categories and checklist", async () => {
   const project = await createProject(alice, { name: "Đồ án", color: "#f47258", icon: "code", template: "blank", withStarterTasks: false });
   const [tag] = await db.insert(category).values({ userId: alice, name: "Tag", color: "#5b8def" }).returning();
