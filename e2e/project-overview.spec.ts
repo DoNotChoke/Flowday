@@ -38,6 +38,7 @@ test("the overview shows the project and its real numbers", async ({ page }, tes
 });
 
 test("Add task starts with this project chosen, and the new task counts", async ({ page }) => {
+  const overview = page.url();
   await page.getByRole("link", { name: "Add task" }).click();
   await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
   await expect(page.getByLabel("Project", { exact: true })).toHaveValue(/.+/);
@@ -47,9 +48,7 @@ test("Add task starts with this project chosen, and the new task counts", async 
   await page.getByRole("button", { name: "Create Task" }).click();
   await expect(page).toHaveURL("/tasks");
 
-  await page.goBack();
-  await page.goBack();
-  await page.reload();
+  await page.goto(overview);
   await expect(summary(page)).toContainText("0 / 5");
   await expect(summary(page)).toContainText("5 open · 1 overdue");
 });
