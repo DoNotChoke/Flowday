@@ -23,12 +23,14 @@ async function Content({ params }: PageProps<"/tasks/[id]">) {
   ]);
   if (!task) notFound();
 
+  // An archived project is off the list, yet this task still belongs to it.
+  const options = task.projectId && !projects.some((row) => row.id === task.projectId) ? [...projects, { id: task.projectId, name: task.projectName ?? "" }] : projects;
   const now = new Date();
   const rows = activity.map(({ createdAt, ...row }) => ({ ...row, when: relativeTime(createdAt, now, task.timeZone) }));
 
   return (
     <div className="flex flex-wrap items-start gap-6">
-      <TaskFields task={task} categories={categories} projects={projects}>
+      <TaskFields task={task} categories={categories} projects={options}>
         <Checklist taskId={id} subtasks={subtasks} />
       </TaskFields>
       <Activity taskId={id} rows={rows} />

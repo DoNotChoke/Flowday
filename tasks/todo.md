@@ -36,14 +36,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang `/projects/[id]/settings` dùng lại `ProjectForm` với giá trị ban đầu, ẩn template và starter tasks. `updateProject`, `archiveProject`, `restoreProject` trong service. Lưu trữ có xác nhận bằng `Sheet`. `key` không sửa được. Trang của project đã lưu trữ có nhãn và nút khôi phục. Task thuộc project đã lưu trữ vẫn giữ được liên kết khi sửa.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Sửa tên, mục tiêu, màu, icon, ngày, time budget được lưu; mã task không đổi.
-- [ ] Project lưu trữ biến khỏi Sidebar và form tạo task, task không mất và vẫn hiện trên `/tasks`.
-- [ ] Sửa task thuộc project đã lưu trữ không làm mất liên kết project.
-- [ ] Không sửa hay lưu trữ được project của người khác.
+- [x] Sửa tên, mục tiêu, màu, icon, ngày, time budget được lưu; mã task không đổi.
+- [x] Project lưu trữ biến khỏi Sidebar và form tạo task, task không mất và vẫn hiện trên `/tasks`.
+- [x] Sửa task thuộc project đã lưu trữ không làm mất liên kết project.
+- [x] Không sửa hay lưu trữ được project của người khác.
 
 **Kiểm chứng:**
-- [ ] Vitest cho sửa, lưu trữ, khôi phục, user khác.
-- [ ] E2E sửa rồi tải lại, lưu trữ rồi khôi phục.
+- [x] Vitest cho sửa, lưu trữ, khôi phục, user khác.
+- [x] E2E sửa rồi tải lại, lưu trữ rồi khôi phục.
 
 **Phụ thuộc:** T4.1
 

@@ -1,5 +1,7 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { completeTask, deleteUser, expectNoHorizontalScroll, signInNewUser } from "./helpers";
+import { completeTask, deleteUser, expectNoHorizontalScroll, signInNewUser, tasksOf } from "./helpers";
+
+test.describe.configure({ timeout: 60_000 });
 
 function emailFor(testInfo: TestInfo) {
   return `e2e-overview-${testInfo.project.name}@flowday.test`;
@@ -61,3 +63,56 @@ for (const width of [360, 390, 820, 1440]) {
     await expectNoHorizontalScroll(page);
   });
 }
+
+test("editing saves every field and keeps the prefix", async ({ page }) => {
+  await page.getByRole("link", { name: "Project settings" }).click();
+  await expect(page.getByRole("button", { name: "Save changes" })).toBeEnabled();
+  await expect(page.getByRole("textbox", { name: "Project name" })).toHaveValue("Đồ án tốt nghiệp");
+  await expect(page.getByRole("textbox", { name: "Task prefix" })).toHaveValue("DAT");
+  await expect(page.getByLabel("Target end date").filter({ visible: true })).toHaveValue("2030-01-15");
+  await expect(page.getByText("Start from a template").filter({ visible: true })).toHaveCount(0);
+
+  await page.getByRole("textbox", { name: "Project name" }).fill("Luận văn");
+  await page.getByRole("textbox", { name: "Goal & description" }).fill("Mục tiêu mới");
+  await page.getByRole("spinbutton", { name: "Time budget (hours)" }).fill("40");
+  await page.getByRole("button", { name: "Save changes" }).click();
+
+  await expect(page.getByRole("heading", { name: "Luận văn" })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Luận văn" })).toBeVisible();
+  await expect(page.getByText("Mục tiêu mới")).toBeVisible();
+  await expect(page.getByText("DAT · Software sprint").filter({ visible: true })).toBeVisible();
+});
+
+test("archiving needs a confirmation, hides the project, and restoring brings it back", async ({ page }, testInfo) => {
+  const overview = page.url();
+  await page.getByRole("link", { name: "Project settings" }).click();
+  await page.getByRole("button", { name: "Archive project" }).click();
+  await page.getByRole("button", { name: "Keep project" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Archive project" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Archive", exact: true }).click();
+  await expect(page.getByText("This project is archived").filter({ visible: true })).toBeVisible();
+
+  await page.goto("/tasks/new");
+  await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+  await expect(page.getByLabel("Project", { exact: true }).getByRole("option", { name: "Đồ án tốt nghiệp" })).toHaveCount(0);
+
+  await page.goto("/tasks");
+  const card = page.getByRole("link", { name: /Build auth flow/ });
+  await expect(card).toContainText("Đồ án tốt nghiệp");
+  await card.click();
+
+  await page.getByRole("button", { name: /^Project/ }).click();
+  await expect(page.getByRole("dialog").getByLabel("Project")).toHaveValue(/.+/);
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("dialog")).toBeHidden();
+  await page.reload();
+  await expect(page.getByRole("button", { name: /^Project/ })).toContainText("Đồ án tốt nghiệp");
+  expect((await tasksOf(emailFor(testInfo))).length).toBe(4);
+
+  await page.goto(overview);
+  await page.getByRole("button", { name: "Restore project" }).click();
+  await expect(page.getByText("This project is archived")).toHaveCount(0);
+});

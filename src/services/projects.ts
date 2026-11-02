@@ -4,27 +4,30 @@ import { db } from "@/lib/db";
 import { utcToZoned } from "@/lib/datetime";
 import { activity, project, task } from "@/lib/db/schema";
 import { projectColors, projectIcons, projectKey, projectTemplates } from "@/lib/projects";
-import { parseInput } from "./errors";
+import { NotFoundError, parseInput } from "./errors";
 import { endOfColumn, getTimeZone, POSITION_GAP } from "./tasks";
 
-const createSchema = z
-  .object({
-    name: z.string().trim().min(1, "Enter a project name.").max(80),
-    description: z.string().max(10_000).nullable().optional(),
-    color: z.enum(projectColors.map((color) => color.hex)),
-    icon: z.enum(projectIcons.map((icon) => icon.name)),
-    template: z.enum(projectTemplates.map((template) => template.id)),
-    startDate: z.iso.date().nullable().optional(),
-    targetDate: z.iso.date().nullable().optional(),
-    budgetHours: z.number().int().min(0).max(100_000).nullable().optional(),
-    withStarterTasks: z.boolean().default(true),
-  })
-  .refine(({ startDate, targetDate }) => !startDate || !targetDate || targetDate >= startDate, {
-    path: ["targetDate"],
-    message: "The end date must come after the start date.",
-  });
+const fields = z.object({
+  name: z.string().trim().min(1, "Enter a project name.").max(80),
+  description: z.string().max(10_000).nullable().optional(),
+  color: z.enum(projectColors.map((color) => color.hex)),
+  icon: z.enum(projectIcons.map((icon) => icon.name)),
+  startDate: z.iso.date().nullable().optional(),
+  targetDate: z.iso.date().nullable().optional(),
+  budgetHours: z.number().int().min(0).max(100_000).nullable().optional(),
+});
+const datesInOrder = {
+  check: ({ startDate, targetDate }: { startDate?: string | null; targetDate?: string | null }) => !startDate || !targetDate || targetDate >= startDate,
+  options: { path: ["targetDate"], message: "The end date must come after the start date." },
+};
+
+const createSchema = fields
+  .extend({ template: z.enum(projectTemplates.map((template) => template.id)), withStarterTasks: z.boolean().default(true) })
+  .refine(datesInOrder.check, datesInOrder.options);
+const updateSchema = fields.refine(datesInOrder.check, datesInOrder.options);
 
 export type CreateProjectInput = z.input<typeof createSchema>;
+export type UpdateProjectInput = z.input<typeof updateSchema>;
 
 export async function createProject(userId: string, input: CreateProjectInput) {
   const { withStarterTasks, ...values } = parseInput(createSchema, input);
@@ -71,6 +74,28 @@ export async function getProject(userId: string, id: string) {
     .from(project)
     .where(and(eq(project.id, id), eq(project.userId, userId)));
   return row ?? null;
+}
+
+async function setProject(userId: string, id: string, values: Partial<typeof project.$inferInsert>) {
+  const [row] = await db
+    .update(project)
+    .set({ ...values, updatedAt: new Date() })
+    .where(and(eq(project.id, id), eq(project.userId, userId)))
+    .returning();
+  if (!row) throw new NotFoundError("Project");
+  return row;
+}
+
+export async function updateProject(userId: string, id: string, input: UpdateProjectInput) {
+  return setProject(userId, id, parseInput(updateSchema, input));
+}
+
+export async function archiveProject(userId: string, id: string) {
+  await setProject(userId, id, { archivedAt: new Date() });
+}
+
+export async function restoreProject(userId: string, id: string) {
+  await setProject(userId, id, { archivedAt: null });
 }
 
 function daysLabel(days: number) {

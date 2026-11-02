@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { project, task, user } from "@/lib/db/schema";
 import { projectKey } from "@/lib/projects";
 import { NotFoundError, ValidationError } from "./errors";
-import { createProject, getProject, getProjectOverview, listProjects } from "./projects";
+import { archiveProject, createProject, getProject, getProjectOverview, listProjects, restoreProject, updateProject } from "./projects";
 import { createTask, listTasks } from "./tasks";
 
 const alice = "projects-test-alice";
@@ -170,4 +170,46 @@ test("another user's project or a wrong id has no overview", async () => {
 
   expect(await getProjectOverview(bob, id)).toBeNull();
   expect(await getProjectOverview(alice, "not-a-real-id")).toBeNull();
+});
+
+const editable = { name: "Renamed", color: "#5b8def", icon: "book", description: "Goal", startDate: "2026-11-01", targetDate: "2026-12-01", budgetHours: 40 };
+
+test("editing changes the fields and leaves the key and the task codes alone", async () => {
+  const created = await createProject(alice, { ...base, name: "Before Edit" });
+
+  const row = await updateProject(alice, created.id, editable);
+
+  expect(row).toMatchObject({ ...editable, key: created.key });
+});
+
+test("an edit keeps the same rules as creating", async () => {
+  const { id } = await createProject(alice, { ...base, name: "Rules" });
+
+  await expect(updateProject(alice, id, { ...editable, name: "  " })).rejects.toBeInstanceOf(ValidationError);
+  await expect(updateProject(alice, id, { ...editable, startDate: "2026-12-02" })).rejects.toBeInstanceOf(ValidationError);
+  await expect(updateProject(alice, id, { ...editable, color: "red" })).rejects.toBeInstanceOf(ValidationError);
+});
+
+test("an archived project leaves the list but keeps its tasks, and comes back", async () => {
+  const { id } = await createProject(alice, { ...base, name: "Archive me" });
+  const item = await createTask(alice, { title: "Stays", projectId: id });
+  const listed = async () => (await listProjects(alice)).some((row) => row.id === id);
+
+  await archiveProject(alice, id);
+  expect(await listed()).toBe(false);
+  expect((await getProject(alice, id))?.archivedAt).toBeInstanceOf(Date);
+  expect((await listTasks(alice)).find((row) => row.id === item.id)?.projectId).toBe(id);
+
+  await restoreProject(alice, id);
+  expect(await listed()).toBe(true);
+  expect((await getProject(alice, id))?.archivedAt).toBeNull();
+});
+
+test("another user's project can be neither edited nor archived", async () => {
+  const { id } = await createProject(alice, { ...base, name: "Mine alone" });
+
+  await expect(updateProject(bob, id, editable)).rejects.toBeInstanceOf(NotFoundError);
+  await expect(archiveProject(bob, id)).rejects.toBeInstanceOf(NotFoundError);
+  await expect(restoreProject(bob, id)).rejects.toBeInstanceOf(NotFoundError);
+  expect(await getProject(alice, id)).toMatchObject({ name: "Mine alone", archivedAt: null });
 });

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { getProjectOverview } from "@/services/projects";
+import { RestoreButton } from "./ArchiveControls";
 
 function Kpi({ label, value, tone = "bg-white", children }: { label: string; value: string; tone?: string; children: ReactNode }) {
   return (
@@ -21,6 +22,12 @@ async function Overview({ params }: PageProps<"/projects/[id]">) {
 
   return (
     <>
+      {project.archivedAt && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-control border-hard bg-stone-tint px-4 py-3">
+          <span className="text-sm font-medium">This project is archived. It is hidden from the sidebar and its tasks stay on your board.</span>
+          <RestoreButton id={project.id} />
+        </div>
+      )}
       <header style={{ backgroundColor: project.color }} className="flex flex-col gap-4.5 rounded-card border-hard p-5.5 shadow-hard-5">
         <div className="flex flex-wrap items-center justify-between gap-3.5">
           <div className="flex min-w-0 items-center gap-3.5">
@@ -34,12 +41,19 @@ async function Overview({ params }: PageProps<"/projects/[id]">) {
               <h1 className="font-content text-3xl font-bold tracking-[-0.6px] break-words">{project.name}</h1>
             </div>
           </div>
-          <Link href={`/tasks/new?project=${project.id}`} className="flex h-11 items-center gap-2 rounded-xl border-hard bg-ink px-4.5 text-sm font-semibold text-white">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Add task
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <Link href={`/projects/${project.id}/settings`} aria-label="Project settings" className="flex size-11 items-center justify-center rounded-xl border-hard bg-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+              </svg>
+            </Link>
+            <Link href={`/tasks/new?project=${project.id}`} className="flex h-11 items-center gap-2 rounded-xl border-hard bg-ink px-4.5 text-sm font-semibold text-white">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Add task
+            </Link>
+          </div>
         </div>
         {project.description && <p className="max-w-190 font-content text-sm leading-relaxed break-words whitespace-pre-wrap">{project.description}</p>}
       </header>

@@ -7,6 +7,7 @@ import { DateField } from "@/components/ui/DateField";
 import { Field } from "@/components/ui/Field";
 import { projectColors, projectIcons, projectKey, projectTemplates } from "@/lib/projects";
 import { useHydrated } from "@/lib/useHydrated";
+import { updateProjectAction } from "../[id]/actions";
 import { createProjectAction } from "./actions";
 
 type Errors = Record<string, string[] | undefined>;
@@ -19,17 +20,30 @@ function Icon({ path, size = 18 }: { path: string; size?: number }) {
   );
 }
 
-export function ProjectForm() {
+type Existing = {
+  id: string;
+  key: string;
+  name: string;
+  description: string | null;
+  color: string;
+  icon: string;
+  template: string | null;
+  startDate: string | null;
+  targetDate: string | null;
+  budgetHours: number | null;
+};
+
+export function ProjectForm({ project }: { project?: Existing }) {
   const hydrated = useHydrated();
-  const [template, setTemplate] = useState("software");
-  const [name, setName] = useState("");
-  const [color, setColor] = useState(projectColors[0].hex);
-  const [icon, setIcon] = useState(projectIcons[0].name);
+  const [template, setTemplate] = useState(project?.template ?? "software");
+  const [name, setName] = useState(project?.name ?? "");
+  const [color, setColor] = useState(project?.color ?? projectColors[0].hex);
+  const [icon, setIcon] = useState(project?.icon ?? projectIcons[0].name);
   const [pending, setPending] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
 
-  const key = projectKey(name);
-  const chosen = projectTemplates.find((option) => option.id === template)!;
+  const key = project?.key ?? projectKey(name);
+  const chosen = projectTemplates.find((option) => option.id === template) ?? projectTemplates[0];
   const iconPath = projectIcons.find((option) => option.name === icon)!.path;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -39,16 +53,17 @@ export function ProjectForm() {
     setPending(true);
     setErrors({});
 
-    const result = await createProjectAction({
+    const input = {
       name,
       color,
       icon,
-      template,
       description: String(values.get("description")) || null,
       startDate: String(values.get("start")) || null,
       targetDate: String(values.get("target")) || null,
       budgetHours: budget ? Number(budget) : null,
-    }).catch((error) => {
+    };
+
+    const result = await (project ? updateProjectAction(project.id, input) : createProjectAction({ ...input, template })).catch((error) => {
       // A redirect from the action arrives here as a rejection.
       unstable_rethrow(error);
       return { fields: { form: ["Could not reach Flowday. Check your connection and try again."] } };
@@ -63,7 +78,7 @@ export function ProjectForm() {
   return (
     <div className="flex flex-wrap items-start gap-6">
       <form onSubmit={submit} className="flex min-w-0 flex-[3_1_480px] flex-col gap-6 rounded-card border-hard bg-white p-5 shadow-hard-5 md:p-7">
-        <fieldset className="min-w-0">
+        {!project && <fieldset className="min-w-0">
           <legend className="mb-2.5 text-sm font-semibold">Start from a template</legend>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
             {projectTemplates.map((option) => (
@@ -82,7 +97,7 @@ export function ProjectForm() {
               </button>
             ))}
           </div>
-        </fieldset>
+        </fieldset>}
 
         <div className="grid gap-4 md:grid-cols-3">
           <div className="min-w-0 md:col-span-2">
@@ -100,7 +115,7 @@ export function ProjectForm() {
           <Field label="Task prefix" value={key} readOnly hint={`Tasks get IDs like ${key}-12`} className="bg-[#f7f7f4] font-semibold tracking-[1px]" />
         </div>
 
-        <Field as="textarea" label="Goal & description" name="description" rows={3} placeholder="What does “done” look like for this project?" className="font-content" />
+        <Field as="textarea" label="Goal & description" name="description" rows={3} defaultValue={project?.description ?? ""} placeholder="What does “done” look like for this project?" className="font-content" />
 
         <div className="flex flex-wrap gap-7">
           <fieldset className="min-w-0">
@@ -139,9 +154,9 @@ export function ProjectForm() {
         </div>
 
         <div className="grid items-end gap-4 md:grid-cols-3">
-          <DateField label="Start date" name="start" />
-          <DateField label="Target end date" name="target" error={errors.targetDate?.[0]} />
-          <Field label="Time budget (hours)" name="budget" type="number" min={0} />
+          <DateField label="Start date" name="start" defaultValue={project?.startDate ?? ""} />
+          <DateField label="Target end date" name="target" defaultValue={project?.targetDate ?? ""} error={errors.targetDate?.[0]} />
+          <Field label="Time budget (hours)" name="budget" type="number" min={0} defaultValue={project?.budgetHours ?? ""} />
         </div>
 
         {errors.form && (
@@ -151,11 +166,11 @@ export function ProjectForm() {
         )}
 
         <div className="flex flex-wrap justify-end gap-3">
-          <Button href="/tasks" variant="outline">
+          <Button href={project ? `/projects/${project.id}` : "/tasks"} variant="outline">
             Cancel
           </Button>
           <Button type="submit" disabled={pending || !hydrated} className="px-8">
-            Create project
+            {project ? "Save changes" : "Create project"}
           </Button>
         </div>
       </form>
@@ -175,10 +190,10 @@ export function ProjectForm() {
             </span>
           </div>
           <div className="h-2.5 rounded-full border border-ink bg-white/60" />
-          <span className="text-xs font-medium">0 / {chosen.starter.length} tasks</span>
+          {!project && <span className="text-xs font-medium">0 / {chosen.starter.length} tasks</span>}
         </div>
 
-        <div className="flex flex-col gap-3 rounded-[22px] border-hard bg-white p-5">
+        {!project && <div className="flex flex-col gap-3 rounded-[22px] border-hard bg-white p-5">
           <span className="text-sm font-semibold">Starter tasks from template</span>
           <ul className="flex flex-col gap-2">
             {chosen.starter.map((title) => (
@@ -189,7 +204,7 @@ export function ProjectForm() {
             ))}
           </ul>
           <span className="text-xs text-muted">You can edit or remove them after creating.</span>
-        </div>
+        </div>}
       </aside>
     </div>
   );
