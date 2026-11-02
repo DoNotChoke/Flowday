@@ -309,7 +309,7 @@ test("search ignores accents and case in the title and the description", async (
 test("search treats % _ and backslash as plain characters", async () => {
   const percent = await createTask(mover, { title: "Giảm 50% giá" });
   const under = await createTask(mover, { title: "snake_case" });
-  const slash = await createTask(mover, { title: "C:\temp" });
+  const slash = await createTask(mover, { title: String.raw`C:\temp` });
   const plain = await createTask(mover, { title: "snakeXcase" });
 
   expect((await searchTasks(mover, "%")).map((row) => row.id)).toEqual([percent.id]);
