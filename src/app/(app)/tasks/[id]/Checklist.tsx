@@ -141,9 +141,10 @@ export function Checklist({ taskId, subtasks }: { taskId: string; subtasks: Item
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           maxLength={200}
-          disabled={!hydrated || adding}
+          disabled={!hydrated}
+          readOnly={adding}
           enterKeyHint="done"
-          className="h-full w-full min-w-0 flex-1 bg-transparent font-content text-sm pointer-coarse:text-base"
+          className="h-full w-full min-w-0 flex-1 bg-transparent font-content text-sm focus-visible:outline-none pointer-coarse:text-base"
         />
       </form>
     </section>

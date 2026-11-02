@@ -236,3 +236,17 @@ test.describe("the checklist", () => {
     await expect(input).toHaveValue("Đừng mất");
   });
 });
+
+test("the add item box shows only the caret and keeps it after adding", async ({ page }) => {
+  const input = page.getByRole("textbox", { name: "Add checklist item" });
+  await input.click();
+  await expect(input).toHaveCSS("outline-style", "none");
+
+  await input.fill("Mục một");
+  await input.press("Enter");
+  await expect(page.getByRole("textbox", { name: "Edit Mục một" })).toBeVisible();
+  await expect(input).toBeFocused();
+
+  await page.getByRole("textbox", { name: "Edit Mục một" }).click();
+  await expect(page.getByRole("textbox", { name: "Edit Mục một" })).toHaveCSS("outline-style", "solid");
+});
