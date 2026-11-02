@@ -267,12 +267,12 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 ### Phase 4 — Project
 
-- [ ] **T4.1 Project overview (M).** Trang 10: header theo màu project, Add task, KPI Progress, Tasks, Target date, trang sửa project, archive. *Xong khi:* số liệu khớp DB; số quá hạn và số ngày còn lại tính theo múi giờ người dùng; project archive biến khỏi Sidebar nhưng task không mất.
-- [ ] **T4.2 Bảng Project tasks (M).** Lọc status kèm số đếm, mã, priority, estimate, due, status; dưới 744 px đổi thành danh sách thẻ. *Xong khi:* không có cuộn ngang ở 360 px; task quá hạn tô đỏ.
-- [ ] **T4.3 Tab Board và List (S).** Dùng lại component của `/tasks`, lọc theo project. *Xong khi:* kéo thả trong tab Board cũng cập nhật `/tasks`.
-- [ ] **T4.4 Milestones (M).** Bảng `milestone`, `task.milestone_id`, sheet "+ Milestone", chọn milestone ở Task detail, thêm `milestones` cho `create_project` và `milestone` cho `create_task`. *Xong khi:* hoàn thành task làm đổi % và state của milestone; xóa milestone không xóa task.
+- [x] **T4.1 Project overview (M).** Trang 10: header theo màu project, Add task, KPI Progress, Tasks, Target date, trang sửa project, archive. *Xong khi:* số liệu khớp DB; số quá hạn và số ngày còn lại tính theo múi giờ người dùng; project archive biến khỏi Sidebar nhưng task không mất.
+- [x] **T4.2 Bảng Project tasks (M).** Lọc status kèm số đếm, mã, priority, estimate, due, status; dưới 744 px đổi thành danh sách thẻ. *Xong khi:* không có cuộn ngang ở 360 px; task quá hạn tô đỏ.
+- [x] **T4.3 Tab Board và List (S).** Dùng lại component của `/tasks`, lọc theo project. *Xong khi:* kéo thả trong tab Board cũng cập nhật `/tasks`.
+- [x] **T4.4 Milestones (M).** Bảng `milestone`, `task.milestone_id`, sheet "+ Milestone", chọn milestone ở Task detail, thêm `milestones` cho `create_project` và `milestone` cho `create_task`. *Xong khi:* hoàn thành task làm đổi % và state của milestone; xóa milestone không xóa task.
 
-**Checkpoint:** tạo project từ template → thêm task vào project → Overview cập nhật đúng, trên cả desktop và mobile. Bước Claude thêm task kiểm ở T3.6.
+**Checkpoint:** đã đạt. Tạo project từ template → thêm task vào project → Overview cập nhật đúng, trên cả desktop và mobile. Sửa và lưu trữ project (T4.1b), gán task vào milestone (T4.4b) và phần Settings không dính MCP (T4.5) cũng đã xong. Bước Claude thêm task kiểm ở T3.6.
 
 ### Phase 5 — Calendar
 

@@ -96,10 +96,10 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint hoàn thành Phase 4
 
-- [ ] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile
-- [ ] CI xanh
-- [ ] `PLAN.md` đã đánh dấu xong Phase 4
-- [ ] Sẵn sàng sang Phase 5
+- [x] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile
+- [x] CI xanh
+- [x] `PLAN.md` đã đánh dấu xong Phase 4
+- [x] Sẵn sàng sang Phase 5
 
 ## Parallelization
 
