@@ -67,7 +67,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm A: Xem và quản lý project
 
-- [ ] T4.1 Project overview (M)
+- [x] T4.1 Project overview (M)
 - [ ] T4.1b Sửa và lưu trữ project (M)
 
 ### Checkpoint A

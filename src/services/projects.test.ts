@@ -1,10 +1,10 @@
 import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
-import { user } from "@/lib/db/schema";
+import { project, task, user } from "@/lib/db/schema";
 import { projectKey } from "@/lib/projects";
 import { NotFoundError, ValidationError } from "./errors";
-import { createProject, getProject, listProjects } from "./projects";
+import { createProject, getProject, getProjectOverview, listProjects } from "./projects";
 import { createTask, listTasks } from "./tasks";
 
 const alice = "projects-test-alice";
@@ -116,4 +116,58 @@ test("creating a task in someone else's project stays refused", async () => {
   const project = await createProject(bob, { ...base, name: "Not Yours" });
 
   await expect(createTask(alice, { title: "Sneaky", projectId: project.id })).rejects.toBeInstanceOf(NotFoundError);
+});
+
+const reference = new Date("2026-11-06T10:00:00Z"); // 17:00 on Nov 6 in Ho Chi Minh City
+
+async function overviewProject(key: string, values: { targetDate?: string } = {}) {
+  const [row] = await db.insert(project).values({ userId: alice, name: "Overview", key, color: "#f47258", icon: "code", template: "software", ...values }).returning();
+  return row;
+}
+
+async function addTask(projectId: string, status: "ongoing" | "completed" | "canceled", dueAt: Date | null = null) {
+  await db.insert(task).values({ userId: alice, title: "T", projectId, status, dueAt, position: 1 });
+}
+
+test("the overview counts done, open and overdue, leaving canceled tasks out", async () => {
+  const { id } = await overviewProject("OV1");
+  await addTask(id, "completed");
+  await addTask(id, "ongoing");
+  await addTask(id, "ongoing", new Date("2026-11-01T00:00:00Z"));
+  await addTask(id, "canceled", new Date("2026-11-01T00:00:00Z"));
+
+  expect(await getProjectOverview(alice, id, reference)).toMatchObject({ done: 1, total: 3, open: 2, overdue: 1, percent: 33 });
+});
+
+test("a task due today is not overdue, and yesterday in the owner's zone is", async () => {
+  const { id } = await overviewProject("OV2");
+  await addTask(id, "ongoing", new Date("2026-11-06T02:00:00Z")); // 09:00 today, already past
+  await addTask(id, "ongoing", new Date("2026-11-05T16:59:00Z")); // 23:59 yesterday there
+
+  expect((await getProjectOverview(alice, id, reference))?.overdue).toBe(1);
+  expect((await getProjectOverview(alice, id, new Date("2026-11-05T16:00:00Z")))?.overdue).toBe(0);
+});
+
+test("the target date counts days in the owner's zone", async () => {
+  const { id } = await overviewProject("OV3", { targetDate: "2026-11-07" });
+  const lateEvening = new Date("2026-11-06T16:30:00Z"); // 23:30 on Nov 6 there
+  const justAfter = new Date("2026-11-06T17:30:00Z"); // 00:30 on Nov 7 there
+
+  expect(await getProjectOverview(alice, id, lateEvening)).toMatchObject({ targetLabel: "Nov 7", daysLabel: "1 day left" });
+  expect((await getProjectOverview(alice, id, justAfter))?.daysLabel).toBe("Due today");
+  expect((await getProjectOverview(alice, id, new Date("2026-11-10T03:00:00Z")))?.daysLabel).toBe("3 days overdue");
+  expect((await getProjectOverview(alice, id, new Date("2025-11-01T03:00:00Z")))?.targetLabel).toBe("Nov 7, 2026");
+});
+
+test("an empty project has no division by zero and no target", async () => {
+  const { id } = await overviewProject("OV4");
+
+  expect(await getProjectOverview(alice, id, reference)).toMatchObject({ total: 0, percent: 0, targetLabel: null, daysLabel: null, templateName: "Software sprint" });
+});
+
+test("another user's project or a wrong id has no overview", async () => {
+  const { id } = await overviewProject("OV5");
+
+  expect(await getProjectOverview(bob, id)).toBeNull();
+  expect(await getProjectOverview(alice, "not-a-real-id")).toBeNull();
 });

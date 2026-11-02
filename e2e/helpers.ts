@@ -1,6 +1,6 @@
 import { randomInt, randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { oauthClient, oauthClientResource, oauthResource, project, task, user, verification } from "@/lib/db/schema";
 
@@ -95,4 +95,9 @@ export async function expectNoHorizontalScroll(page: Page) {
     return scrollWidth - clientWidth;
   });
   expect(overflow, "page scrolls horizontally").toBeLessThanOrEqual(0);
+}
+
+export async function completeTask(email: string, title: string) {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, email));
+  await db.update(task).set({ status: "completed" }).where(and(eq(task.userId, owner.id), eq(task.title, title)));
 }

@@ -13,15 +13,15 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang 10 tại `/projects/[id]`: header theo màu project có icon, mã · template, tên, mục tiêu, nút Add task (`/tasks/new?project=`) và nút sửa. Ba KPI: Progress, Tasks (`11 / 18`, kèm số đang mở và số quá hạn), Target date (kèm số ngày còn lại). `getProjectOverview` trong `src/services/projects.ts` tính số liệu theo múi giờ người dùng. Bỏ `shortcut` cũ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Số liệu khớp DB; task đã hủy không tính vào Progress.
-- [ ] Số quá hạn và số ngày còn lại tính theo múi giờ người dùng; hạn hôm nay chưa tính là quá hạn.
-- [ ] Project không có task hoặc không có ngày đích hiện trạng thái rỗng rõ ràng, không chia cho 0.
-- [ ] Project của người khác hoặc id sai trả 404.
+- [x] Số liệu khớp DB; task đã hủy không tính vào Progress.
+- [x] Số quá hạn và số ngày còn lại tính theo múi giờ người dùng; hạn hôm nay chưa tính là quá hạn.
+- [x] Project không có task hoặc không có ngày đích hiện trạng thái rỗng rõ ràng, không chia cho 0.
+- [x] Project của người khác hoặc id sai trả 404.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `getProjectOverview`, có múi giờ âm, hạn gần nửa đêm, project rỗng, user khác.
-- [ ] E2E tạo project, xem KPI ở desktop và mobile.
-- [ ] So ảnh với `design/screens/10-project-overview.html` ở 390 và 1440 px.
+- [x] Vitest cho `getProjectOverview`, có múi giờ âm, hạn gần nửa đêm, project rỗng, user khác.
+- [x] E2E tạo project, xem KPI ở desktop và mobile.
+- [x] So ảnh với `design/screens/10-project-overview.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** Không
 
