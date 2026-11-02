@@ -271,13 +271,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Cài `chrono-node`. Phím `N` mở `Sheet`, `parseQuickAdd` tách `#category`, `!priority` và ngày tự nhiên theo múi giờ người dùng, hiện trước kết quả phân tích khi gõ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] "Review PR tomorrow 9am #Development !high" cho đúng tên, ngày, giờ, category, priority.
-- [ ] `N` không kích hoạt khi đang gõ trong input.
-- [ ] Category không tồn tại được báo, không tự tạo.
+- [x] "Review PR tomorrow 9am #Development !high" cho đúng tên, ngày, giờ, category, priority.
+- [x] `N` không kích hoạt khi đang gõ trong input.
+- [x] Category không tồn tại được báo, không tự tạo.
 
 **Kiểm chứng:**
-- [ ] Test bảng cho `parseQuickAdd`, có tên tiếng Việt và câu không có ngày.
-- [ ] E2E mở bằng phím, tạo task, thấy trên Board.
+- [x] Test bảng cho `parseQuickAdd`, có tên tiếng Việt và câu không có ngày.
+- [x] E2E mở bằng phím, tạo task, thấy trên Board.
 
 **Phụ thuộc:** T2.3, T2.4
 

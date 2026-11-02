@@ -160,6 +160,11 @@ export function listTasks(userId: string, filter: { status?: TaskRow["status"]; 
     .orderBy(asc(task.position), asc(task.id));
 }
 
+export async function getTimeZone(userId: string) {
+  const [owner] = await db.select({ timezone: user.timezone }).from(user).where(eq(user.id, userId));
+  return owner.timezone ?? "UTC";
+}
+
 export async function searchTasks(userId: string, query: string) {
   const term = query.trim().slice(0, 100);
   if (!term) return [];

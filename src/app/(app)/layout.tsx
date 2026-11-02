@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { BottomNav } from "@/components/app/BottomNav";
+import { QuickAdd } from "@/components/app/QuickAdd";
 import { Sidebar } from "@/components/app/Sidebar";
 import { TopBar } from "@/components/app/TopBar";
 
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <Suspense>
         <BottomNav />
       </Suspense>
+      <QuickAdd />
     </div>
   );
 }

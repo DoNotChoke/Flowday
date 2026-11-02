@@ -260,3 +260,58 @@ test.describe("search", () => {
     else await expect(hint).toBeVisible();
   });
 });
+
+test.describe("quick add", () => {
+  test.skip(({ isMobile }) => isMobile, "the N key needs a keyboard");
+
+  async function open(page: Page) {
+    await expect(async () => {
+      await page.keyboard.press("n");
+      await expect(page.getByRole("dialog", { name: "Quick add" })).toBeVisible({ timeout: 500 });
+    }).toPass();
+    return page.getByRole("dialog", { name: "Quick add" });
+  }
+
+  test("N opens the sheet, the preview follows, and the task reaches the board", async ({ page }, testInfo) => {
+    const sheet = await open(page);
+    const input = sheet.getByRole("textbox", { name: "Task" });
+    await expect(input).toBeFocused();
+    await input.fill("Review PR tomorrow 9am #Development !high");
+
+    await expect(sheet.getByText("Review PR", { exact: true })).toBeVisible();
+    await expect(sheet.getByText(/, 09:00$/)).toBeVisible();
+    await expect(sheet.getByText("Development", { exact: true })).toBeVisible();
+    await expect(sheet.getByText("High", { exact: true })).toBeVisible();
+
+    await input.press("Enter");
+    await expect(sheet).toBeHidden();
+    await expect(column(page, "On going").getByRole("link", { name: /Review PR/ })).toContainText("Development");
+    await expect(column(page, "On going").getByRole("link", { name: /Review PR/ })).toContainText("High");
+
+    const task = (await tasksOf(emailFor(testInfo))).find((row) => row.title === "Review PR");
+    expect(task).toMatchObject({ priority: "high" });
+    expect(task?.dueAt?.toISOString()).toMatch(/T02:00:00\.000Z$/);
+  });
+
+  test("an unknown category is reported and nothing is created", async ({ page }, testInfo) => {
+    const sheet = await open(page);
+    const input = sheet.getByRole("textbox", { name: "Task" });
+    await input.fill("Plan #Nope");
+    await input.press("Enter");
+
+    await expect(sheet.getByRole("alert")).toContainText("No category named Nope");
+    await expect(input).toHaveValue("Plan #Nope");
+    expect(await tasksOf(emailFor(testInfo))).toHaveLength(1);
+  });
+
+  test("N does nothing while typing", async ({ page }) => {
+    await expect(page.getByRole("searchbox", { name: "Search tasks" })).toBeEnabled();
+    await open(page);
+    await page.keyboard.press("Escape");
+
+    await page.getByRole("searchbox", { name: "Search tasks" }).press("n");
+
+    await expect(page.getByRole("searchbox", { name: "Search tasks" })).toHaveValue("n");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+});

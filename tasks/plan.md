@@ -95,7 +95,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm D: Thao tác nhanh
 
 - [x] T2.9 Tìm kiếm (S)
-- [ ] T2.10 Quick-add (M)
+- [x] T2.10 Quick-add (M)
 
 ### Checkpoint hoàn thành Phase 2
 
