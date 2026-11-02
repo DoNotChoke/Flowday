@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { expect, test, type APIRequestContext, type Page, type TestInfo } from "@playwright/test";
-import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll, resetTokenFor, verifyEmail } from "./helpers";
+import { createOAuthClient, deleteOAuthClient, deleteUser, expectNoHorizontalScroll, resetTokenFor, verifyEmail, tasksOf } from "./helpers";
 
 const password = "correct-horse-battery";
 
@@ -88,6 +88,52 @@ test("signing in, creating a project and a task in it, then seeing the task on t
 
   await page.reload();
   await expect(card).toContainText("Đồ án tốt nghiệp");
+});
+
+test("signing in, creating a task, moving it and completing it", async ({ page, request, isMobile }, testInfo) => {
+  test.slow();
+  await register(request, testInfo);
+  await page.goto("/sign-in");
+  await signIn(page, testInfo);
+  await expect(page).toHaveURL("/tasks");
+
+  await page.goto("/tasks/new");
+  await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+  await page.getByLabel("Task name").fill("Viết chương ba");
+  await page.getByRole("button", { name: "Create Task" }).click();
+  await expect(page).toHaveURL("/tasks");
+
+  const column = (name: string) => page.getByRole("region", { name });
+  const card = (name: string) => column(name).getByRole("link", { name: /Viết chương ba/ });
+  const saved = () => page.waitForResponse((response) => response.request().method() === "POST" && new URL(response.url()).pathname === "/tasks");
+
+  async function move(from: string, to: string) {
+    const response = saved();
+    if (isMobile) {
+      await page.getByRole("button", { name: "Move Viết chương ba" }).click();
+      await page.getByRole("dialog").getByRole("button", { name: to }).click();
+    } else {
+      const start = (await card(from).boundingBox())!;
+      const target = (await column(to).boundingBox())!;
+      await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(start.x + start.width / 2 + 12, start.y + start.height / 2 + 12, { steps: 4 });
+      await page.mouse.move(target.x + target.width / 2, target.y + target.height / 2, { steps: 12 });
+      await page.mouse.up();
+    }
+    await response;
+    if (isMobile) await page.getByRole("group", { name: "Status" }).getByRole("button", { name: new RegExp(to) }).click();
+    await expect(card(to)).toBeVisible();
+  }
+
+  await move("On going", "In process");
+  await move("In process", "Completed");
+
+  await page.reload();
+  if (isMobile) await page.getByRole("group", { name: "Status" }).getByRole("button", { name: /Completed/ }).click();
+  await expect(card("Completed")).toContainText("100%");
+  await expect(page.getByRole("region", { name: "Task status" })).toContainText("Completed1 Tasks");
+  expect((await tasksOf(emailFor(testInfo)))[0].status).toBe("completed");
 });
 
 test("a signed-out visitor is sent to sign-in and returned afterwards", async ({ page, request }, testInfo) => {
