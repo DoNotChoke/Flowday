@@ -289,7 +289,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint hoàn thành Phase 2
 
-- [ ] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile.
-- [ ] CI xanh.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 2.
-- [ ] Sẵn sàng sang T3.1.
+- [x] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile.
+- [x] CI xanh.
+- [x] `PLAN.md` đã đánh dấu xong Phase 2.
+- [x] Sẵn sàng sang T3.1.

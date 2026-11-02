@@ -250,7 +250,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T2.9 Tìm kiếm (S).** Ô search và phím `⌘K`/`Ctrl+K`. *Xong khi:* tìm được tên có dấu tiếng Việt, kể cả khi gõ không dấu.
 - [x] **T2.10 Quick-add (M).** Phím `N`, parser `#category`, `!priority`, ngày tự nhiên bằng `chrono-node`. *Xong khi:* test bảng phủ câu mẫu "Review PR tomorrow 9am #Development !high"; `N` không kích hoạt khi đang gõ trong input.
 
-**Checkpoint:** E2E đăng nhập → tạo → kéo → hoàn thành chạy trên cả project desktop và mobile.
+**Checkpoint:** đã đạt. E2E đăng nhập → tạo → kéo → hoàn thành chạy trên cả project desktop và mobile; mobile đổi status bằng Move to.
 
 ### Phase 3 — MCP cho Claude
 

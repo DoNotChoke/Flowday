@@ -99,9 +99,9 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint hoàn thành Phase 2
 
-- [ ] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile
-- [ ] `PLAN.md` đã đánh dấu xong Phase 2
-- [ ] Sẵn sàng sang T3.1
+- [x] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile
+- [x] `PLAN.md` đã đánh dấu xong Phase 2
+- [x] Sẵn sàng sang T3.1
 
 ## Parallelization
 
