@@ -87,6 +87,8 @@ test.describe("with a mouse and a wide screen", () => {
     await card.focus();
     await page.keyboard.press("Space");
     await expect(page.getByRole("status").filter({ hasText: "is over On going" })).toBeAttached();
+    // dnd-kit starts listening for arrow keys a tick after it announces the pick-up.
+    await page.waitForTimeout(100);
     await page.keyboard.press("ArrowRight");
     await expect(page.getByRole("status").filter({ hasText: "is over In process" })).toBeAttached();
     await page.keyboard.press("Space");
