@@ -9,8 +9,10 @@ import { Sheet } from "@/components/ui/Sheet";
 import { useHydrated } from "@/lib/useHydrated";
 import { addMilestoneAction, deleteMilestoneAction, updateMilestoneAction } from "./actions";
 
-type Milestone = { id: string; name: string; dueDate: string | null; taskCount: number };
+type Milestone = { id: string; name: string; dueDate: string | null; taskCount: number; percent: number; state: string };
 type Editing = Milestone | "new" | null;
+
+const stateTones: Record<string, string> = { Done: "bg-teal-tint", "In progress": "bg-sun-tint" };
 
 function dateLabel(date: string) {
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(date));
@@ -65,11 +67,17 @@ export function Milestones({ projectId, milestones }: { projectId: string; miles
         <ol className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
           {milestones.map((milestone) => (
             <li key={milestone.id} className="min-w-0">
-              <button type="button" disabled={!hydrated} onClick={() => open(milestone)} className="flex w-full flex-col gap-2 rounded-2xl border-hard bg-white p-3.5 text-left">
-                <span className="text-xs font-semibold">{milestone.dueDate ? dateLabel(milestone.dueDate) : "No date"}</span>
+              <button type="button" disabled={!hydrated} onClick={() => open(milestone)} className={`flex w-full flex-col gap-2 rounded-2xl border-hard p-3.5 text-left ${stateTones[milestone.state] ?? "bg-white"}`}>
+                <span className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold">{milestone.dueDate ? dateLabel(milestone.dueDate) : "No date"}</span>
+                  <span className="rounded-full border border-ink bg-white px-2 py-0.5 text-[11px] font-semibold">{milestone.state}</span>
+                </span>
                 <span className="font-content text-sm font-semibold break-words">{milestone.name}</span>
-                <span className="text-xs text-muted">
-                  {milestone.taskCount} {milestone.taskCount === 1 ? "task" : "tasks"}
+                <span aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-ink/12">
+                  <span style={{ width: `${milestone.percent}%` }} className="block h-full bg-ink" />
+                </span>
+                <span className="text-xs text-[#3d3d3d]">
+                  {milestone.percent}% · {milestone.taskCount} {milestone.taskCount === 1 ? "task" : "tasks"}
                 </span>
               </button>
             </li>

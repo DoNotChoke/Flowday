@@ -293,6 +293,42 @@ test.describe("milestones", () => {
     await expect(block(page).getByRole("button", { name: /Bảo vệ thử/ })).toHaveCount(0);
   });
 
+  test("a task joins a milestone, and finishing it moves the milestone", async ({ page }, testInfo) => {
+    const overview = page.url();
+    await add(page, "Bản nháp");
+    const card = block(page).getByRole("button", { name: /Bản nháp/ });
+    await expect(card).toContainText("Planned");
+
+    await page.getByRole("region", { name: "Project tasks" }).getByRole("link", { name: /Build auth flow/ }).click();
+    await page.getByRole("button", { name: /^Milestone/ }).click();
+    await dialog(page).getByLabel("Milestone").selectOption({ label: "Bản nháp" });
+    await dialog(page).getByRole("button", { name: "Save" }).click();
+    await expect(dialog(page)).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole("button", { name: /^Milestone/ })).toContainText("Bản nháp");
+    await expect(page.getByRole("list", { name: "Activity" })).toContainText("changed the milestone");
+
+    await page.goto(overview);
+    await expect(card).toContainText("0% · 1 task");
+
+    await completeTask(emailFor(testInfo), "Build auth flow");
+    await page.reload();
+    await expect(card).toContainText("Done");
+    await expect(card).toContainText("100% · 1 task");
+  });
+
+  test("a task with no project has no milestone field", async ({ page }) => {
+    await page.goto("/tasks/new");
+    await expect(page.getByRole("button", { name: "Create Task" })).toBeEnabled();
+    await page.getByLabel("Task name").fill("Không project");
+    await page.getByRole("button", { name: "Create Task" }).click();
+    await expect(page).toHaveURL("/tasks");
+
+    await page.getByRole("link", { name: /Không project/ }).click();
+    await expect(page.getByRole("button", { name: /^Deadline/ })).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Milestone/ })).toHaveCount(0);
+  });
+
   test("a blank name is refused and the sheet stays open", async ({ page }) => {
     await page.getByRole("button", { name: "+ Milestone" }).click();
     await dialog(page).getByLabel("Milestone name").fill("   ");

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray, max, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
+import { category, milestone, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
 import { utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { recordActivity, type Actor } from "./activity";
 import { NotFoundError, parseInput } from "./errors";
@@ -31,7 +31,7 @@ const createSchema = z.object({
   categoryIds: fields.categoryIds.default([]),
   alertEnabled: fields.alertEnabled.default(false),
 });
-const updateSchema = z.object(fields).partial();
+const updateSchema = z.object({ ...fields, milestoneId: z.string().nullable() }).partial();
 const moveSchema = z.object({ status: fields.status, afterId: z.string().nullable() });
 
 const editable = [
@@ -67,6 +67,16 @@ async function nextNumber(tx: Transaction, userId: string, projectId: string) {
     .returning({ number: project.taskSeq });
   if (!row) throw new NotFoundError("Project");
   return row.number;
+}
+
+async function milestoneInProject(tx: Transaction, userId: string, id: string, projectId: string | null | undefined) {
+  if (!projectId) return false;
+  const [row] = await tx
+    .select({ id: milestone.id })
+    .from(milestone)
+    .innerJoin(project, eq(milestone.projectId, project.id))
+    .where(and(eq(milestone.id, id), eq(milestone.projectId, projectId), eq(project.userId, userId)));
+  return Boolean(row);
 }
 
 export async function endOfColumn(tx: Transaction, userId: string, status: TaskRow["status"]) {
@@ -208,7 +218,12 @@ export async function updateTask(userId: string, id: string, input: UpdateTaskIn
     if (values.projectId !== undefined && values.projectId !== current.projectId) {
       changes.number = values.projectId ? await nextNumber(tx, userId, values.projectId) : null;
       edited.push("project");
+      if (values.milestoneId === undefined) changes.milestoneId = null;
     }
+    if (values.milestoneId && !(await milestoneInProject(tx, userId, values.milestoneId, values.projectId ?? current.projectId))) {
+      throw new NotFoundError("Milestone");
+    }
+    if (values.milestoneId !== undefined && values.milestoneId !== current.milestoneId) edited.push("milestone");
     if (dueDate !== undefined) {
       const due = await dueFields(tx, userId, dueDate, dueTime);
       Object.assign(changes, due);

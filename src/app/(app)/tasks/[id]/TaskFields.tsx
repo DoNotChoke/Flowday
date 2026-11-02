@@ -16,7 +16,7 @@ import { deleteTaskAction, updateTaskAction } from "./actions";
 
 type Task = NonNullable<Awaited<ReturnType<typeof getTaskDetail>>>;
 type Option = { id: string; name: string };
-type Props = { task: Task; categories: Option[]; projects: Option[]; children: ReactNode };
+type Props = { task: Task; categories: Option[]; projects: Option[]; milestones: Option[]; children: ReactNode };
 
 function unreachable(error: unknown) {
   // A redirect from an action arrives here as a rejection.
@@ -43,7 +43,7 @@ function PencilButton({ label, disabled, onClick }: { label: string; disabled: b
   );
 }
 
-export function TaskFields({ task, categories, projects, children }: Props) {
+export function TaskFields({ task, categories, projects, milestones, children }: Props) {
   const hydrated = useHydrated();
   const [editing, setEditing] = useState<keyof typeof editors | null>(null);
   const [menu, setMenu] = useState<"actions" | "delete" | null>(null);
@@ -114,6 +114,20 @@ export function TaskFields({ task, categories, projects, children }: Props) {
         <Field as="select" label="Project" name="project" defaultValue={task.projectId ?? ""} className="font-content">
           <option value="">No project (Inbox)</option>
           {projects.map((option) => (
+            <option key={option.id} value={option.id}>
+              {option.name}
+            </option>
+          ))}
+        </Field>
+      ),
+    },
+    milestone: {
+      label: "milestone",
+      read: (values: FormData): UpdateTaskInput => ({ milestoneId: String(values.get("milestone")) || null }),
+      fields: (
+        <Field as="select" label="Milestone" name="milestone" defaultValue={task.milestoneId ?? ""} className="font-content">
+          <option value="">No milestone</option>
+          {milestones.map((option) => (
             <option key={option.id} value={option.id}>
               {option.name}
             </option>
@@ -234,6 +248,11 @@ export function TaskFields({ task, categories, projects, children }: Props) {
         <Tile label="Project" tone="bg-[#f7f7f4]" disabled={!hydrated} onClick={() => open("project")}>
           <span className="font-content">{task.projectName ?? "Inbox"}</span>
         </Tile>
+        {task.projectId && (
+          <Tile label="Milestone" tone="bg-[#f7f7f4]" disabled={!hydrated} onClick={() => open("milestone")}>
+            <span className="font-content">{milestones.find((option) => option.id === task.milestoneId)?.name ?? "None"}</span>
+          </Tile>
+        )}
         <Tile label="Estimate" tone="bg-[#f7f7f4]" disabled={!hydrated} onClick={() => open("estimate")}>
           {task.estimateMin ? estimateLabel(task.estimateMin) : "Not set"}
         </Tile>

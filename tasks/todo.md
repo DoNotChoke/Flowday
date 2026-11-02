@@ -134,13 +134,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Tile Milestone ở Task detail, chỉ hiện khi task có project. `updateTask` kiểm tra milestone thuộc đúng project và ghi activity. Đổi project thì bỏ milestone. Milestone hiện % và trạng thái suy ra từ task.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Hoàn thành task làm đổi % và trạng thái của milestone; task đã hủy không tính.
-- [ ] Không gán được milestone của project khác; đổi project tự bỏ milestone.
-- [ ] Milestone không có task hiện `Planned`, 0%.
+- [x] Hoàn thành task làm đổi % và trạng thái của milestone; task đã hủy không tính.
+- [x] Không gán được milestone của project khác; đổi project tự bỏ milestone.
+- [x] Milestone không có task hiện `Planned`, 0%.
 
 **Kiểm chứng:**
-- [ ] Test bảng cho % và trạng thái.
-- [ ] E2E gán task, hoàn thành, xem lại ở Overview.
+- [x] Test bảng cho % và trạng thái.
+- [x] E2E gán task, hoàn thành, xem lại ở Overview.
 
 **Phụ thuộc:** T4.4
 

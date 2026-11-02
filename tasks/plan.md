@@ -83,7 +83,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm C: Milestones
 
 - [x] T4.4 Milestones (M)
-- [ ] T4.4b Gán task vào milestone (S)
+- [x] T4.4b Gán task vào milestone (S)
 
 ### Checkpoint B
 

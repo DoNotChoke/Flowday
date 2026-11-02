@@ -4,6 +4,7 @@ import { requireUserId } from "@/lib/auth/session";
 import { relativeTime } from "@/lib/datetime";
 import { listActivity } from "@/services/activity";
 import { listCategories } from "@/services/categories";
+import { listMilestones } from "@/services/milestones";
 import { listProjects } from "@/services/projects";
 import { listSubtasks } from "@/services/subtasks";
 import { getTaskDetail } from "@/services/tasks";
@@ -22,6 +23,7 @@ async function Content({ params }: PageProps<"/tasks/[id]">) {
     listActivity(userId, id),
   ]);
   if (!task) notFound();
+  const milestones = task.projectId ? await listMilestones(userId, task.projectId) : [];
 
   // An archived project is off the list, yet this task still belongs to it.
   const options = task.projectId && !projects.some((row) => row.id === task.projectId) ? [...projects, { id: task.projectId, name: task.projectName ?? "" }] : projects;
@@ -30,7 +32,7 @@ async function Content({ params }: PageProps<"/tasks/[id]">) {
 
   return (
     <div className="flex flex-wrap items-start gap-6">
-      <TaskFields task={task} categories={categories} projects={options}>
+      <TaskFields task={task} categories={categories} projects={options} milestones={milestones}>
         <Checklist taskId={id} subtasks={subtasks} />
       </TaskFields>
       <Activity taskId={id} rows={rows} />

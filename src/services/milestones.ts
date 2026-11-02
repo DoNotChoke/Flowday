@@ -1,4 +1,4 @@
-import { and, asc, count, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { milestone, project, task } from "@/lib/db/schema";
@@ -20,15 +20,29 @@ async function ownedMilestone(userId: string, id: string) {
   if (!row) throw new NotFoundError("Milestone");
 }
 
-export function listMilestones(userId: string, projectId: string) {
-  return db
-    .select({ id: milestone.id, name: milestone.name, dueDate: milestone.dueDate, taskCount: count(task.id) })
+export function milestoneProgress(total: number, done: number, started: number) {
+  const percent = total ? Math.round((done / total) * 100) : 0;
+  if (total > 0 && done === total) return { percent, state: "Done" };
+  return { percent, state: done > 0 || started > 0 ? "In progress" : "Planned" };
+}
+
+export async function listMilestones(userId: string, projectId: string) {
+  const rows = await db
+    .select({
+      id: milestone.id,
+      name: milestone.name,
+      dueDate: milestone.dueDate,
+      taskCount: sql<number>`count(${task.id}) filter (where ${task.status} <> 'canceled')::int`,
+      done: sql<number>`count(${task.id}) filter (where ${task.status} = 'completed')::int`,
+      started: sql<number>`count(${task.id}) filter (where ${task.status} = 'in_process')::int`,
+    })
     .from(milestone)
     .innerJoin(project, eq(milestone.projectId, project.id))
     .leftJoin(task, eq(task.milestoneId, milestone.id))
     .where(and(eq(milestone.projectId, projectId), eq(project.userId, userId)))
     .groupBy(milestone.id)
     .orderBy(sql`${milestone.dueDate} asc nulls last`, asc(milestone.createdAt));
+  return rows.map(({ done, started, ...row }) => ({ ...row, ...milestoneProgress(row.taskCount, done, started) }));
 }
 
 export async function addMilestone(userId: string, projectId: string, input: MilestoneInput) {
