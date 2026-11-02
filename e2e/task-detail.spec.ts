@@ -148,3 +148,91 @@ for (const width of [360, 390, 820, 1440]) {
     await expectNoHorizontalScroll(page);
   });
 }
+
+test.describe("the checklist", () => {
+  function saved(page: Page) {
+    return page.waitForResponse((response) => response.request().method() === "POST" && new URL(response.url()).pathname.startsWith("/tasks/"));
+  }
+
+  async function add(page: Page, title: string) {
+    const input = page.getByRole("textbox", { name: "Add checklist item" });
+    await input.fill(title);
+    await input.press("Enter");
+    await expect(page.getByRole("textbox", { name: `Edit ${title}` })).toBeVisible();
+    await expect(input).toHaveValue("");
+  }
+
+  test("ticking an item shows on the page and on the board", async ({ page }) => {
+    await add(page, "Mở đầu");
+    await add(page, "Kết luận");
+    await expect(page.getByText("0/2 done")).toBeVisible();
+
+    const ticked = saved(page);
+    await page.getByRole("checkbox", { name: "Mở đầu" }).check();
+    await expect(page.getByText("1/2 done")).toBeVisible();
+    await ticked;
+
+    await page.reload();
+    await expect(page.getByRole("checkbox", { name: "Mở đầu" })).toBeChecked();
+
+    await page.getByRole("link", { name: "Back to tasks" }).click();
+    await expect(page.getByRole("link", { name: /Viết chương ba/ })).toContainText("50%");
+    await expect(page.getByRole("link", { name: /Viết chương ba/ })).toContainText("1/2");
+  });
+
+  test("an item can be renamed, moved and removed", async ({ page }) => {
+    await add(page, "Một");
+    await add(page, "Hai");
+
+    const moved = saved(page);
+    await page.getByRole("button", { name: "Move Hai up" }).click();
+    await expect(page.getByRole("list", { name: "Checklist" }).getByRole("textbox").first()).toHaveValue("Hai");
+    await moved;
+
+    const item = page.getByRole("textbox", { name: "Edit Một" });
+    const renamed = saved(page);
+    await item.fill("Ba");
+    await item.press("Enter");
+    await expect(page.getByRole("textbox", { name: "Edit Ba" })).toBeVisible();
+    await renamed;
+
+    const removed = saved(page);
+    await page.getByRole("button", { name: "Delete Hai" }).click();
+    await expect(page.getByRole("textbox", { name: "Edit Hai" })).toHaveCount(0);
+    await removed;
+
+    await page.reload();
+    await expect(page.getByRole("textbox", { name: "Edit Ba" })).toHaveValue("Ba");
+    await expect(page.getByText("0/1 done")).toBeVisible();
+  });
+
+  test("clearing an item's name puts the old name back", async ({ page }) => {
+    await add(page, "Giữ tên");
+    const item = page.getByRole("textbox", { name: "Edit Giữ tên" });
+
+    await item.fill("  ");
+    await item.press("Enter");
+
+    await expect(item).toHaveValue("Giữ tên");
+  });
+
+  test("a failed tick goes back and says so", async ({ page }) => {
+    await add(page, "Mất mạng");
+    await page.route(/\/tasks\//, (route) => (route.request().method() === "POST" ? route.abort() : route.continue()));
+
+    await page.getByRole("checkbox", { name: "Mất mạng" }).click();
+
+    await expect(page.getByRole("alert").filter({ hasText: "Could not save" })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: "Mất mạng" })).not.toBeChecked();
+  });
+
+  test("a failed add keeps what was typed", async ({ page }) => {
+    await page.route(/\/tasks\//, (route) => (route.request().method() === "POST" ? route.abort() : route.continue()));
+    const input = page.getByRole("textbox", { name: "Add checklist item" });
+    await input.fill("Đừng mất");
+    await input.press("Enter");
+
+    await expect(page.getByRole("alert").filter({ hasText: "Could not save" })).toBeVisible();
+    await expect(input).toHaveValue("Đừng mất");
+  });
+});

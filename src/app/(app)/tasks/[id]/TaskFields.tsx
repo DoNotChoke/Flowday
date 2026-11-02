@@ -16,7 +16,7 @@ import { deleteTaskAction, updateTaskAction } from "./actions";
 
 type Task = NonNullable<Awaited<ReturnType<typeof getTaskDetail>>>;
 type Option = { id: string; name: string };
-type Props = { task: Task; categories: Option[]; projects: Option[] };
+type Props = { task: Task; categories: Option[]; projects: Option[]; children: ReactNode };
 
 function unreachable(error: unknown) {
   // A redirect from an action arrives here as a rejection.
@@ -43,7 +43,7 @@ function PencilButton({ label, disabled, onClick }: { label: string; disabled: b
   );
 }
 
-export function TaskFields({ task, categories, projects }: Props) {
+export function TaskFields({ task, categories, projects, children }: Props) {
   const hydrated = useHydrated();
   const [editing, setEditing] = useState<keyof typeof editors | null>(null);
   const [menu, setMenu] = useState<"actions" | "delete" | null>(null);
@@ -238,6 +238,8 @@ export function TaskFields({ task, categories, projects }: Props) {
           {task.estimateMin ? estimateLabel(task.estimateMin) : "Not set"}
         </Tile>
       </div>
+
+      {children}
 
       <Sheet open={Boolean(editing)} onClose={() => setEditing(null)} title={`Edit ${editing ? editors[editing].label : "task"}`}>
         {editing && (

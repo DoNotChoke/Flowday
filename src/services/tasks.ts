@@ -176,7 +176,7 @@ export async function updateTask(userId: string, id: string, input: UpdateTaskIn
 }
 
 // shortcut: positions run out of float precision after about 50 inserts into the same gap, renumber the column when two cards get too close.
-function positionAfter(cards: { id: string; position: number }[], afterId: string | null) {
+export function positionAfter(cards: { id: string; position: number }[], afterId: string | null) {
   if (afterId === null) return cards.length > 0 ? cards[0].position - POSITION_GAP : POSITION_GAP;
   const index = cards.findIndex((card) => card.id === afterId);
   // -1 picks the last card: a neighbour that left the column sends the task to the end.

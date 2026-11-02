@@ -208,11 +208,11 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** `src/services/subtasks.ts` thêm, tick, sửa, xóa, sắp xếp. Thanh tiến độ ở trang chi tiết, nhấn Enter để thêm.
 
 **Tiêu chí nghiệm thu:**
-- [ ] % trên Board đổi theo checklist.
-- [ ] Không đụng được subtask của task người khác.
+- [x] % trên Board đổi theo checklist.
+- [x] Không đụng được subtask của task người khác.
 
 **Kiểm chứng:**
-- [ ] Vitest và E2E tick rồi xem lại trên Board.
+- [x] Vitest và E2E tick rồi xem lại trên Board.
 
 **Phụ thuộc:** T2.7
 
