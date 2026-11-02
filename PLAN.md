@@ -199,6 +199,8 @@ Phase 0 → Phase 1 → Phase 2 → Phase 3 ─┬─ Phase 4 (Project) ──�
 
 Phase 4, 5, 6 và 8 làm song song được sau Phase 3. Phase 7 cần dữ liệu của Phase 4 và Phase 6.
 
+**Đổi thứ tự ngày 2026-11-02:** gác Phase 3 tới khi app đủ tính năng. Làm Phase 4 → 5 → 6 → 7 → 8, rồi Phase 3, rồi Phase 9. Phần không dính MCP của T3.4 (hồ sơ, múi giờ, category/project) làm cùng Phase 4, vì trang Settings đang trống. Phần MCP của T4.4 (`milestones` cho `create_project`, `milestone` cho `create_task`) chuyển sang T3.2.
+
 ### Phase 0 — Nền móng
 
 Đã xong. Tiêu chí và quyết định: `git show 5c468a5:tasks/todo.md` và `git show 5c468a5:tasks/plan.md`.
@@ -270,7 +272,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [ ] **T4.3 Tab Board và List (S).** Dùng lại component của `/tasks`, lọc theo project. *Xong khi:* kéo thả trong tab Board cũng cập nhật `/tasks`.
 - [ ] **T4.4 Milestones (M).** Bảng `milestone`, `task.milestone_id`, sheet "+ Milestone", chọn milestone ở Task detail, thêm `milestones` cho `create_project` và `milestone` cho `create_task`. *Xong khi:* hoàn thành task làm đổi % và state của milestone; xóa milestone không xóa task.
 
-**Checkpoint:** tạo project từ template → Claude thêm task vào project → Overview cập nhật đúng, trên cả desktop và mobile.
+**Checkpoint:** tạo project từ template → thêm task vào project → Overview cập nhật đúng, trên cả desktop và mobile. Bước Claude thêm task kiểm ở T3.6.
 
 ### Phase 5 — Calendar
 

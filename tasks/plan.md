@@ -1,60 +1,62 @@
-# Implementation Plan: Flowday — Phase 2 (Quản lý task)
+# Implementation Plan: Flowday — Phase 4 (Project) và Settings
 
-> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-01. Kế hoạch Phase 1 đã xong, xem lại bằng `git show 62abfc5:tasks/plan.md`.
+> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-02. Kế hoạch Phase 2 đã xong, xem lại bằng `git show 2b28c24:tasks/plan.md`.
 
 ## Overview
 
-Phase 2 biến khung app thành công cụ dùng được mỗi ngày: tạo project, tạo task, xem và kéo task trên Board, mở chi tiết, checklist, comment, tìm kiếm, thêm nhanh bằng phím `N`. Cuối phase có dữ liệu thật thay cho các trang tạm ở `/tasks`, `/tasks/new`, `/projects/new`, và `src/services/` sẵn sàng để Phase 3 gọi từ MCP.
+Phase 4 biến project từ một cái tên trên Sidebar thành nơi theo dõi được công việc: trang tổng quan có số liệu thật, sửa và lưu trữ project, bảng task, tab Board và List, milestones. Phase này cũng làm phần Settings không dính MCP, vì Phase 3 đã được gác lại và trang Settings đang trống.
 
 **Hoàn thành khi:**
 
-1. E2E đăng nhập → tạo task → kéo sang cột khác → hoàn thành chạy trên cả desktop và mobile.
-2. Mọi hàm service nhận `userId` và có test chứng minh user A không đọc hoặc sửa được dữ liệu của user B.
-3. Dữ liệu sống qua tải lại trang và không có cuộn ngang ở 360, 390, 820 và 1440 px.
+1. E2E tạo project từ template → thêm task → Overview cập nhật đúng chạy trên cả desktop và mobile.
+2. Mọi hàm service mới nhận `userId` và có test chứng minh user A không đọc hoặc sửa được dữ liệu của user B.
+3. Không có cuộn ngang ở 360, 390, 820 và 1440 px trên mọi trang mới.
 
 ## Hiện trạng đã kiểm tra
 
 | Hạng mục | Kết quả | Ảnh hưởng |
 |---|---|---|
-| Repo | `main` sạch, CI xanh | Bắt đầu từ nền đã kiểm chứng |
-| `schema.ts` | 13 bảng, đều của Better Auth, do `auth generate` ghi đè toàn bộ | Phải tách file trước khi thêm bảng của app |
-| `zod` | 4.6 đã có | Không thêm dependency để validate |
-| `@dnd-kit` | `core` 6.3 và `sortable` 10 ổn định; `@dnd-kit/react` mới 0.5 | Dùng `core` + `sortable` |
-| `chrono-node` | 2.10 | Chỉ thêm ở T2.10 |
-| `getCurrentUser()` | Dùng `use cache: private`, cache ở trình duyệt | Server Action cần hàm đọc phiên riêng, không cache |
-| `Card` | Không đổi được bo góc qua `className` | T2.4 cần prop, vì card task bo 18 px |
-| Sidebar, drawer | Có sẵn `PROJECTS` rỗng, đầy đủ tiêu đề và nút `+` | T2.2b chỉ thay dòng rỗng bằng danh sách |
-| Thiết kế | 4 cột On going, In process, Completed, Canceled. Bộ category: Design, Development, Coding, Meeting, Research, Office Time, User Experience. 4 template project có starter tasks | Dùng nguyên văn |
+| Repo | `main` có Phase 2 đóng, CI xanh ở Run 31 | Bắt đầu từ nền đã kiểm chứng |
+| `/projects/[id]` | Chỉ có tiêu đề, ghi `shortcut` chờ T4.1 | Viết lại trang |
+| `/settings` | Chỉ có tiêu đề | Viết mới |
+| `project` | Đã có `archived_at`, `budget_hours`, `start_date`, `target_date` | T4.1 và T4.1b không cần migration |
+| `task.project_id` | `on delete set null` | Xóa project không xóa task, nhưng V1 chỉ lưu trữ |
+| `getBoard` | Đã nhận `projectId`, nhưng card chưa có estimate và cờ quá hạn | T4.2 thêm hai trường, không viết truy vấn mới |
+| `listProjects` | Bỏ qua project đã lưu trữ | Sidebar tự đúng; form task cần xử lý task thuộc project đã lưu trữ |
+| `/tasks/new?project=` | Đã chọn sẵn project | "Add task" chỉ cần một link |
+| `ProjectForm` | Dùng state riêng, chưa nhận giá trị ban đầu | T4.1b thêm prop, không viết form mới |
+| Migration | 0000–0004, CI chạy `db:migrate` | T4.4 thêm 0005, chỉ thêm bảng và cột |
+| Thiết kế | Trang 10 có Share, Members, Assignee, Team workload, Timeline, Files, Burndown, Time logged | Xem mục "Không làm trong phase này" |
 
 ## Architecture Decisions
 
-- **Tách `src/lib/db/auth-schema.ts` cho Better Auth.** `auth generate` ghi vào đó, còn `schema.ts` chứa bảng của app và `export * from "./auth-schema"`. Mọi import hiện có giữ nguyên, và lần sinh lại sau không xóa bảng của app.
-- **Mỗi task chỉ thêm đúng bảng nó cần.** Phase 2 có `project`, `category`, `task`, `task_category`, `subtask`, `activity`. `focus_session` đợi T6.2, `milestone` đợi T4.4, `alert_sent_at` đợi T8.1.
-- **Dùng `refresh()` sau khi ghi, không dùng cache tag.** Trang đọc dữ liệu lúc request trong `<Suspense>`, Server Action gọi service rồi `refresh()`. Dữ liệu của một người dùng không cần cache phía server, và Claude tạo task qua MCP thì không có gì cũ để dọn.
-- **Thêm `requireUserId()` không cache cho Server Action.** `getCurrentUser()` cache 5 phút ở trình duyệt nên không dùng để phân quyền khi ghi. Action đọc lại phiên mỗi lần gọi và không nhận `userId` từ client.
-- **Server Action mỏng, logic nằm ở `src/services/`.** Zod validate tại service để web và MCP dùng chung. Lỗi validate trả về theo từng trường, không ném ra giao diện.
-- **`timestamp with timezone` cho bảng của app.** Hạn được quy đổi tại `src/lib/datetime.ts` bằng `Intl`, không thêm thư viện ngày giờ. `due_has_time` phân biệt "hạn cả ngày" với "hạn 17:00".
-- **`position` là `double precision`.** Thả giữa hai card thì lấy trung bình, chỉ ghi đúng một dòng. `shortcut: số thực sẽ cạn độ chính xác sau khoảng 50 lần chèn liên tiếp cùng một khe, đánh số lại cột khi khoảng cách quá nhỏ`.
-- **Cấp số task bằng `UPDATE project SET task_seq = task_seq + 1 RETURNING`.** Câu lệnh đơn nguyên tử, không cần khóa riêng.
-- **Activity ghi trong cùng transaction với thay đổi.** Lịch sử không thể lệch so với dữ liệu. Vì vậy T2.8 sửa lại các hàm service đã viết, nên service phải gọn từ đầu.
-- **Tìm kiếm bằng `unaccent(title) ILIKE unaccent(query)`.** Một người dùng với vài nghìn task thì không cần full-text index.
-- **Xóa cứng chỉ có ở web, có xác nhận.** MCP chỉ được hủy, đúng quy ước `PLAN.md` mục 5.
-- **Bộ phận lùi khỏi V1 ẩn hẳn:** Assignee, Members, Visibility, Workflow statuses, Attachment, Break into subtasks, tab Files.
+- **Số liệu project tính bằng một hàm service, `getProjectOverview`.** Đọc qua `getBoard` để Board, bảng và KPI cùng một nguồn. Mốc thời gian (quá hạn, số ngày còn lại) tính theo `user.timezone`.
+- **Trạng thái tab nằm trên URL** (`?view=board`, `?status=completed`), giống `/tasks`. Tải lại và chia sẻ link đều giữ nguyên.
+- **Lưu trữ thay cho xóa project.** Task giữ nguyên, vẫn hiện trên `/tasks`. Khôi phục ở Settings. Đúng quy ước "không có xóa cứng ngoài ý muốn" của `PLAN.md`.
+- **`key` không đổi sau khi tạo.** Đổi tên project không đổi mã task, vì mã đã xuất hiện trong activity và có thể đã được ghi lại ở nơi khác.
+- **Trạng thái milestone được suy ra, không lưu.** `Done` khi có task và mọi task không hủy đều xong, `In progress` khi có ít nhất một task xong hoặc đang làm, còn lại là `Planned`. Không có cột nào có thể lệch.
+- **Sửa project dùng lại `ProjectForm`**, thêm prop giá trị ban đầu, ẩn template và starter tasks.
+- **Giữ nguyên từ các phase trước:** nội dung người dùng nhập dùng `font-content`; form khóa submit tới khi hydrate; `.catch` của Server Action phải qua `unstable_rethrow`; mọi thay đổi trên task ghi activity; test chờ server trả lời trước khi tải lại trang; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
 
-Giữ nguyên từ các phase trước: nội dung người dùng nhập dùng `font-content`; form khóa submit tới khi hydrate; rate limit e2e dùng IP riêng; `.test` không gửi mail; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
+## Không làm trong phase này
+
+| Phần trong thiết kế | Lý do |
+|---|---|
+| Share, Members, Assignee, Team workload | Lùi khỏi V1, app cá nhân |
+| Tab Timeline, Files | Lùi khỏi V1 |
+| KPI Time logged, Budget, Burndown | T7.7, cần dữ liệu focus |
+| `milestones` trong `create_project`, `milestone` trong `create_task` | Chuyển sang T3.2 cùng MCP |
+| Connected apps, hướng dẫn kết nối Claude | Ở lại T3.4 cùng Phase 3 |
+| Đổi email, đổi mật khẩu trong Settings | `forgot-password` đã đổi được mật khẩu; đợi khi cần |
 
 ## Dependency Graph
 
 ```text
-T2.1 Schema, datetime, service task
-  ├── T2.2 Create project ── T2.2b Project trên Sidebar và drawer
-  │         │
-  │         └──────────┐
-  └── T2.3 Create task ┴── T2.4 Board
-                              ├── T2.5 Kéo thả ── T2.6 Board phone/tablet, List
-                              ├── T2.7 Task detail ── T2.7b Checklist ── T2.8 Comment, activity
-                              ├── T2.9 Tìm kiếm
-                              └── T2.10 Quick-add (cần T2.3)
+T4.1 Overview ──┬── T4.1b Sửa và lưu trữ
+                ├── T4.2 Bảng task ── T4.3 Tab Board và List
+                └── T4.4 Milestones ── T4.4b Gán task vào milestone
+
+T4.1b ── T4.5 Settings (khôi phục project đã lưu trữ)
 ```
 
 Mỗi task để lại một đường dùng được từ giao diện tới DB.
@@ -63,73 +65,69 @@ Mỗi task để lại một đường dùng được từ giao diện tới DB.
 
 Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
-### Nhóm A: Tạo và nhìn thấy dữ liệu
+### Nhóm A: Xem và quản lý project
 
-- [x] T2.1 Schema, datetime và service task (M)
-- [x] T2.2 Create project (M)
-- [x] T2.2b Project trên Sidebar và drawer (S)
-- [x] T2.3 Create task (M)
-- [x] T2.4 Board đọc dữ liệu (M)
+- [ ] T4.1 Project overview (M)
+- [ ] T4.1b Sửa và lưu trữ project (M)
 
 ### Checkpoint A
 
-- [x] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile
-- [x] Bạn đã xem Board và form tạo task
+- [ ] Số liệu Overview khớp DB trên desktop và mobile
+- [ ] Bạn đã xem Overview và trang sửa project
 
-### Nhóm B: Di chuyển task
+### Nhóm B: Task trong project
 
-- [x] T2.5 Kéo thả (M)
-- [x] T2.6 Board phone/tablet và List view (M)
+- [ ] T4.2 Bảng Project tasks (M)
+- [ ] T4.3 Tab Board và List (S)
+
+### Nhóm C: Milestones
+
+- [ ] T4.4 Milestones (M)
+- [ ] T4.4b Gán task vào milestone (S)
 
 ### Checkpoint B
 
-- [x] Đổi status được bằng chuột, bàn phím và cảm ứng
-- [x] Bạn đã thử trên điện thoại hoặc iPad thật
+- [ ] Hoàn thành task làm đổi % và trạng thái milestone
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
 
-### Nhóm C: Chi tiết task
+### Nhóm D: Settings
 
-- [x] T2.7 Task detail (M)
-- [x] T2.7b Checklist (S)
-- [x] T2.8 Comment và activity (M)
+- [ ] T4.5 Settings (M)
 
-### Nhóm D: Thao tác nhanh
+### Checkpoint hoàn thành Phase 4
 
-- [x] T2.9 Tìm kiếm (S)
-- [x] T2.10 Quick-add (M)
-
-### Checkpoint hoàn thành Phase 2
-
-- [x] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile
-- [x] `PLAN.md` đã đánh dấu xong Phase 2
-- [x] Sẵn sàng sang T3.1
+- [ ] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile
+- [ ] CI xanh
+- [ ] `PLAN.md` đã đánh dấu xong Phase 4
+- [ ] Sẵn sàng sang Phase 5
 
 ## Parallelization
 
-- **Tuần tự:** T2.1 → T2.4, vì cùng sửa schema và thứ tự migration.
-- **Song song được sau Checkpoint A:** nhóm B, nhóm C và T2.9.
-- **Cần phối hợp:** T2.8 sửa mọi hàm ghi của service, nên làm sau khi các hàm đó đã ổn định.
+- **Tuần tự:** T4.1 trước mọi task còn lại, vì cùng dựng trang `/projects/[id]`. T4.4 trước T4.4b vì có migration.
+- **Song song được sau T4.1:** T4.1b, T4.2 và T4.4.
+- **Cần phối hợp:** T4.2 và T4.3 cùng sửa phần dưới trang, nên làm liền nhau.
 
 ## Risks and Mitigations
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Kéo thả trên cảm ứng xung đột với cuộn trang; test tự động mô phỏng kém | Cao | `TouchSensor` có độ trễ, luôn có menu "Move to" làm đường dự phòng; thử trên thiết bị thật ở Checkpoint B |
-| Cập nhật lạc quan lệch với server khi mạng lỗi | TB | Giữ trạng thái trước khi kéo, lỗi thì quay về và báo; test bằng `page.route` chặn request |
-| Sai ngày do múi giờ, nhất là hạn gần nửa đêm | TB | Test bảng ở `lib/datetime`, đọc múi giờ từ `user.timezone` |
-| Trang tải chậm khi Neon vừa thức | TB | Khung trang tĩnh hiện ngay, dữ liệu stream trong `<Suspense>`; đã đo khoảng 2 giây |
-| Hai card trùng `position` khi kéo liên tiếp | Thấp | Sắp xếp phụ theo `id` để thứ tự vẫn xác định |
-| Sidebar quá dài khi nhiều project | Thấp | Vùng giữa Sidebar đã tự cuộn; test với 30 project |
-| Test ghi nhiều dữ liệu vào Neon `dev` | Thấp | Xóa user sau mỗi test, dữ liệu xóa theo cascade |
+| Task thuộc project đã lưu trữ: ô Project ở trang chi tiết không có lựa chọn đó và có thể làm mất liên kết khi lưu | TB | T4.1b thêm project hiện tại vào danh sách lựa chọn, có test |
+| Đổi múi giờ làm số ngày và nhãn hạn đổi theo | Thấp | Đúng ý muốn, vì `due_at` lưu UTC; T4.5 có test đổi múi giờ |
+| Tên ở Sidebar còn cũ sau khi đổi, do `getCurrentUser` cache 5 phút ở trình duyệt | TB | T4.5 tìm cách dọn cache hoặc tải lại đầy đủ; có E2E kiểm tra Sidebar |
+| Tốc độ: `/projects/[id]` đọc nhiều bảng, mỗi truy vấn khoảng 50 ms từ máy bạn | TB | Khung trang và dữ liệu dùng `<Suspense>`; gộp truy vấn khi có thể; đo lại sau deploy |
+| Hạn "hôm nay" tính nhầm là quá hạn gần nửa đêm | TB | Test bảng theo múi giờ cho `getProjectOverview` |
+| Migration 0005 trên Neon `dev` | Thấp | Chỉ thêm bảng và cột có thể rỗng, CI chạy trên DB sạch |
 
 ## Việc bạn cần làm
 
 | Khi nào | Việc |
 |---|---|
-| Checkpoint A | Xem Board và form tạo task, nói điều muốn đổi |
-| Checkpoint B | Thử kéo thả trên điện thoại hoặc iPad thật. App chưa deploy nên cần tunnel như lần trước, hoặc cùng mạng Wi-Fi |
+| Checkpoint A | Xem Overview và trang sửa project, nói điều muốn đổi |
+| Checkpoint B | Thử trên điện thoại hoặc iPad thật qua ngrok |
 
 ## Open Questions
 
 Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
 
-- **Xóa task có khôi phục được không?** Mặc định xóa hẳn sau khi xác nhận; muốn giữ lại thì dùng trạng thái Canceled.
+- **Deploy lên Vercel sớm?** Mặc định chưa đưa vào phase này. Mình đề xuất làm ngay sau Phase 4 để dùng thật và đo lại tốc độ, bạn quyết định ở Checkpoint hoàn thành.
+- **Có cần xóa hẳn project không?** Mặc định chỉ lưu trữ.

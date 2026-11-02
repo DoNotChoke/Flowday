@@ -1,118 +1,53 @@
-# Phase 2 — Danh sách việc
+# Phase 4 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
-**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run check` và `npm run test:e2e` pass trên máy, đã push (không chờ CI giữa các task, nhưng CI phải xanh trước khi qua checkpoint), không còn code thừa và không có thay đổi ngoài phạm vi. Trước khi viết code Next, đọc guide liên quan trong `node_modules/next/dist/docs/`.
+**Mọi task** chỉ xong khi đạt tiêu chí riêng, đã chạy thử thật, `npm run check` và `npm run test:e2e` pass trên máy, đã push (không chờ CI giữa các task, nhưng CI phải xanh trước khi qua checkpoint), không còn code thừa và không có thay đổi ngoài phạm vi. Trước khi viết code Next, đọc guide liên quan trong `node_modules/next/dist/docs/`. Nối lệnh commit bằng `&&`, không để test fail đi vào commit.
 
 ---
 
-## Nhóm A: Tạo và nhìn thấy dữ liệu
+## Nhóm A: Xem và quản lý project
 
-### T2.1 Schema, datetime và service task
+### T4.1 Project overview
 
-**Mô tả:** Chuyển bảng Better Auth sang `src/lib/db/auth-schema.ts` (sửa lệnh `auth generate` trong `README.md`), `schema.ts` re-export và thêm `project`, `category`, `task`, `task_category`, `subtask`, `activity` theo `PLAN.md` mục 3, bỏ các cột của phase sau. Hook `user.create.after` tạo 7 category mặc định, kèm migration chèn cho user đã có. `src/lib/datetime.ts` đổi `YYYY-MM-DD` + `HH:mm` theo múi giờ sang `Date` và ngược lại bằng `Intl`. `src/lib/auth/session.ts` thêm `requireUserId()` không cache. `src/services/tasks.ts` có `createTask`, `getTask`, `listTasks`, `updateTask`, `deleteTask`, validate bằng zod.
+**Mô tả:** Trang 10 tại `/projects/[id]`: header theo màu project có icon, mã · template, tên, mục tiêu, nút Add task (`/tasks/new?project=`) và nút sửa. Ba KPI: Progress, Tasks (`11 / 18`, kèm số đang mở và số quá hạn), Target date (kèm số ngày còn lại). `getProjectOverview` trong `src/services/projects.ts` tính số liệu theo múi giờ người dùng. Bỏ `shortcut` cũ.
 
 **Tiêu chí nghiệm thu:**
-- [x] User A không đọc, sửa hay xóa được task của user B; không gắn được project hay category của user B vào task.
-- [x] `2026-11-06` + `17:00` ở `Asia/Ho_Chi_Minh` lưu thành `10:00Z`; test bảng có múi giờ âm và hạn gần nửa đêm.
-- [x] Đăng ký xong có đủ 7 category; `(user_id, client_request_id)` unique.
-- [x] Chạy `auth generate` không làm mất bảng của app.
+- [ ] Số liệu khớp DB; task đã hủy không tính vào Progress.
+- [ ] Số quá hạn và số ngày còn lại tính theo múi giờ người dùng; hạn hôm nay chưa tính là quá hạn.
+- [ ] Project không có task hoặc không có ngày đích hiện trạng thái rỗng rõ ràng, không chia cho 0.
+- [ ] Project của người khác hoặc id sai trả 404.
 
 **Kiểm chứng:**
-- [x] `npm test` và test `requireUserId()` từ chối khi không có phiên.
-- [x] `npm run db:migrate` chạy trên `dev` và DB trống của CI; migration chỉ thêm, không xóa.
+- [ ] Vitest cho `getProjectOverview`, có múi giờ âm, hạn gần nửa đêm, project rỗng, user khác.
+- [ ] E2E tạo project, xem KPI ở desktop và mobile.
+- [ ] So ảnh với `design/screens/10-project-overview.html` ở 390 và 1440 px.
 
-**Phụ thuộc:** Phase 1
+**Phụ thuộc:** Không
 
-**File dự kiến:** `src/lib/db/auth-schema.ts`, `src/lib/db/schema.ts`, `src/lib/datetime.ts`, `src/services/tasks.ts`, `src/services/tasks.test.ts`, `src/lib/auth/index.ts`, `src/lib/auth/session.ts`, `drizzle/*`, `README.md`
+**File dự kiến:** `src/services/projects.ts`, `src/services/projects.test.ts`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T2.2 Create project
+### T4.1b Sửa và lưu trữ project
 
-**Mô tả:** `src/services/projects.ts` với `createProject`: sinh `key` bỏ dấu tiếng Việt qua `unaccent` trong Postgres (hoặc chuẩn hóa NFD), trùng thì thêm số, tạo starter tasks theo template trong một transaction, cấp số bằng `UPDATE ... RETURNING`. Trang 09 tại `/projects/new`: 4 template, tên, prefix, mục tiêu, 6 màu, 6 icon, ngày bắt đầu và kết thúc, time budget, Live preview. Ẩn Members, Workflow statuses, Visibility. Thêm `flex-wrap` cho hàng màu và icon, `Project name` chỉ span từ `md`.
-
-**Tiêu chí nghiệm thu:**
-- [x] Tạo từ template sinh đúng starter tasks, mã `FLW-1` trở đi.
-- [x] `Đồ án tốt nghiệp` cho prefix `DAT`; prefix trùng thì thành `DAT2`. Prefix chỉ đọc như thiết kế.
-- [x] Tạo đồng thời 2 task không bị trùng số.
-- [x] Không có cuộn ngang ở 360 px.
-
-**Kiểm chứng:**
-- [x] Vitest chạy 10 lần tạo song song và test cô lập theo user.
-- [x] E2E tạo project từ form và thấy Live preview cập nhật.
-- [x] So ảnh với `design/screens/09-create-project.html` ở 390 và 1440 px.
-
-**Phụ thuộc:** T2.1
-
-**File dự kiến:** `src/services/projects.ts`, `src/services/projects.test.ts`, `src/app/(app)/projects/new/page.tsx`, `src/app/(app)/projects/new/ProjectForm.tsx`, `src/app/(app)/projects/new/actions.ts`, `e2e/projects.spec.ts`
-
-**Quy mô:** M
-
----
-
-### T2.2b Project trên Sidebar và drawer
-
-**Mô tả:** Thay dòng "No projects yet" bằng danh sách thật: chấm màu, tên, số task. Thêm mục Projects vào drawer mobile. Mục đang mở được highlight. Trang `/projects/[id]` tạm có tiêu đề cho tới T4.1.
+**Mô tả:** Trang `/projects/[id]/settings` dùng lại `ProjectForm` với giá trị ban đầu, ẩn template và starter tasks. `updateProject`, `archiveProject`, `restoreProject` trong service. Lưu trữ có xác nhận bằng `Sheet`. `key` không sửa được. Trang của project đã lưu trữ có nhãn và nút khôi phục. Task thuộc project đã lưu trữ vẫn giữ được liên kết khi sửa.
 
 **Tiêu chí nghiệm thu:**
-- [x] Project mới xuất hiện ngay sau khi tạo, số task khớp DB.
-- [x] 30 project vẫn cuộn trong Sidebar, nút đăng xuất luôn thấy.
-- [x] Tên project dài bị cắt gọn, không gây cuộn ngang.
+- [ ] Sửa tên, mục tiêu, màu, icon, ngày, time budget được lưu; mã task không đổi.
+- [ ] Project lưu trữ biến khỏi Sidebar và form tạo task, task không mất và vẫn hiện trên `/tasks`.
+- [ ] Sửa task thuộc project đã lưu trữ không làm mất liên kết project.
+- [ ] Không sửa hay lưu trữ được project của người khác.
 
 **Kiểm chứng:**
-- [x] `e2e/shell.spec.ts` thêm các trường hợp trên ở 1366 × 600 và 390 px.
+- [ ] Vitest cho sửa, lưu trữ, khôi phục, user khác.
+- [ ] E2E sửa rồi tải lại, lưu trữ rồi khôi phục.
 
-**Phụ thuộc:** T2.2
+**Phụ thuộc:** T4.1
 
-**File dự kiến:** `src/components/app/ProjectLinks.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/TopBar.tsx`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/shell.spec.ts`
-
-**Quy mô:** S
-
----
-
-### T2.3 Create task
-
-**Mô tả:** Trang 04 tại `/tasks/new`, nhận `?project=`: tên, mô tả, priority, category nhiều lựa chọn, tạo category mới tại chỗ, project, time estimate (giờ, phút, chip nhanh, số phiên focus), status, ngày giờ, nhắc hạn, Live preview. Sửa dòng mô tả nhắc hạn cho khớp phạm vi V1. "+ New project" mở `Sheet` tạo nhanh tại chỗ để không mất nội dung đang nhập. Ẩn Assignee, Break into subtasks.
-
-**Tiêu chí nghiệm thu:**
-- [x] Tạo task xong về `/tasks` và thấy task đó.
-- [x] Lỗi validation hiện tại đúng trường, không mất nội dung đã nhập.
-- [x] Bấm "+ New project" rồi quay lại vẫn còn nội dung.
-- [x] Hạn `17:00` lưu đúng theo múi giờ của người dùng.
-
-**Kiểm chứng:**
-- [x] E2E tạo task đủ trường trên desktop và mobile, tải lại vẫn còn.
-- [x] So ảnh với `design/screens/04-create-task.html` ở 390 và 1440 px.
-
-**Phụ thuộc:** T2.1, T2.2
-
-**File dự kiến:** `src/app/(app)/tasks/new/page.tsx`, `src/app/(app)/tasks/new/TaskForm.tsx`, `src/app/(app)/tasks/new/actions.ts`, `src/services/categories.ts`, `e2e/tasks.spec.ts`
-
-**Quy mô:** M
-
----
-
-### T2.4 Board đọc dữ liệu
-
-**Mô tả:** Trang 03 tại `/tasks`: lời chào, số task đến hạn hôm nay, 4 thẻ thống kê với delta 7 ngày, lọc category và project, sort, 4 cột, card với vòng %, trạng thái rỗng. Card task tự giữ bo góc 18 px nên `Card` không cần đổi. Badge số task ở mục My tasks. Sort có thêm Manual làm mặc định để kéo thả có ý nghĩa. Chưa có ô search (T2.9) và số streak (T7.2). Dữ liệu nằm trong `<Suspense>`, có skeleton.
-
-**Tiêu chí nghiệm thu:**
-- [x] Số liệu và delta khớp DB, "hôm nay" tính theo múi giờ người dùng.
-- [x] Vòng % là subtask done/total; không có subtask thì 100% khi completed, ngược lại 0%.
-- [x] Lọc và sort nằm trên URL, tải lại vẫn giữ.
-- [x] Task của Claude sau này không cần thay đổi gì ở Board.
-
-**Kiểm chứng:**
-- [x] Vitest cho service thống kê với dữ liệu biên quanh nửa đêm.
-- [x] E2E lọc và sort; không có cuộn ngang ở 1024 và 1440 px.
-- [x] So ảnh với `design/screens/03-tasks-board.html` ở 1440 px.
-
-**Phụ thuộc:** T2.3
-
-**File dự kiến:** `src/app/(app)/tasks/page.tsx`, `src/components/app/board/Board.tsx`, `src/components/app/board/TaskCard.tsx`, `src/services/board.ts`, `src/services/board.test.ts`
+**File dự kiến:** `src/services/projects.ts`, `src/app/(app)/projects/new/ProjectForm.tsx`, `src/app/(app)/projects/[id]/settings/page.tsx`, `src/app/(app)/projects/[id]/actions.ts`, `e2e/project-overview.spec.ts`
 
 **Quy mô:** M
 
@@ -120,176 +55,136 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [x] E2E đăng nhập → tạo project → tạo task → thấy trên Board pass trên desktop và mobile.
-- [x] CI xanh.
-- [x] Bạn đã xem Board và form tạo task.
+- [ ] Số liệu Overview khớp DB trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] Bạn đã xem Overview và trang sửa project.
 
 ---
 
-## Nhóm B: Di chuyển task
+## Nhóm B: Task trong project
 
-### T2.5 Kéo thả
+### T4.2 Bảng Project tasks
 
-**Mô tả:** Cài `@dnd-kit/core` và `@dnd-kit/sortable`. Đổi status và thứ tự, cập nhật lạc quan, `moveTask` trong service ghi `position` và `completed_at`. Hỗ trợ `KeyboardSensor` và `TouchSensor` có độ trễ. Có thông báo cho trình đọc màn hình.
+**Mô tả:** Khối Project tasks ở Overview: lọc status kèm số đếm trên URL (`?status=`), các cột mã và tên, Priority, Estimate, Due, Status. Dưới 744 px đổi thành danh sách thẻ. Thêm `estimateMin` và cờ quá hạn vào card của `getBoard`. Nút "+ Add task to project". Ẩn cột Assignee.
 
 **Tiêu chí nghiệm thu:**
-- [x] Kéo sang cột khác được lưu sau khi tải lại.
-- [x] Lỗi mạng thì card quay về chỗ cũ và có thông báo.
-- [x] Bàn phím di chuyển được card giữa các cột.
-- [x] Vuốt dọc trên cảm ứng cuộn trang, giữ lâu mới kéo.
+- [ ] Lọc giữ trên URL, số đếm đúng từng status.
+- [ ] Task quá hạn tô đỏ; task đã xong hoặc đã hủy thì không.
+- [ ] Không có cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [x] Vitest cho `moveTask`: giữa hai card, đầu cột, cuối cột, cột rỗng, task của user khác.
-- [x] E2E kéo bằng chuột, bằng bàn phím, và chặn mạng bằng `page.route`.
+- [ ] Vitest cho cờ quá hạn theo múi giờ.
+- [ ] E2E lọc, tải lại, mở task.
 
-**Phụ thuộc:** T2.4
+**Phụ thuộc:** T4.1
 
-**File dự kiến:** `package.json`, `src/components/app/board/Board.tsx`, `src/app/(app)/tasks/actions.ts`, `src/services/tasks.ts`, `e2e/board.spec.ts`
+**File dự kiến:** `src/services/board.ts`, `src/services/board.test.ts`, `src/app/(app)/projects/[id]/ProjectTasks.tsx`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T2.6 Board phone/tablet và List view
+### T4.3 Tab Board và List
 
-**Mô tả:** Tab theo status dưới `md`, lưới 2×2 ở tablet, 4 cột từ `xl`. Menu "Move to" trên mọi thiết bị cảm ứng. Chế độ List dưới `md` là danh sách thẻ.
+**Mô tả:** Tab Overview, Board, List trên URL (`?view=`). Hai tab sau dùng lại `Board` của `/tasks`, lọc theo project. Ẩn Timeline và Files.
 
 **Tiêu chí nghiệm thu:**
-- [x] Đổi status được ở 390 và 820 px chỉ bằng cảm ứng.
-- [x] Chế độ Board hoặc List giữ trên URL.
-- [x] Không có cuộn ngang ở 360, 390, 744, 820 và 1180 px.
+- [ ] Kéo thả và Move to trong tab Board cũng cập nhật `/tasks`.
+- [ ] Tab giữ trên URL, tải lại vẫn đúng.
+- [ ] Trên phone vẫn có tab status và Move to như `/tasks`.
 
 **Kiểm chứng:**
-- [x] E2E trên project mobile dùng "Move to".
-- [x] Bạn thử trên điện thoại hoặc iPad thật.
+- [ ] E2E chuyển tab, đổi status, xem lại ở `/tasks` trên desktop và mobile.
 
-**Phụ thuộc:** T2.5
+**Phụ thuộc:** T4.2
 
-**File dự kiến:** `src/components/app/board/Board.tsx`, `src/components/app/board/MoveMenu.tsx`, `src/components/app/board/TaskList.tsx`, `e2e/board.spec.ts`
+**File dự kiến:** `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
+
+**Quy mô:** S
+
+---
+
+## Nhóm C: Milestones
+
+### T4.4 Milestones
+
+**Mô tả:** Bảng `milestone` (project, tên, hạn, vị trí), cột `task.milestone_id` có `on delete set null`, migration 0005. `src/services/milestones.ts` thêm, sửa, xóa, liệt kê kèm số task. Khối Milestones ở Overview và sheet "+ Milestone".
+
+**Tiêu chí nghiệm thu:**
+- [ ] Thêm, sửa, xóa milestone được lưu sau khi tải lại.
+- [ ] Xóa milestone không xóa task.
+- [ ] Project không có milestone hiện trạng thái rỗng và nút thêm.
+- [ ] Không đụng được milestone của project người khác.
+
+**Kiểm chứng:**
+- [ ] Vitest cho thêm, sửa, xóa, user khác, tên rỗng.
+- [ ] Migration chạy sạch trên DB rỗng ở CI.
+- [ ] E2E thêm, sửa, xóa.
+
+**Phụ thuộc:** T4.1
+
+**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0005_*.sql`, `src/services/milestones.ts`, `src/services/milestones.test.ts`, `src/app/(app)/projects/[id]/Milestones.tsx`
 
 **Quy mô:** M
+
+---
+
+### T4.4b Gán task vào milestone
+
+**Mô tả:** Tile Milestone ở Task detail, chỉ hiện khi task có project. `updateTask` kiểm tra milestone thuộc đúng project và ghi activity. Đổi project thì bỏ milestone. Milestone hiện % và trạng thái suy ra từ task.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Hoàn thành task làm đổi % và trạng thái của milestone; task đã hủy không tính.
+- [ ] Không gán được milestone của project khác; đổi project tự bỏ milestone.
+- [ ] Milestone không có task hiện `Planned`, 0%.
+
+**Kiểm chứng:**
+- [ ] Test bảng cho % và trạng thái.
+- [ ] E2E gán task, hoàn thành, xem lại ở Overview.
+
+**Phụ thuộc:** T4.4
+
+**File dự kiến:** `src/services/milestones.ts`, `src/services/tasks.ts`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `src/app/(app)/tasks/[id]/page.tsx`
+
+**Quy mô:** S
 
 ---
 
 ## Checkpoint B
 
-- [x] Đổi status được bằng chuột, bàn phím và cảm ứng.
-- [x] CI xanh.
-- [x] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [ ] Hoàn thành task làm đổi % và trạng thái milestone.
+- [ ] CI xanh.
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
 
 ---
 
-## Nhóm C: Chi tiết task
+## Nhóm D: Settings
 
-### T2.7 Task detail
+### T4.5 Settings
 
-**Mô tả:** Trang 05 tại `/tasks/[id]`: mã task, project, sửa từng trường tại chỗ, đổi status, estimate, hủy và xóa có xác nhận bằng `Sheet`. Ẩn Team, Attachment. Khối Time tracked đợi T6.2.
+**Mô tả:** Trang Settings phần không dính MCP. Hồ sơ: tên, múi giờ. Category: đổi tên, xóa. Project: danh sách đã lưu trữ và nút khôi phục. Đăng xuất đã có ở Sidebar nên không thêm. Connected apps ở lại T3.4.
 
 **Tiêu chí nghiệm thu:**
-- [x] Sửa trường nào được lưu trường đó, tải lại vẫn còn.
-- [x] Xóa cần xác nhận, xong về Board; hủy chuyển sang Canceled và khôi phục được.
-- [x] Task của người khác hoặc id sai trả 404.
+- [ ] Đổi tên hiện ngay ở Sidebar và lời chào.
+- [ ] Đổi múi giờ làm hạn và "Today" đổi theo; giá trị ngoài danh sách IANA bị từ chối.
+- [ ] Đổi tên category hiện trên card; trùng tên bị từ chối; xóa category không xóa task.
+- [ ] Khôi phục project đưa nó về Sidebar.
 
 **Kiểm chứng:**
-- [x] Vitest cho `deleteTask` và hủy.
-- [x] E2E sửa, hủy, xóa trên desktop và mobile.
-- [x] So ảnh với `design/screens/05-task-detail.html` ở 390 và 1440 px.
+- [ ] Vitest cho `updateProfile`, đổi tên và xóa category, user khác.
+- [ ] E2E đổi tên, đổi múi giờ, khôi phục project.
 
-**Phụ thuộc:** T2.4
+**Phụ thuộc:** T4.1b
 
-**File dự kiến:** `src/app/(app)/tasks/[id]/page.tsx`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `src/app/(app)/tasks/[id]/actions.ts`, `e2e/task-detail.spec.ts`
+**File dự kiến:** `src/services/profile.ts`, `src/services/categories.ts`, `src/app/(app)/settings/page.tsx`, `src/app/(app)/settings/SettingsForms.tsx`, `src/app/(app)/settings/actions.ts`
 
 **Quy mô:** M
 
 ---
 
-### T2.7b Checklist
+## Checkpoint hoàn thành Phase 4
 
-**Mô tả:** `src/services/subtasks.ts` thêm, tick, sửa, xóa, sắp xếp. Thanh tiến độ ở trang chi tiết, nhấn Enter để thêm.
-
-**Tiêu chí nghiệm thu:**
-- [x] % trên Board đổi theo checklist.
-- [x] Không đụng được subtask của task người khác.
-
-**Kiểm chứng:**
-- [x] Vitest và E2E tick rồi xem lại trên Board.
-
-**Phụ thuộc:** T2.7
-
-**File dự kiến:** `src/services/subtasks.ts`, `src/services/subtasks.test.ts`, `src/app/(app)/tasks/[id]/Checklist.tsx`, `src/app/(app)/tasks/[id]/actions.ts`
-
-**Quy mô:** S
-
----
-
-### T2.8 Comment và activity
-
-**Mô tả:** Ghi `activity` trong cùng transaction ở mọi hàm ghi của service, có `actor` để Phase 3 ghi `mcp`. Comment là một `type`. Hiện dòng thời gian ở trang chi tiết, thời gian tương đối theo múi giờ.
-
-**Tiêu chí nghiệm thu:**
-- [x] Mọi thay đổi có dòng activity đúng thứ tự thời gian.
-- [x] Ghi activity lỗi thì thay đổi cũng không được lưu.
-- [x] Comment rỗng bị từ chối; nội dung hiện đúng tiếng Việt và không chạy HTML.
-
-**Kiểm chứng:**
-- [x] Vitest cho từng loại thay đổi và trường hợp rollback.
-- [x] E2E thêm comment rồi tải lại.
-
-**Phụ thuộc:** T2.7b
-
-**File dự kiến:** `src/services/activity.ts`, `src/services/activity.test.ts`, `src/services/tasks.ts`, `src/services/subtasks.ts`, `src/app/(app)/tasks/[id]/Activity.tsx`
-
-**Quy mô:** M
-
----
-
-## Nhóm D: Thao tác nhanh
-
-### T2.9 Tìm kiếm
-
-**Mô tả:** Ô search trên Board và `⌘K`/`Ctrl+K`. `searchTasks` dùng `unaccent` theo tiêu đề và mô tả. Ẩn gợi ý phím trên thiết bị cảm ứng.
-
-**Tiêu chí nghiệm thu:**
-- [x] Gõ `do an` tìm được `Đồ án`.
-- [x] Ký tự `%` và `_` được hiểu là ký tự thường.
-- [x] `Ctrl+K` không kích hoạt khi đang gõ trong ô khác nếu trình duyệt đã dùng phím đó.
-
-**Kiểm chứng:**
-- [x] Vitest cho bỏ dấu, ký tự đặc biệt, cô lập theo user.
-- [x] E2E tìm rồi mở task.
-
-**Phụ thuộc:** T2.4
-
-**File dự kiến:** `src/services/tasks.ts`, `src/components/app/board/SearchBox.tsx`, `e2e/board.spec.ts`
-
-**Quy mô:** S
-
----
-
-### T2.10 Quick-add
-
-**Mô tả:** Cài `chrono-node`. Phím `N` mở `Sheet`, `parseQuickAdd` tách `#category`, `!priority` và ngày tự nhiên theo múi giờ người dùng, hiện trước kết quả phân tích khi gõ.
-
-**Tiêu chí nghiệm thu:**
-- [x] "Review PR tomorrow 9am #Development !high" cho đúng tên, ngày, giờ, category, priority.
-- [x] `N` không kích hoạt khi đang gõ trong input.
-- [x] Category không tồn tại được báo, không tự tạo.
-
-**Kiểm chứng:**
-- [x] Test bảng cho `parseQuickAdd`, có tên tiếng Việt và câu không có ngày.
-- [x] E2E mở bằng phím, tạo task, thấy trên Board.
-
-**Phụ thuộc:** T2.3, T2.4
-
-**File dự kiến:** `package.json`, `src/lib/quickAdd.ts`, `src/lib/quickAdd.test.ts`, `src/components/app/QuickAdd.tsx`, `src/app/(app)/layout.tsx`
-
-**Quy mô:** M
-
----
-
-## Checkpoint hoàn thành Phase 2
-
-- [x] E2E đăng nhập → tạo → kéo → hoàn thành pass trên desktop và mobile.
-- [x] CI xanh.
-- [x] `PLAN.md` đã đánh dấu xong Phase 2.
-- [x] Sẵn sàng sang T3.1.
+- [ ] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 4.
+- [ ] Sẵn sàng sang Phase 5.
