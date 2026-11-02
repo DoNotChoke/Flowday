@@ -2,10 +2,10 @@ import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
-import { createCategory, listCategories } from "./categories";
-import { ValidationError } from "./errors";
+import { createCategory, deleteCategory, listCategories, renameCategory } from "./categories";
+import { NotFoundError, ValidationError } from "./errors";
 import { createProject } from "./projects";
-import { listTasks } from "./tasks";
+import { createTask, getTask, listTasks } from "./tasks";
 
 const alice = "categories-test-alice";
 const bob = "categories-test-bob";
@@ -56,4 +56,31 @@ test("a project made from the task form has no starter tasks", async () => {
   });
 
   expect(await listTasks(alice, { projectId: project.id })).toEqual([]);
+});
+
+test("a category can be renamed, but not onto another one", async () => {
+  const first = await createCategory(alice, "Rename me");
+  await createCategory(alice, "Taken");
+
+  expect((await renameCategory(alice, first.id, "  Renamed ")).name).toBe("Renamed");
+  expect((await renameCategory(alice, first.id, "renamed")).name).toBe("renamed");
+  await expect(renameCategory(alice, first.id, "TAKEN")).rejects.toBeInstanceOf(ValidationError);
+  await expect(renameCategory(alice, first.id, "  ")).rejects.toBeInstanceOf(ValidationError);
+});
+
+test("deleting a category keeps its tasks", async () => {
+  const tag = await createCategory(alice, "Short lived");
+  const row = await createTask(alice, { title: "Stays", categoryIds: [tag.id] });
+
+  await deleteCategory(alice, tag.id);
+
+  expect((await listCategories(alice)).some(({ id }) => id === tag.id)).toBe(false);
+  expect((await getTask(alice, row.id))?.categoryIds).toEqual([]);
+});
+
+test("another user's category is out of reach", async () => {
+  const mine = await createCategory(alice, "Only mine");
+
+  await expect(renameCategory(bob, mine.id, "Taken over")).rejects.toBeInstanceOf(NotFoundError);
+  await expect(deleteCategory(bob, mine.id)).rejects.toBeInstanceOf(NotFoundError);
 });

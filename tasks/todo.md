@@ -152,9 +152,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint B
 
-- [ ] Hoàn thành task làm đổi % và trạng thái milestone.
-- [ ] CI xanh.
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [x] Hoàn thành task làm đổi % và trạng thái milestone.
+- [x] CI xanh.
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật.
 
 ---
 
@@ -165,14 +165,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang Settings phần không dính MCP. Hồ sơ: tên, múi giờ. Category: đổi tên, xóa. Project: danh sách đã lưu trữ và nút khôi phục. Đăng xuất đã có ở Sidebar nên không thêm. Connected apps ở lại T3.4.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đổi tên hiện ngay ở Sidebar và lời chào.
-- [ ] Đổi múi giờ làm hạn và "Today" đổi theo; giá trị ngoài danh sách IANA bị từ chối.
-- [ ] Đổi tên category hiện trên card; trùng tên bị từ chối; xóa category không xóa task.
-- [ ] Khôi phục project đưa nó về Sidebar.
+- [x] Đổi tên hiện ngay ở Sidebar và lời chào.
+- [x] Đổi múi giờ làm hạn và "Today" đổi theo; giá trị ngoài danh sách IANA bị từ chối.
+- [x] Đổi tên category hiện trên card; trùng tên bị từ chối; xóa category không xóa task.
+- [x] Khôi phục project đưa nó về Sidebar.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `updateProfile`, đổi tên và xóa category, user khác.
-- [ ] E2E đổi tên, đổi múi giờ, khôi phục project.
+- [x] Vitest cho `updateProfile`, đổi tên và xóa category, user khác.
+- [x] E2E đổi tên, đổi múi giờ, khôi phục project.
 
 **Phụ thuộc:** T4.1b
 

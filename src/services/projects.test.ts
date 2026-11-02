@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { project, task, user } from "@/lib/db/schema";
 import { projectKey } from "@/lib/projects";
 import { NotFoundError, ValidationError } from "./errors";
-import { archiveProject, createProject, getProject, getProjectOverview, listProjects, restoreProject, updateProject } from "./projects";
+import { archiveProject, createProject, getProject, getProjectOverview, listArchivedProjects, listProjects, restoreProject, updateProject } from "./projects";
 import { createTask, listTasks } from "./tasks";
 
 const alice = "projects-test-alice";
@@ -212,4 +212,14 @@ test("another user's project can be neither edited nor archived", async () => {
   await expect(archiveProject(bob, id)).rejects.toBeInstanceOf(NotFoundError);
   await expect(restoreProject(bob, id)).rejects.toBeInstanceOf(NotFoundError);
   expect(await getProject(alice, id)).toMatchObject({ name: "Mine alone", archivedAt: null });
+});
+
+test("the archived list holds only the owner's archived projects", async () => {
+  const { id } = await createProject(alice, { ...base, name: "Shelved" });
+  await archiveProject(alice, id);
+
+  expect((await listArchivedProjects(alice)).map((row) => row.id)).toContain(id);
+  expect(await listArchivedProjects(bob)).toEqual([]);
+  await restoreProject(alice, id);
+  expect((await listArchivedProjects(alice)).map((row) => row.id)).not.toContain(id);
 });

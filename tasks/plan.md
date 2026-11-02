@@ -87,12 +87,12 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint B
 
-- [ ] Hoàn thành task làm đổi % và trạng thái milestone
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
+- [x] Hoàn thành task làm đổi % và trạng thái milestone
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật
 
 ### Nhóm D: Settings
 
-- [ ] T4.5 Settings (M)
+- [x] T4.5 Settings (M)
 
 ### Checkpoint hoàn thành Phase 4
 

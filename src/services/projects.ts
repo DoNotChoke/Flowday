@@ -1,4 +1,4 @@
-import { and, count, eq, isNull, like, asc } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull, like, asc } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { utcToZoned } from "@/lib/datetime";
@@ -132,6 +132,14 @@ export async function getProjectOverview(userId: string, id: string, now = new D
       : null,
     daysLabel: target ? daysLabel(Math.round((target.getTime() - Date.parse(today)) / 86_400_000)) : null,
   };
+}
+
+export function listArchivedProjects(userId: string) {
+  return db
+    .select({ id: project.id, name: project.name, color: project.color })
+    .from(project)
+    .where(and(eq(project.userId, userId), isNotNull(project.archivedAt)))
+    .orderBy(asc(project.name));
 }
 
 export function listProjects(userId: string) {

@@ -1,8 +1,8 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { category } from "@/lib/db/schema";
-import { parseInput, ValidationError } from "./errors";
+import { NotFoundError, parseInput, ValidationError } from "./errors";
 
 const defaults = [
   { name: "Design", color: "#5b8def" },
@@ -30,6 +30,33 @@ export async function createCategory(userId: string, input: string) {
   const color = defaults[existing.length % defaults.length].color;
   const [row] = await db.insert(category).values({ userId, name, color }).returning();
   return row;
+}
+
+export async function renameCategory(userId: string, id: string, input: string) {
+  const { name } = parseInput(nameSchema, { name: input });
+  const others = await db
+    .select({ name: category.name })
+    .from(category)
+    .where(and(eq(category.userId, userId), ne(category.id, id)));
+  if (others.some((row) => row.name.toLowerCase() === name.toLowerCase())) {
+    throw new ValidationError({ name: ["You already have this category."] });
+  }
+
+  const [row] = await db
+    .update(category)
+    .set({ name })
+    .where(and(eq(category.id, id), eq(category.userId, userId)))
+    .returning();
+  if (!row) throw new NotFoundError("Category");
+  return row;
+}
+
+export async function deleteCategory(userId: string, id: string) {
+  const deleted = await db
+    .delete(category)
+    .where(and(eq(category.id, id), eq(category.userId, userId)))
+    .returning({ id: category.id });
+  if (deleted.length === 0) throw new NotFoundError("Category");
 }
 
 export async function seedCategories(userId: string) {

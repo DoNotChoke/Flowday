@@ -101,3 +101,8 @@ export async function completeTask(email: string, title: string) {
   const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, email));
   await db.update(task).set({ status: "completed" }).where(and(eq(task.userId, owner.id), eq(task.title, title)));
 }
+
+export async function archiveProjects(email: string) {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, email));
+  await db.update(project).set({ archivedAt: new Date() }).where(eq(project.userId, owner.id));
+}
