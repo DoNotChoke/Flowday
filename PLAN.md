@@ -242,8 +242,8 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T2.2b Project trên Sidebar và drawer (S).** *Xong khi:* project mới hiện ngay; 30 project vẫn cuộn trong Sidebar.
 - [x] **T2.3 Create task (M).** Trang 04: Project, Time estimate (giờ/phút, chip nhanh, số phiên focus), category nhiều lựa chọn, tạo category mới, status, priority, ngày giờ, nhắc hạn, Live preview. Bấm "+ New project" không mất nội dung đang nhập. *Xong khi:* tạo task xong xuất hiện trên Board; lỗi validation hiển thị tại trường tương ứng.
 - [x] **T2.4 Board đọc dữ liệu (M).** Trang 03: 4 thẻ thống kê, cột, lọc category/project, sort, trạng thái rỗng, lời chào. *Xong khi:* số liệu khớp DB; delta tính theo 7 ngày gần nhất.
-- [ ] **T2.5 Kéo thả (M).** Đổi status và thứ tự bằng `@dnd-kit`, cập nhật lạc quan, hỗ trợ bàn phím và cảm ứng (`TouchSensor` có độ trễ để vuốt cuộn không kích hoạt kéo). *Xong khi:* kéo qua cột được lưu sau khi tải lại; lỗi mạng thì card quay về chỗ cũ; trên iPad vừa cuộn được vừa kéo được.
-- [ ] **T2.6 Board phone/tablet và List view (M).** Tab theo status trên phone, 2×2 trên tablet, menu "Move to" trên mọi thiết bị cảm ứng, chế độ List. *Xong khi:* đổi status được ở 390 px và 820 px chỉ bằng cảm ứng.
+- [x] **T2.5 Kéo thả (M).** Đổi status và thứ tự bằng `@dnd-kit`, cập nhật lạc quan, hỗ trợ bàn phím và cảm ứng (`TouchSensor` có độ trễ để vuốt cuộn không kích hoạt kéo). *Xong khi:* kéo qua cột được lưu sau khi tải lại; lỗi mạng thì card quay về chỗ cũ; trên iPad vừa cuộn được vừa kéo được.
+- [x] **T2.6 Board phone/tablet và List view (M).** Tab theo status trên phone, 2×2 trên tablet, menu "Move to" trên mọi thiết bị cảm ứng, chế độ List. *Xong khi:* đổi status được ở 390 px và 820 px chỉ bằng cảm ứng.
 - [ ] **T2.7 Task detail (M).** Trang 05: mã task, Project, sửa trường, đổi status, estimate, hủy/xóa có xác nhận. *Xong khi:* sửa trường nào lưu trường đó; xóa cần xác nhận.
 - [ ] **T2.7b Checklist (S).** Tách khỏi T2.7. *Xong khi:* % trên Board đổi theo checklist.
 - [ ] **T2.8 Comment và activity (M).** Ghi activity tại service, comment là `activity`. *Xong khi:* mọi thay đổi có dòng activity đúng thứ tự thời gian.

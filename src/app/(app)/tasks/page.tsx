@@ -14,6 +14,11 @@ const sorts = [
   { value: "due", label: "Due date" },
 ] as const;
 
+const views = [
+  { value: "board", label: "Board" },
+  { value: "list", label: "List" },
+] as const;
+
 function single(value: string | string[] | undefined) {
   return typeof value === "string" ? value : undefined;
 }
@@ -24,13 +29,14 @@ async function Content({ searchParams }: PageProps<"/tasks">) {
   const category = single(query.category);
   const project = single(query.project);
   const sort = sorts.find((option) => option.value === query.sort)?.value ?? "manual";
+  const view = views.find((option) => option.value === query.view)?.value ?? "board";
   const filter: BoardFilter = { categoryId: category, projectId: project, sort };
   const [board, categories] = await Promise.all([getBoard(userId, filter), listCategories(userId)]);
 
   function href(change: Record<string, string | undefined>) {
     const params = new URLSearchParams();
-    for (const [key, value] of Object.entries({ category, project, sort, ...change })) {
-      if (value && value !== "manual") params.set(key, value);
+    for (const [key, value] of Object.entries({ category, project, sort, view, ...change })) {
+      if (value && value !== "manual" && value !== "board") params.set(key, value);
     }
     const search = params.toString();
     return search ? `/tasks?${search}` : "/tasks";
@@ -38,6 +44,8 @@ async function Content({ searchParams }: PageProps<"/tasks">) {
 
   const chipClass = (on: boolean) =>
     `flex h-9.5 max-w-full items-center truncate rounded-full border-hard px-4 text-[13px] font-medium pointer-coarse:min-h-11 ${on ? "bg-ink text-white" : "bg-white"}`;
+
+  const segmentClass = (on: boolean) => `flex h-8.5 items-center rounded-[9px] px-3 text-[13px] pointer-coarse:min-h-11 ${on ? "bg-sun-tint font-semibold" : ""}`;
 
   return (
     <>
@@ -61,21 +69,25 @@ async function Content({ searchParams }: PageProps<"/tasks">) {
             </Link>
           ))}
         </div>
-        <div role="group" aria-label="Sort" className="flex items-center gap-1 rounded-xl border-hard bg-white p-0.75">
-          {sorts.map((option) => (
-            <Link
-              key={option.value}
-              href={href({ sort: option.value })}
-              aria-current={sort === option.value ? "true" : undefined}
-              className={`flex h-8.5 items-center rounded-[9px] px-3 text-[13px] pointer-coarse:min-h-11 ${sort === option.value ? "bg-sun-tint font-semibold" : ""}`}
-            >
-              {option.label}
-            </Link>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div role="group" aria-label="View" className="flex items-center gap-1 rounded-xl border-hard bg-white p-0.75">
+            {views.map((option) => (
+              <Link key={option.value} href={href({ view: option.value })} aria-current={view === option.value ? "true" : undefined} className={segmentClass(view === option.value)}>
+                {option.label}
+              </Link>
+            ))}
+          </div>
+          <div role="group" aria-label="Sort" className="flex items-center gap-1 rounded-xl border-hard bg-white p-0.75">
+            {sorts.map((option) => (
+              <Link key={option.value} href={href({ sort: option.value })} aria-current={sort === option.value ? "true" : undefined} className={segmentClass(sort === option.value)}>
+                {option.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      <Board tasks={board.tasks} />
+      <Board tasks={board.tasks} view={view} />
     </>
   );
 }

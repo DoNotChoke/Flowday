@@ -5,7 +5,7 @@ import { percentDone } from "@/lib/progress";
 
 export type Card = Awaited<ReturnType<typeof getBoard>>["tasks"][number];
 
-const priorities = {
+export const priorities = {
   urgent: { label: "Urgent", tone: "bg-coral-tint", dot: "#e0492c" },
   high: { label: "High", tone: "bg-sun-tint", dot: "#d99a00" },
   medium: { label: "Medium", tone: "bg-blue-tint", dot: "#3a6fd8" },

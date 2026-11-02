@@ -20,15 +20,12 @@ import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { useOptimistic, useState, useTransition } from "react";
 import { moveTaskAction } from "@/app/(app)/tasks/actions";
+import { Chip } from "@/components/ui/Chip";
 import type { getBoard } from "@/services/board";
+import { columns } from "./columns";
+import { MoveButton, MoveSheet } from "./MoveMenu";
 import { TaskCard, type Card } from "./TaskCard";
-
-const columns = [
-  { status: "ongoing", name: "On going", color: "#5b8def", tone: "bg-blue", icon: "M21 12a9 9 0 0 1-15.5 6.3M3 12a9 9 0 0 1 15.5-6.3M21 4v5h-5M3 20v-5h5" },
-  { status: "in_process", name: "In process", color: "#ffc94a", tone: "bg-sun", icon: "M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" },
-  { status: "completed", name: "Completed", color: "#4fc1be", tone: "bg-teal", icon: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M9 15l2 2 4-4" },
-  { status: "canceled", name: "Canceled", color: "#f47258", tone: "bg-coral", icon: "M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9zM14 3v6h6M10 13l4 4M14 13l-4 4" },
-] as const;
+import { TaskList } from "./TaskList";
 
 export function StatusCards({ stats }: { stats: Awaited<ReturnType<typeof getBoard>>["stats"] }) {
   return (
@@ -57,32 +54,37 @@ function columnName(status: unknown) {
   return columns.find((column) => column.status === status)?.name;
 }
 
-function SortableCard({ card, color }: { card: Card; color: string }) {
+function SortableCard({ card, color, onMove }: { card: Card; color: string; onMove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: card.id });
 
   return (
-    <TaskCard
-      card={card}
-      color={color}
-      ref={setNodeRef}
-      {...attributes}
-      {...listeners}
-      // The card stays a link: Enter opens it and Space picks it up.
-      role={undefined}
-      aria-roledescription="draggable task"
-      style={{ transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined, transition, opacity: isDragging ? 0.4 : undefined }}
-    />
+    <div className="flex flex-col gap-1.5">
+      <TaskCard
+        card={card}
+        color={color}
+        ref={setNodeRef}
+        {...attributes}
+        {...listeners}
+        // The card stays a link: Enter opens it and Space picks it up.
+        role={undefined}
+        aria-roledescription="draggable task"
+        style={{ transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined, transition, opacity: isDragging ? 0.4 : undefined }}
+      />
+      <div className="hidden pointer-coarse:grid">
+        <MoveButton card={card} onClick={onMove} />
+      </div>
+    </div>
   );
 }
 
-function BoardColumn({ column, cards }: { column: Column; cards: Card[] }) {
+function BoardColumn({ column, cards, shown, onMove }: { column: Column; cards: Card[]; shown: boolean; onMove: (card: Card) => void }) {
   const { setNodeRef } = useDroppable({ id: column.status });
   const { over } = useDndContext();
   const headingId = `column-${column.status}`;
   const highlighted = over?.id === column.status || over?.data.current?.sortable?.containerId === column.status;
 
   return (
-    <section ref={setNodeRef} aria-labelledby={headingId} className={`flex min-w-0 flex-col gap-3.5 rounded-[22px] bg-panel p-3.5 ${highlighted ? "outline-2 outline-ink" : ""}`}>
+    <section ref={setNodeRef} aria-labelledby={headingId} className={`min-w-0 flex-col gap-3.5 rounded-[22px] bg-panel p-3.5 md:flex ${shown ? "flex" : "hidden"} ${highlighted ? "outline-2 outline-ink" : ""}`}>
       <div className="flex items-center gap-2.5 px-1 py-0.5">
         <span style={{ backgroundColor: column.color }} className="size-3 rounded border-hard" />
         <h2 id={headingId} className="flex-1 text-[15px] font-semibold">
@@ -97,7 +99,7 @@ function BoardColumn({ column, cards }: { column: Column; cards: Card[] }) {
       </div>
       <SortableContext id={column.status} items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
         {cards.map((card) => (
-          <SortableCard key={card.id} card={card} color={column.color} />
+          <SortableCard key={card.id} card={card} color={column.color} onMove={() => onMove(card)} />
         ))}
       </SortableContext>
       {cards.length === 0 && <p className="rounded-2xl border-[1.5px] border-dashed border-[#9c9c96] p-5 text-center text-[13px] text-muted">No tasks here</p>}
@@ -105,10 +107,12 @@ function BoardColumn({ column, cards }: { column: Column; cards: Card[] }) {
   );
 }
 
-export function Board({ tasks }: { tasks: Card[] }) {
+export function Board({ tasks, view }: { tasks: Card[]; view: "board" | "list" }) {
   const [cards, showCards] = useOptimistic(tasks);
   const [, startTransition] = useTransition();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [tab, setTab] = useState<Card["status"]>("ongoing");
+  const [moving, setMoving] = useState<Card | null>(null);
   const [error, setError] = useState("");
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 6 } }),
@@ -145,8 +149,10 @@ export function Board({ tasks }: { tasks: Card[] }) {
         : Boolean(moved) && moved!.top + moved!.height / 2 > over.rect.top + over.rect.height / 2;
       index = others.indexOf(target.id) + (lands ? 1 : 0);
     }
-    const afterId = others[index - 1] ?? null;
+    move(card, status, others[index - 1] ?? null);
+  }
 
+  function move(card: Card, status: Card["status"], afterId: string | null) {
     const rest = cards.filter((option) => option.id !== card.id);
     const at = afterId ? rest.findIndex((option) => option.id === afterId) + 1 : 0;
 
@@ -162,7 +168,28 @@ export function Board({ tasks }: { tasks: Card[] }) {
     });
   }
 
+  function moveToEnd(card: Card, status: Card["status"]) {
+    setMoving(null);
+    move(card, status, cards.findLast((option) => option.status === status)?.id ?? null);
+  }
+
   const activeCard = cards.find((card) => card.id === activeId);
+  const alert = error && (
+    <p role="alert" className="rounded-control border-hard bg-coral-tint px-4 py-3 text-sm font-medium">
+      {error}
+    </p>
+  );
+  const sheet = <MoveSheet card={moving} onClose={() => setMoving(null)} onMove={moveToEnd} />;
+
+  if (view === "list") {
+    return (
+      <>
+        {alert}
+        <TaskList cards={cards} onMove={setMoving} />
+        {sheet}
+      </>
+    );
+  }
 
   return (
     <DndContext
@@ -177,20 +204,24 @@ export function Board({ tasks }: { tasks: Card[] }) {
       onDragEnd={drop}
       onDragCancel={() => setActiveId(null)}
     >
-      {error && (
-        <p role="alert" className="rounded-control border-hard bg-coral-tint px-4 py-3 text-sm font-medium">
-          {error}
-        </p>
-      )}
+      {alert}
+      <div role="group" aria-label="Status" className="flex flex-wrap gap-2 md:hidden">
+        {columns.map((column) => (
+          <Chip key={column.status} pressed={tab === column.status} onClick={() => setTab(column.status)}>
+            {column.name} {cards.filter((card) => card.status === column.status).length}
+          </Chip>
+        ))}
+      </div>
       <section aria-label="Board" className="grid items-start gap-4.5 md:grid-cols-2 xl:grid-cols-4">
         {columns.map((column) => (
-          <BoardColumn key={column.status} column={column} cards={cards.filter((task) => task.status === column.status)} />
+          <BoardColumn key={column.status} column={column} cards={cards.filter((task) => task.status === column.status)} shown={tab === column.status} onMove={setMoving} />
         ))}
       </section>
       {/* No drop animation: the optimistic card is already in place when the overlay leaves. */}
       <DragOverlay dropAnimation={null}>
         {activeCard && <TaskCard card={activeCard} color={columns.find((column) => column.status === activeCard.status)!.color} aria-hidden tabIndex={-1} />}
       </DragOverlay>
+      {sheet}
     </DndContext>
   );
 }

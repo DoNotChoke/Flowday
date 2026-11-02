@@ -79,7 +79,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm B: Di chuyển task
 
 - [x] T2.5 Kéo thả (M)
-- [ ] T2.6 Board phone/tablet và List view (M)
+- [x] T2.6 Board phone/tablet và List view (M)
 
 ### Checkpoint B
 

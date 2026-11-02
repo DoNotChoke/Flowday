@@ -155,12 +155,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Tab theo status dưới `md`, lưới 2×2 ở tablet, 4 cột từ `xl`. Menu "Move to" trên mọi thiết bị cảm ứng. Chế độ List dưới `md` là danh sách thẻ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đổi status được ở 390 và 820 px chỉ bằng cảm ứng.
-- [ ] Chế độ Board hoặc List giữ trên URL.
-- [ ] Không có cuộn ngang ở 360, 390, 744, 820 và 1180 px.
+- [x] Đổi status được ở 390 và 820 px chỉ bằng cảm ứng.
+- [x] Chế độ Board hoặc List giữ trên URL.
+- [x] Không có cuộn ngang ở 360, 390, 744, 820 và 1180 px.
 
 **Kiểm chứng:**
-- [ ] E2E trên project mobile dùng "Move to".
+- [x] E2E trên project mobile dùng "Move to".
 - [ ] Bạn thử trên điện thoại hoặc iPad thật.
 
 **Phụ thuộc:** T2.5
