@@ -186,14 +186,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang 05 tại `/tasks/[id]`: mã task, project, sửa từng trường tại chỗ, đổi status, estimate, hủy và xóa có xác nhận bằng `Sheet`. Ẩn Team, Attachment. Khối Time tracked đợi T6.2.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Sửa trường nào được lưu trường đó, tải lại vẫn còn.
-- [ ] Xóa cần xác nhận, xong về Board; hủy chuyển sang Canceled và khôi phục được.
-- [ ] Task của người khác hoặc id sai trả 404.
+- [x] Sửa trường nào được lưu trường đó, tải lại vẫn còn.
+- [x] Xóa cần xác nhận, xong về Board; hủy chuyển sang Canceled và khôi phục được.
+- [x] Task của người khác hoặc id sai trả 404.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `deleteTask` và hủy.
-- [ ] E2E sửa, hủy, xóa trên desktop và mobile.
-- [ ] So ảnh với `design/screens/05-task-detail.html` ở 390 và 1440 px.
+- [x] Vitest cho `deleteTask` và hủy.
+- [x] E2E sửa, hủy, xóa trên desktop và mobile.
+- [x] So ảnh với `design/screens/05-task-detail.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** T2.4
 

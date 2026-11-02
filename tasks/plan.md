@@ -88,7 +88,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm C: Chi tiết task
 
-- [ ] T2.7 Task detail (M)
+- [x] T2.7 Task detail (M)
 - [ ] T2.7b Checklist (S)
 - [ ] T2.8 Comment và activity (M)
 

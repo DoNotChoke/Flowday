@@ -7,6 +7,7 @@ import { DateField } from "@/components/ui/DateField";
 import { Field } from "@/components/ui/Field";
 import { Sheet } from "@/components/ui/Sheet";
 import { Switch } from "@/components/ui/Switch";
+import { estimateLabel } from "@/lib/progress";
 import { useHydrated } from "@/lib/useHydrated";
 import { createCategoryAction, createProjectAction, createTaskAction } from "./actions";
 
@@ -42,12 +43,6 @@ const quickEstimates = [
   { label: "4h", minutes: 240 },
   { label: "1 day", minutes: 480 },
 ];
-
-function estimateLabel(minutes: number) {
-  if (!minutes) return "not set";
-  const hours = Math.floor(minutes / 60);
-  return [hours && `${hours}h`, minutes % 60 && `${minutes % 60}m`].filter(Boolean).join(" ");
-}
 
 type TaskFormProps = { categories: Category[]; projects: Project[]; projectId: string };
 

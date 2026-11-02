@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Field } from "./Field";
 
-type DateFieldProps = { label: string; name: string; error?: string };
+type DateFieldProps = { label: string; name: string; error?: string; defaultValue?: string };
 
 // iOS writes the value in words ("6 thg 11, 2026") and no CSS can change that, so touch screens show our own text over it.
 export function DateField(props: DateFieldProps) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(props.defaultValue ?? "");
 
   return (
     <Field

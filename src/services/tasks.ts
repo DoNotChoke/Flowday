@@ -2,7 +2,7 @@ import { and, asc, eq, inArray, max, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
-import { zonedToUtc } from "@/lib/datetime";
+import { utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { NotFoundError, parseInput } from "./errors";
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -110,6 +110,29 @@ export async function getTask(userId: string, id: string) {
 
   const links = await db.select({ id: taskCategory.categoryId }).from(taskCategory).where(eq(taskCategory.taskId, id));
   return { ...row, categoryIds: links.map((link) => link.id) };
+}
+
+export async function getTaskDetail(userId: string, id: string) {
+  const row = await getTask(userId, id);
+  if (!row) return null;
+
+  const [[owner], [linked]] = await Promise.all([
+    db.select({ timezone: user.timezone }).from(user).where(eq(user.id, userId)),
+    row.projectId ? db.select({ key: project.key, name: project.name }).from(project).where(eq(project.id, row.projectId)) : [undefined],
+  ]);
+  const timeZone = owner.timezone ?? "UTC";
+  const due = row.dueAt && utcToZoned(row.dueAt, timeZone);
+  const dueTime = due && row.dueHasTime ? due.time : "";
+  const day = row.dueAt && new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone }).format(row.dueAt);
+
+  return {
+    ...row,
+    code: linked && row.number ? `${linked.key}-${row.number}` : null,
+    projectName: linked?.name ?? null,
+    dueDate: due ? due.date : "",
+    dueTime,
+    dueLabel: day ? [day, dueTime].filter(Boolean).join(", ") : null,
+  };
 }
 
 export function listTasks(userId: string, filter: { status?: TaskRow["status"]; projectId?: string } = {}) {

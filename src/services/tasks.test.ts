@@ -3,7 +3,7 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { category, project, user } from "@/lib/db/schema";
 import { NotFoundError, ValidationError } from "./errors";
-import { createTask, deleteTask, getTask, listTasks, moveTask, updateTask } from "./tasks";
+import { createTask, deleteTask, getTask, getTaskDetail, listTasks, moveTask, updateTask } from "./tasks";
 
 const alice = "tasks-test-alice";
 const bob = "tasks-test-bob";
@@ -253,4 +253,45 @@ test("a status outside the list is refused", async () => {
 
   await expect(moveTask(mover, row.id, { status: "archived" as "ongoing", afterId: null })).rejects.toBeInstanceOf(ValidationError);
   await deleteTask(mover, row.id);
+});
+
+test("the detail gives the due date in the owner's zone, the code and the project", async () => {
+  const row = await createTask(alice, { title: "Detail", projectId: aliceProject, dueDate: "2026-11-06", dueTime: "17:00" });
+  const detail = await getTaskDetail(alice, row.id);
+
+  expect(detail).toMatchObject({ dueDate: "2026-11-06", dueTime: "17:00", dueLabel: "Fri, Nov 6, 17:00", projectName: "Flowday" });
+  expect(detail?.code).toBe(`FLW-${row.number}`);
+  await deleteTask(alice, row.id);
+});
+
+test("an all-day task has no time, and no due date gives empty values", async () => {
+  const allDay = await createTask(alice, { title: "All day", dueDate: "2026-11-06" });
+  const none = await createTask(alice, { title: "None" });
+
+  expect(await getTaskDetail(alice, allDay.id)).toMatchObject({ dueDate: "2026-11-06", dueTime: "", dueLabel: "Fri, Nov 6", code: null });
+  expect(await getTaskDetail(alice, none.id)).toMatchObject({ dueDate: "", dueTime: "", dueLabel: null });
+  await Promise.all([deleteTask(alice, allDay.id), deleteTask(alice, none.id)]);
+});
+
+test("another user's task or a wrong id has no detail", async () => {
+  const theirs = await createTask(bob, { title: "Theirs" });
+
+  expect(await getTaskDetail(alice, theirs.id)).toBeNull();
+  expect(await getTaskDetail(alice, "not-a-real-id")).toBeNull();
+  await deleteTask(bob, theirs.id);
+});
+
+test("restoring a canceled task clears the cancel time", async () => {
+  const row = await createTask(alice, { title: "Back", status: "canceled" });
+
+  expect((await updateTask(alice, row.id, { status: "ongoing" })).canceledAt).toBeNull();
+  await deleteTask(alice, row.id);
+});
+
+test("a deleted task is gone", async () => {
+  const row = await createTask(alice, { title: "Gone" });
+
+  await deleteTask(alice, row.id);
+
+  expect(await getTask(alice, row.id)).toBeNull();
 });
