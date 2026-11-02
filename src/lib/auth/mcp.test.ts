@@ -1,8 +1,10 @@
-import { afterAll, expect, test } from "vitest";
+import { afterAll, expect, test, vi } from "vitest";
 import { GET as authorizationServer } from "@/app/.well-known/oauth-authorization-server/api/auth/route";
 import { GET as protectedResource } from "@/app/.well-known/oauth-protected-resource/api/mcp/route";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+
+vi.mock("next/server", async (original) => ({ ...(await original<object>()), connection: async () => {} }));
 
 const origin = process.env.BETTER_AUTH_URL;
 
