@@ -2,22 +2,15 @@ import { and, asc, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { subtask, task } from "@/lib/db/schema";
+import { recordActivity } from "./activity";
 import { NotFoundError, parseInput } from "./errors";
-import { positionAfter } from "./tasks";
+import { positionAfter, type Transaction } from "./tasks";
 
 const titleSchema = z.object({ title: z.string().trim().min(1, "Enter an item.").max(200) });
 
-function ordered(taskId: string) {
-  return db
-    .select({ id: subtask.id, position: subtask.position })
-    .from(subtask)
-    .where(eq(subtask.taskId, taskId))
-    .orderBy(asc(subtask.position), asc(subtask.id));
-}
-
-async function ownedItem(userId: string, id: string) {
-  const [row] = await db
-    .select({ taskId: subtask.taskId })
+async function ownedItem(tx: Transaction, userId: string, id: string) {
+  const [row] = await tx
+    .select({ taskId: subtask.taskId, title: subtask.title })
     .from(subtask)
     .innerJoin(task, eq(subtask.taskId, task.id))
     .where(and(eq(subtask.id, id), eq(task.userId, userId)));
@@ -36,42 +29,62 @@ export function listSubtasks(userId: string, taskId: string) {
 
 export async function addSubtask(userId: string, taskId: string, input: string) {
   const { title } = parseInput(titleSchema, { title: input });
-  const [owned] = await db
-    .select({ id: task.id })
-    .from(task)
-    .where(and(eq(task.id, taskId), eq(task.userId, userId)));
-  if (!owned) throw new NotFoundError("Task");
 
-  const items = await ordered(taskId);
-  const [row] = await db
-    .insert(subtask)
-    .values({ taskId, title, position: positionAfter(items, items.at(-1)?.id ?? null) })
-    .returning();
-  return row;
+  return db.transaction(async (tx) => {
+    const [owned] = await tx
+      .select({ id: task.id })
+      .from(task)
+      .where(and(eq(task.id, taskId), eq(task.userId, userId)));
+    if (!owned) throw new NotFoundError("Task");
+
+    const items = await tx
+      .select({ id: subtask.id, position: subtask.position })
+      .from(subtask)
+      .where(eq(subtask.taskId, taskId))
+      .orderBy(asc(subtask.position), asc(subtask.id));
+    const [row] = await tx
+      .insert(subtask)
+      .values({ taskId, title, position: positionAfter(items, items.at(-1)?.id ?? null) })
+      .returning();
+    await recordActivity(tx, taskId, "subtask_added", { title });
+    return row;
+  });
 }
 
 export async function setSubtaskDone(userId: string, id: string, done: boolean) {
-  await ownedItem(userId, id);
-  await db.update(subtask).set({ done }).where(eq(subtask.id, id));
+  await db.transaction(async (tx) => {
+    const { taskId, title } = await ownedItem(tx, userId, id);
+    await tx.update(subtask).set({ done }).where(eq(subtask.id, id));
+    await recordActivity(tx, taskId, "subtask_done", { title, done });
+  });
 }
 
 export async function renameSubtask(userId: string, id: string, input: string) {
   const { title } = parseInput(titleSchema, { title: input });
-  await ownedItem(userId, id);
-  await db.update(subtask).set({ title }).where(eq(subtask.id, id));
+
+  await db.transaction(async (tx) => {
+    const { taskId } = await ownedItem(tx, userId, id);
+    await tx.update(subtask).set({ title }).where(eq(subtask.id, id));
+    await recordActivity(tx, taskId, "subtask_renamed", { title });
+  });
 }
 
 export async function moveSubtask(userId: string, id: string, afterId: string | null) {
-  const { taskId } = await ownedItem(userId, id);
-  const others = await db
-    .select({ id: subtask.id, position: subtask.position })
-    .from(subtask)
-    .where(and(eq(subtask.taskId, taskId), ne(subtask.id, id)))
-    .orderBy(asc(subtask.position), asc(subtask.id));
-  await db.update(subtask).set({ position: positionAfter(others, afterId) }).where(eq(subtask.id, id));
+  await db.transaction(async (tx) => {
+    const { taskId } = await ownedItem(tx, userId, id);
+    const others = await tx
+      .select({ id: subtask.id, position: subtask.position })
+      .from(subtask)
+      .where(and(eq(subtask.taskId, taskId), ne(subtask.id, id)))
+      .orderBy(asc(subtask.position), asc(subtask.id));
+    await tx.update(subtask).set({ position: positionAfter(others, afterId) }).where(eq(subtask.id, id));
+  });
 }
 
 export async function deleteSubtask(userId: string, id: string) {
-  await ownedItem(userId, id);
-  await db.delete(subtask).where(eq(subtask.id, id));
+  await db.transaction(async (tx) => {
+    const { taskId, title } = await ownedItem(tx, userId, id);
+    await tx.delete(subtask).where(eq(subtask.id, id));
+    await recordActivity(tx, taskId, "subtask_deleted", { title });
+  });
 }

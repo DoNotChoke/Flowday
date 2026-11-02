@@ -26,3 +26,18 @@ export function utcToZoned(instant: Date, timeZone: string) {
   const [date, time] = new Date(instant.getTime() + zoneOffset(instant.getTime(), timeZone)).toISOString().split("T");
   return { date, time: time.slice(0, 5) };
 }
+
+export function relativeTime(instant: Date, now: Date, timeZone: string) {
+  const minutes = Math.floor((now.getTime() - instant.getTime()) / 60_000);
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const then = utcToZoned(instant, timeZone);
+  const today = utcToZoned(now, timeZone).date;
+  if (then.date === today) {
+    const hours = Math.floor(minutes / 60);
+    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  }
+  if (then.date === new Date(Date.parse(today) - 86_400_000).toISOString().slice(0, 10)) return `Yesterday, ${then.time}`;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone }).format(instant);
+}

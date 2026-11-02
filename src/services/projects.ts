@@ -1,7 +1,7 @@
 import { and, count, eq, isNull, like, asc } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { project, task } from "@/lib/db/schema";
+import { activity, project, task } from "@/lib/db/schema";
 import { projectColors, projectIcons, projectKey, projectTemplates } from "@/lib/projects";
 import { parseInput } from "./errors";
 import { endOfColumn, POSITION_GAP } from "./tasks";
@@ -46,15 +46,19 @@ export async function createProject(userId: string, input: CreateProjectInput) {
       .returning();
     const start = await endOfColumn(tx, userId, "ongoing");
     if (starter.length > 0) {
-      await tx.insert(task).values(
-        starter.map((title, index) => ({
-          userId,
-          title,
-          projectId: row.id,
-          number: index + 1,
-          position: start + index * POSITION_GAP,
-        })),
-      );
+      const tasks = await tx
+        .insert(task)
+        .values(
+          starter.map((title, index) => ({
+            userId,
+            title,
+            projectId: row.id,
+            number: index + 1,
+            position: start + index * POSITION_GAP,
+          })),
+        )
+        .returning({ id: task.id });
+      await tx.insert(activity).values(tasks.map(({ id }) => ({ taskId: id, type: "created", actor: "user" as const })));
     }
     return row;
   });

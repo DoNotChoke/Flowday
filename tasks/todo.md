@@ -227,13 +227,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Ghi `activity` trong cùng transaction ở mọi hàm ghi của service, có `actor` để Phase 3 ghi `mcp`. Comment là một `type`. Hiện dòng thời gian ở trang chi tiết, thời gian tương đối theo múi giờ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Mọi thay đổi có dòng activity đúng thứ tự thời gian.
-- [ ] Ghi activity lỗi thì thay đổi cũng không được lưu.
-- [ ] Comment rỗng bị từ chối; nội dung hiện đúng tiếng Việt và không chạy HTML.
+- [x] Mọi thay đổi có dòng activity đúng thứ tự thời gian.
+- [x] Ghi activity lỗi thì thay đổi cũng không được lưu.
+- [x] Comment rỗng bị từ chối; nội dung hiện đúng tiếng Việt và không chạy HTML.
 
 **Kiểm chứng:**
-- [ ] Vitest cho từng loại thay đổi và trường hợp rollback.
-- [ ] E2E thêm comment rồi tải lại.
+- [x] Vitest cho từng loại thay đổi và trường hợp rollback.
+- [x] E2E thêm comment rồi tải lại.
 
 **Phụ thuộc:** T2.7b
 

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUserId } from "@/lib/auth/session";
+import { addComment } from "@/services/activity";
 import { ValidationError } from "@/services/errors";
 import { addSubtask, deleteSubtask, moveSubtask, renameSubtask, setSubtaskDone } from "@/services/subtasks";
 import { deleteTask, updateTask, type UpdateTaskInput } from "@/services/tasks";
@@ -21,6 +22,10 @@ async function save(work: (userId: string) => Promise<unknown>) {
 
 export async function updateTaskAction(id: string, input: UpdateTaskInput) {
   return save((userId) => updateTask(userId, id, input));
+}
+
+export async function addCommentAction(taskId: string, body: string) {
+  return save((userId) => addComment(userId, taskId, body));
 }
 
 export async function addSubtaskAction(taskId: string, title: string) {

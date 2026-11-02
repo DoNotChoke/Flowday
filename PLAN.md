@@ -246,7 +246,7 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 - [x] **T2.6 Board phone/tablet và List view (M).** Tab theo status trên phone, 2×2 trên tablet, menu "Move to" trên mọi thiết bị cảm ứng, chế độ List. *Xong khi:* đổi status được ở 390 px và 820 px chỉ bằng cảm ứng.
 - [x] **T2.7 Task detail (M).** Trang 05: mã task, Project, sửa trường, đổi status, estimate, hủy/xóa có xác nhận. *Xong khi:* sửa trường nào lưu trường đó; xóa cần xác nhận.
 - [x] **T2.7b Checklist (S).** Tách khỏi T2.7. *Xong khi:* % trên Board đổi theo checklist.
-- [ ] **T2.8 Comment và activity (M).** Ghi activity tại service, comment là `activity`. *Xong khi:* mọi thay đổi có dòng activity đúng thứ tự thời gian.
+- [x] **T2.8 Comment và activity (M).** Ghi activity tại service, comment là `activity`. *Xong khi:* mọi thay đổi có dòng activity đúng thứ tự thời gian.
 - [ ] **T2.9 Tìm kiếm (S).** Ô search và phím `⌘K`/`Ctrl+K`. *Xong khi:* tìm được tên có dấu tiếng Việt, kể cả khi gõ không dấu.
 - [ ] **T2.10 Quick-add (M).** Phím `N`, parser `#category`, `!priority`, ngày tự nhiên bằng `chrono-node`. *Xong khi:* test bảng phủ câu mẫu "Review PR tomorrow 9am #Development !high"; `N` không kích hoạt khi đang gõ trong input.
 

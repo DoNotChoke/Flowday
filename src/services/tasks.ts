@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
 import { utcToZoned, zonedToUtc } from "@/lib/datetime";
+import { recordActivity, type Actor } from "./activity";
 import { NotFoundError, parseInput } from "./errors";
 
 export type Transaction = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -32,6 +33,14 @@ const createSchema = z.object({
 });
 const updateSchema = z.object(fields).partial();
 const moveSchema = z.object({ status: fields.status, afterId: z.string().nullable() });
+
+const editable = [
+  { key: "title", field: "title" },
+  { key: "description", field: "description" },
+  { key: "priority", field: "priority" },
+  { key: "estimateMin", field: "estimate" },
+  { key: "alertEnabled", field: "alert" },
+] as const;
 
 export type CreateTaskInput = z.input<typeof createSchema>;
 export type UpdateTaskInput = z.input<typeof updateSchema>;
@@ -81,7 +90,7 @@ async function setCategories(tx: Transaction, userId: string, taskId: string, ca
   if (ids.length > 0) await tx.insert(taskCategory).values(ids.map((categoryId) => ({ taskId, categoryId })));
 }
 
-export async function createTask(userId: string, input: CreateTaskInput) {
+export async function createTask(userId: string, input: CreateTaskInput, actor: Actor = "user") {
   const { categoryIds, dueDate, dueTime, ...values } = parseInput(createSchema, input);
 
   return db.transaction(async (tx) => {
@@ -97,6 +106,7 @@ export async function createTask(userId: string, input: CreateTaskInput) {
       })
       .returning();
     await setCategories(tx, userId, row.id, categoryIds);
+    await recordActivity(tx, row.id, "created", null, actor);
     return row;
   });
 }
@@ -127,6 +137,7 @@ export async function getTaskDetail(userId: string, id: string) {
 
   return {
     ...row,
+    timeZone,
     code: linked && row.number ? `${linked.key}-${row.number}` : null,
     projectName: linked?.name ?? null,
     dueDate: due ? due.date : "",
@@ -149,7 +160,7 @@ export function listTasks(userId: string, filter: { status?: TaskRow["status"]; 
     .orderBy(asc(task.position), asc(task.id));
 }
 
-export async function updateTask(userId: string, id: string, input: UpdateTaskInput) {
+export async function updateTask(userId: string, id: string, input: UpdateTaskInput, actor: Actor = "user") {
   const { categoryIds, dueDate, dueTime, ...values } = parseInput(updateSchema, input);
 
   return db.transaction(async (tx) => {
@@ -164,13 +175,25 @@ export async function updateTask(userId: string, id: string, input: UpdateTaskIn
     if (values.status && values.status !== current.status) {
       Object.assign(changes, statusStamps(values.status), { position: await endOfColumn(tx, userId, values.status) });
     }
+    const edited: string[] = editable.filter(({ key }) => values[key] !== undefined && values[key] !== current[key]).map(({ field }) => field);
     if (values.projectId !== undefined && values.projectId !== current.projectId) {
       changes.number = values.projectId ? await nextNumber(tx, userId, values.projectId) : null;
+      edited.push("project");
     }
-    if (dueDate !== undefined) Object.assign(changes, await dueFields(tx, userId, dueDate, dueTime));
-    if (categoryIds) await setCategories(tx, userId, id, categoryIds);
+    if (dueDate !== undefined) {
+      const due = await dueFields(tx, userId, dueDate, dueTime);
+      Object.assign(changes, due);
+      if (due.dueAt?.getTime() !== current.dueAt?.getTime() || due.dueHasTime !== current.dueHasTime) edited.push("deadline");
+    }
+    if (categoryIds) {
+      const links = await tx.select({ id: taskCategory.categoryId }).from(taskCategory).where(eq(taskCategory.taskId, id));
+      if (links.length !== new Set(categoryIds).size || links.some((link) => !categoryIds.includes(link.id))) edited.push("categories");
+      await setCategories(tx, userId, id, categoryIds);
+    }
 
     const [row] = await tx.update(task).set(changes).where(eq(task.id, id)).returning();
+    if (row.status !== current.status) await recordActivity(tx, id, "status", { from: current.status, to: row.status }, actor);
+    for (const field of edited) await recordActivity(tx, id, "updated", { field }, actor);
     return row;
   });
 }
@@ -186,7 +209,7 @@ export function positionAfter(cards: { id: string; position: number }[], afterId
   return next ? (previous.position + next.position) / 2 : previous.position + POSITION_GAP;
 }
 
-export async function moveTask(userId: string, id: string, input: MoveTaskInput) {
+export async function moveTask(userId: string, id: string, input: MoveTaskInput, actor: Actor = "user") {
   const { status, afterId } = parseInput(moveSchema, input);
 
   return db.transaction(async (tx) => {
@@ -213,6 +236,7 @@ export async function moveTask(userId: string, id: string, input: MoveTaskInput)
       })
       .where(eq(task.id, id))
       .returning();
+    if (status !== current.status) await recordActivity(tx, id, "status", { from: current.status, to: status }, actor);
     return row;
   });
 }

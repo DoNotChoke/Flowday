@@ -179,7 +179,7 @@ export function TaskFields({ task, categories, projects, children }: Props) {
   );
 
   return (
-    <article className="flex min-w-0 flex-col gap-5.5 rounded-card border-hard bg-white p-5 shadow-hard-5 md:p-7">
+    <article className="flex min-w-0 flex-[3_1_480px] flex-col gap-5.5 rounded-card border-hard bg-white p-5 shadow-hard-5 md:p-7">
       <div className="flex items-center justify-between gap-3">
         <Link href="/tasks" aria-label="Back to tasks" className="flex size-11 items-center justify-center rounded-xl border-hard">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

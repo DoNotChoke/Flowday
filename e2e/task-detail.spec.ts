@@ -250,3 +250,36 @@ test("the add item box shows only the caret and keeps it after adding", async ({
   await page.getByRole("textbox", { name: "Edit Mục một" }).click();
   await expect(page.getByRole("textbox", { name: "Edit Mục một" })).toHaveCSS("outline-style", "solid");
 });
+
+test.describe("the activity", () => {
+  test("a comment stays after a reload, in Vietnamese and without running as HTML", async ({ page }) => {
+    const input = page.getByRole("textbox", { name: "Write a comment" });
+    await input.fill('Xong phần đầu <img src=x onerror="window.hacked=1">');
+    await page.getByRole("button", { name: "Send comment" }).click();
+    await expect(input).toHaveValue("");
+
+    await page.reload();
+    const log = page.getByRole("list", { name: "Activity" });
+    await expect(log).toContainText('Xong phần đầu <img src=x onerror="window.hacked=1">');
+    await expect(log.locator("img")).toHaveCount(0);
+    expect(await page.evaluate(() => "hacked" in window)).toBe(false);
+  });
+
+  test("a blank comment is refused", async ({ page }) => {
+    await page.getByRole("textbox", { name: "Write a comment" }).fill("   ");
+    await page.getByRole("button", { name: "Send comment" }).click();
+
+    await expect(page.getByRole("alert").filter({ hasText: "Write a comment." })).toBeVisible();
+  });
+
+  test("changes appear newest first", async ({ page }) => {
+    await page.getByRole("button", { name: /^Status/ }).click();
+    await page.getByRole("dialog").getByLabel("Status").selectOption("in_process");
+    await save(page);
+
+    const lines = page.getByRole("list", { name: "Activity" }).getByRole("listitem");
+    await expect(lines.first()).toContainText("You moved this task to In process");
+    await expect(lines.first()).toContainText("Just now");
+    await expect(lines.last()).toContainText("You created this task");
+  });
+});

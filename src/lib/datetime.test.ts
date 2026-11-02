@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { zonedToUtc, utcToZoned } from "@/lib/datetime";
+import { relativeTime, zonedToUtc, utcToZoned } from "@/lib/datetime";
 
 const cases = [
   { zone: "Asia/Ho_Chi_Minh", date: "2026-11-06", time: "17:00", utc: "2026-11-06T10:00:00.000Z" },
@@ -29,4 +29,17 @@ test("a clock change does not shift the time on the other side of it", () => {
   // New York leaves daylight time on 2026-11-01.
   expect(zonedToUtc("2026-11-02", "09:00", "America/New_York").toISOString()).toBe("2026-11-02T14:00:00.000Z");
   expect(zonedToUtc("2026-10-31", "09:00", "America/New_York").toISOString()).toBe("2026-10-31T13:00:00.000Z");
+});
+
+test("relative time counts minutes, then hours, then days in the owner's zone", () => {
+  const now = new Date("2026-11-06T10:00:00Z"); // 17:00 in Ho Chi Minh City
+  const zone = "Asia/Ho_Chi_Minh";
+
+  expect(relativeTime(new Date("2026-11-06T09:59:40Z"), now, zone)).toBe("Just now");
+  expect(relativeTime(new Date("2026-11-06T09:15:00Z"), now, zone)).toBe("45 min ago");
+  expect(relativeTime(new Date("2026-11-06T09:00:00Z"), now, zone)).toBe("1 hour ago");
+  expect(relativeTime(new Date("2026-11-06T02:00:00Z"), now, zone)).toBe("8 hours ago");
+  // 23:30 the evening before there, though the same UTC day.
+  expect(relativeTime(new Date("2026-11-05T16:30:00Z"), now, zone)).toBe("Yesterday, 23:30");
+  expect(relativeTime(new Date("2026-10-29T03:00:00Z"), now, zone)).toBe("Oct 29");
 });

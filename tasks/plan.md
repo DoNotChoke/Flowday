@@ -90,7 +90,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T2.7 Task detail (M)
 - [x] T2.7b Checklist (S)
-- [ ] T2.8 Comment và activity (M)
+- [x] T2.8 Comment và activity (M)
 
 ### Nhóm D: Thao tác nhanh
 
