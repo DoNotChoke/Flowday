@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Board, StatusCards } from "@/components/app/board/Board";
+import { SearchBox } from "@/components/app/board/SearchBox";
 import { requireUserId } from "@/lib/auth/session";
 import { getBoard, type BoardFilter } from "@/services/board";
 import { listCategories } from "@/services/categories";
@@ -49,11 +50,14 @@ async function Content({ searchParams }: PageProps<"/tasks">) {
 
   return (
     <>
-      <header className="flex flex-col gap-0.5">
-        <h1 className="font-content text-3xl font-bold tracking-[-0.6px]">Hi, {board.name}</h1>
-        <p className="text-sm text-muted">
-          {board.dateLabel} · {board.dueToday} {board.dueToday === 1 ? "task" : "tasks"} due today
-        </p>
+      <header className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <h1 className="font-content text-3xl font-bold tracking-[-0.6px]">Hi, {board.name}</h1>
+          <p className="text-sm text-muted">
+            {board.dateLabel} · {board.dueToday} {board.dueToday === 1 ? "task" : "tasks"} due today
+          </p>
+        </div>
+        <SearchBox />
       </header>
 
       <StatusCards stats={board.stats} />

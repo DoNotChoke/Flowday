@@ -3,7 +3,7 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { category, project, user } from "@/lib/db/schema";
 import { NotFoundError, ValidationError } from "./errors";
-import { createTask, deleteTask, getTask, getTaskDetail, listTasks, moveTask, updateTask } from "./tasks";
+import { createTask, deleteTask, getTask, getTaskDetail, listTasks, moveTask, searchTasks, updateTask } from "./tasks";
 
 const alice = "tasks-test-alice";
 const bob = "tasks-test-bob";
@@ -294,4 +294,43 @@ test("a deleted task is gone", async () => {
   await deleteTask(alice, row.id);
 
   expect(await getTask(alice, row.id)).toBeNull();
+});
+
+test("search ignores accents and case in the title and the description", async () => {
+  const title = await createTask(mover, { title: "Đồ án tốt nghiệp" });
+  const description = await createTask(mover, { title: "Khác", description: "Phần thực nghiệm" });
+
+  expect((await searchTasks(mover, "do an")).map((row) => row.id)).toEqual([title.id]);
+  expect((await searchTasks(mover, "THUC NGHIEM")).map((row) => row.id)).toEqual([description.id]);
+  expect(await searchTasks(mover, "Đồ Án")).toHaveLength(1);
+  await Promise.all([deleteTask(mover, title.id), deleteTask(mover, description.id)]);
+});
+
+test("search treats % _ and backslash as plain characters", async () => {
+  const percent = await createTask(mover, { title: "Giảm 50% giá" });
+  const under = await createTask(mover, { title: "snake_case" });
+  const slash = await createTask(mover, { title: "C:\temp" });
+  const plain = await createTask(mover, { title: "snakeXcase" });
+
+  expect((await searchTasks(mover, "%")).map((row) => row.id)).toEqual([percent.id]);
+  expect((await searchTasks(mover, "_")).map((row) => row.id)).toEqual([under.id]);
+  expect((await searchTasks(mover, "\\")).map((row) => row.id)).toEqual([slash.id]);
+  await Promise.all([percent, under, slash, plain].map((row) => deleteTask(mover, row.id)));
+});
+
+test("search stays inside the user, gives the code, and ignores a blank query", async () => {
+  const theirs = await createTask(bob, { title: "Bí mật riêng" });
+  const mine = await createTask(alice, { title: "Tìm thấy", projectId: aliceProject });
+
+  expect(await searchTasks(mover, "bi mat")).toEqual([]);
+  expect(await searchTasks(alice, "tim thay")).toMatchObject([{ id: mine.id, code: `FLW-${mine.number}`, status: "ongoing" }]);
+  expect(await searchTasks(alice, "   ")).toEqual([]);
+  await Promise.all([deleteTask(bob, theirs.id), deleteTask(alice, mine.id)]);
+});
+
+test("search returns at most 20 tasks", async () => {
+  const rows = await Promise.all(Array.from({ length: 21 }, (_, index) => createTask(mover, { title: `Nhiều ${index}` })));
+
+  expect(await searchTasks(mover, "nhieu")).toHaveLength(20);
+  await Promise.all(rows.map((row) => deleteTask(mover, row.id)));
 });

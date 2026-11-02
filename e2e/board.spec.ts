@@ -208,3 +208,55 @@ for (const path of ["/tasks", "/tasks?view=list"]) {
     });
   }
 }
+
+test.describe("search", () => {
+  const box = (page: Page) => page.getByRole("searchbox", { name: "Search tasks" });
+  const results = (page: Page) => page.getByRole("list", { name: "Search results" });
+
+  test("typing without accents finds the task and opens it", async ({ page }) => {
+    await box(page).fill("viet chuong");
+    await results(page).getByRole("link", { name: /Viết chương ba/ }).click();
+
+    await expect(page).toHaveURL(/\/tasks\/[0-9a-f-]{36}$/);
+  });
+
+  test("nothing found says so and Escape clears the box", async ({ page }) => {
+    await box(page).fill("không có gì");
+    await expect(page.getByText("No tasks found")).toBeVisible();
+
+    await box(page).press("Escape");
+    await expect(box(page)).toHaveValue("");
+    await expect(page.getByText("No tasks found")).toHaveCount(0);
+  });
+
+  test("clicking outside closes the results", async ({ page }) => {
+    await box(page).fill("viet");
+    await expect(results(page)).toBeVisible();
+
+    await page.getByRole("heading", { name: "Hi, Việt" }).click();
+    await expect(results(page)).toHaveCount(0);
+  });
+
+  test("Ctrl+K jumps to the box, unless typing elsewhere", async ({ page, isMobile }) => {
+    test.skip(isMobile, "needs a keyboard");
+    await expect(box(page)).toBeEnabled();
+    await page.keyboard.press("Control+k");
+    await expect(box(page)).toBeFocused();
+
+    await page.evaluate(() => {
+      const other = document.createElement("input");
+      other.id = "other";
+      document.body.append(other);
+      other.focus();
+    });
+    await page.keyboard.press("Control+k");
+    await expect(page.locator("#other")).toBeFocused();
+  });
+
+  test("the shortcut hint is hidden on touch screens", async ({ page, hasTouch }) => {
+    const hint = page.getByText("Ctrl K");
+
+    if (hasTouch) await expect(hint).toBeHidden();
+    else await expect(hint).toBeVisible();
+  });
+});

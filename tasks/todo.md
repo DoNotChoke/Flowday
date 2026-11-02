@@ -250,13 +250,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Ô search trên Board và `⌘K`/`Ctrl+K`. `searchTasks` dùng `unaccent` theo tiêu đề và mô tả. Ẩn gợi ý phím trên thiết bị cảm ứng.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Gõ `do an` tìm được `Đồ án`.
-- [ ] Ký tự `%` và `_` được hiểu là ký tự thường.
-- [ ] `Ctrl+K` không kích hoạt khi đang gõ trong ô khác nếu trình duyệt đã dùng phím đó.
+- [x] Gõ `do an` tìm được `Đồ án`.
+- [x] Ký tự `%` và `_` được hiểu là ký tự thường.
+- [x] `Ctrl+K` không kích hoạt khi đang gõ trong ô khác nếu trình duyệt đã dùng phím đó.
 
 **Kiểm chứng:**
-- [ ] Vitest cho bỏ dấu, ký tự đặc biệt, cô lập theo user.
-- [ ] E2E tìm rồi mở task.
+- [x] Vitest cho bỏ dấu, ký tự đặc biệt, cô lập theo user.
+- [x] E2E tìm rồi mở task.
 
 **Phụ thuộc:** T2.4
 

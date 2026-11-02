@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, max, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, max, ne, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import { category, project, task, taskCategory, taskPriority, taskStatus, user } from "@/lib/db/schema";
@@ -158,6 +158,30 @@ export function listTasks(userId: string, filter: { status?: TaskRow["status"]; 
       ),
     )
     .orderBy(asc(task.position), asc(task.id));
+}
+
+export async function searchTasks(userId: string, query: string) {
+  const term = query.trim().slice(0, 100);
+  if (!term) return [];
+  // strpos rather than ILIKE: % and _ in a search are plain characters.
+  const needle = sql`lower(unaccent(${term}))`;
+
+  const rows = await db
+    .select({ id: task.id, title: task.title, status: task.status, number: task.number, projectKey: project.key })
+    .from(task)
+    .leftJoin(project, eq(task.projectId, project.id))
+    .where(
+      and(
+        eq(task.userId, userId),
+        or(
+          sql`strpos(lower(unaccent(${task.title})), ${needle}) > 0`,
+          sql`strpos(lower(unaccent(${task.description})), ${needle}) > 0`,
+        ),
+      ),
+    )
+    .orderBy(desc(task.updatedAt), asc(task.id))
+    .limit(20);
+  return rows.map(({ number, projectKey, ...row }) => ({ ...row, code: projectKey && number ? `${projectKey}-${number}` : null }));
 }
 
 export async function updateTask(userId: string, id: string, input: UpdateTaskInput, actor: Actor = "user") {
