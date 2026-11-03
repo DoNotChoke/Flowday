@@ -1,4 +1,4 @@
-# Phase 4 — Danh sách việc
+# Phase 5 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
@@ -6,185 +6,128 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ---
 
-## Nhóm A: Xem và quản lý project
+## Nhóm A: Xem lịch
 
-### T4.1 Project overview
+### T5.1 Lịch tháng
 
-**Mô tả:** Trang 10 tại `/projects/[id]`: header theo màu project có icon, mã · template, tên, mục tiêu, nút Add task (`/tasks/new?project=`) và nút sửa. Ba KPI: Progress, Tasks (`11 / 18`, kèm số đang mở và số quá hạn), Target date (kèm số ngày còn lại). `getProjectOverview` trong `src/services/projects.ts` tính số liệu theo múi giờ người dùng. Bỏ `shortcut` cũ.
+**Mô tả:** Trang 06 tại `/calendar` từ dữ liệu thật, cho màn hình từ 744 px. Header có tên tháng, nút tháng trước/sau và Today. Segmented Day/Week/Month thêm ở T5.4, không dựng nút tắt trước. Lưới 6 × 7 bắt đầu từ thứ Hai; mỗi ô tối đa 2 chip, còn lại "+n more"; ô hôm nay và ô đang chọn nổi bật như thiết kế. Agenda bên phải liệt kê task của ngày đang chọn, mỗi dòng có giờ hoặc "Due"/"Planned", tên, category và estimate, bấm vào mở Task detail. Trạng thái trên URL (`?date=`). `getCalendar(userId, from, to)` trong `src/services/calendar.ts`.
 
 **Tiêu chí nghiệm thu:**
-- [x] Số liệu khớp DB; task đã hủy không tính vào Progress.
-- [x] Số quá hạn và số ngày còn lại tính theo múi giờ người dùng; hạn hôm nay chưa tính là quá hạn.
-- [x] Project không có task hoặc không có ngày đích hiện trạng thái rỗng rõ ràng, không chia cho 0.
-- [x] Project của người khác hoặc id sai trả 404.
+- [x] Task hiện theo `planned_at`, không có thì theo `due_at`; task đã hủy không hiện, task đã xong hiện mờ.
+- [x] Task gần nửa đêm rơi đúng ngày theo múi giờ người dùng; tuần bắt đầu từ thứ Hai.
+- [x] Chuyển tháng, Today và chọn ngày đổi URL; tải lại giữ nguyên.
+- [x] Không thấy task của người khác.
 
 **Kiểm chứng:**
-- [x] Vitest cho `getProjectOverview`, có múi giờ âm, hạn gần nửa đêm, project rỗng, user khác.
-- [x] E2E tạo project, xem KPI ở desktop và mobile.
-- [x] So ảnh với `design/screens/10-project-overview.html` ở 390 và 1440 px.
+- [x] Vitest cho `getCalendar`: múi giờ dương và âm, hạn 23:30 và 00:30, ngày đổi giờ, `planned_at` thắng `due_at`, user khác.
+- [x] E2E tạo task có hạn, mở `/calendar?date=`, thấy chip và dòng agenda; bấm mở Task detail.
+- [x] So ảnh với `design/screens/06-calendar.html` ở 820 và 1440 px.
 
 **Phụ thuộc:** Không
 
-**File dự kiến:** `src/services/projects.ts`, `src/services/projects.test.ts`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
+**File dự kiến:** `src/services/calendar.ts`, `src/services/calendar.test.ts`, `src/app/(app)/calendar/page.tsx`, `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/Agenda.tsx`, `e2e/calendar.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T4.1b Sửa và lưu trữ project
+### T5.2 Lịch mobile
 
-**Mô tả:** Trang `/projects/[id]/settings` dùng lại `ProjectForm` với giá trị ban đầu, ẩn template và starter tasks. `updateProject`, `archiveProject`, `restoreProject` trong service. Lưu trữ có xác nhận bằng `Sheet`. `key` không sửa được. Trang của project đã lưu trữ có nhãn và nút khôi phục. Task thuộc project đã lưu trữ vẫn giữ được liên kết khi sửa.
+**Mô tả:** Dưới 744 px: lưới tháng gọn, mỗi ô chỉ có số ngày và tối đa 3 chấm màu; chạm ngày để xem agenda nằm dưới lưới. Header gọn lại một hàng.
 
 **Tiêu chí nghiệm thu:**
-- [x] Sửa tên, mục tiêu, màu, icon, ngày, time budget được lưu; mã task không đổi.
-- [x] Project lưu trữ biến khỏi Sidebar và form tạo task, task không mất và vẫn hiện trên `/tasks`.
-- [x] Sửa task thuộc project đã lưu trữ không làm mất liên kết project.
-- [x] Không sửa hay lưu trữ được project của người khác.
+- [x] Không có cuộn ngang ở 360 và 390 px.
+- [x] Chạm ngày đổi agenda bên dưới; mỗi ô có nhãn cho trình đọc màn hình (ngày và số task).
+- [x] Vùng chạm của ô ngày tối thiểu 44 px.
 
 **Kiểm chứng:**
-- [x] Vitest cho sửa, lưu trữ, khôi phục, user khác.
-- [x] E2E sửa rồi tải lại, lưu trữ rồi khôi phục.
+- [x] E2E project `mobile`: chạm ngày, thấy agenda, kiểm tra không cuộn ngang.
 
-**Phụ thuộc:** T4.1
+**Phụ thuộc:** T5.1
 
-**File dự kiến:** `src/services/projects.ts`, `src/app/(app)/projects/new/ProjectForm.tsx`, `src/app/(app)/projects/[id]/settings/page.tsx`, `src/app/(app)/projects/[id]/actions.ts`, `e2e/project-overview.spec.ts`
+**File dự kiến:** `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/page.tsx`, `e2e/calendar.spec.ts`
 
-**Quy mô:** M
+**Quy mô:** S
 
 ---
 
 ## Checkpoint A
 
-- [x] Số liệu Overview khớp DB trên desktop và mobile.
-- [x] CI xanh.
-- [x] Bạn đã xem Overview và trang sửa project.
+- [ ] Task hiện đúng ngày trên desktop, iPad và phone.
+- [ ] CI xanh.
+- [ ] Bạn đã xem lịch thật trên máy.
 
 ---
 
-## Nhóm B: Task trong project
+## Nhóm B: Lên lịch
 
-### T4.2 Bảng Project tasks
+### T5.3 Unscheduled và sheet chọn ngày
 
-**Mô tả:** Khối Project tasks ở Overview: lọc status kèm số đếm trên URL (`?status=`), các cột mã và tên, Priority, Estimate, Due, Status. Dưới 744 px đổi thành danh sách thẻ. Thêm `estimateMin` và cờ quá hạn vào card của `getBoard`. Nút "+ Add task to project". Ẩn cột Assignee.
+**Mô tả:** Khối "Unscheduled · n" dưới agenda liệt kê task chưa xong, chưa hủy, không có `planned_at` và `due_at`. Mỗi dòng có nút "Plan" mở `Sheet` với `DateField`, mặc định là ngày đang chọn. `updateTask` nhận thêm `plannedDate` (lưu nửa đêm theo múi giờ người dùng, `null` để bỏ lịch) và ghi activity. Task detail có thêm ô "Planned" để đổi hoặc bỏ lịch.
 
 **Tiêu chí nghiệm thu:**
-- [x] Lọc giữ trên URL, số đếm đúng từng status.
-- [x] Task quá hạn tô đỏ; task đã xong hoặc đã hủy thì không.
-- [x] Không có cuộn ngang ở 360 px.
+- [ ] Lên lịch xong, task rời Unscheduled, số đếm giảm 1 và task hiện ở ngày đã chọn.
+- [ ] `planned_at` lưu đúng ngày theo múi giờ người dùng; bỏ lịch trả task về Unscheduled.
+- [ ] Mỗi lần đổi lịch có một dòng activity.
+- [ ] Không lên lịch được task của người khác.
 
 **Kiểm chứng:**
-- [x] Vitest cho cờ quá hạn theo múi giờ.
-- [x] E2E lọc, tải lại, mở task.
+- [ ] Vitest cho `plannedDate` trong `updateTask`: lưu, bỏ, múi giờ âm, user khác.
+- [ ] E2E desktop và mobile: tạo task không ngày → Plan → thấy trong agenda, tải lại vẫn còn.
 
-**Phụ thuộc:** T4.1
+**Phụ thuộc:** T5.1
 
-**File dự kiến:** `src/services/board.ts`, `src/services/board.test.ts`, `src/app/(app)/projects/[id]/ProjectTasks.tsx`, `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
+**File dự kiến:** `src/services/tasks.ts`, `src/services/tasks.test.ts`, `src/services/calendar.ts`, `src/app/(app)/calendar/Unscheduled.tsx`, `src/app/(app)/calendar/actions.ts`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `e2e/calendar.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T4.3 Tab Board và List
+### T5.3b Kéo task vào ngày
 
-**Mô tả:** Tab Overview, Board, List trên URL (`?view=`). Hai tab sau dùng lại `Board` của `/tasks`, lọc theo project. Ẩn Timeline và Files.
+**Mô tả:** Trên lưới tháng (từ 744 px), kéo một dòng Unscheduled thả vào ô ngày để lên lịch, dùng `@dnd-kit` với Mouse, Touch (có độ trễ) và Keyboard sensor như Board. Cập nhật lạc quan; lỗi thì task quay về Unscheduled.
 
 **Tiêu chí nghiệm thu:**
-- [x] Kéo thả và Move to trong tab Board cũng cập nhật `/tasks`.
-- [x] Tab giữ trên URL, tải lại vẫn đúng.
-- [x] Trên phone vẫn có tab status và Move to như `/tasks`.
+- [ ] Kéo thả lưu `planned_at` đúng ngày của ô, tải lại vẫn còn.
+- [ ] Làm được bằng bàn phím và có thông báo cho trình đọc màn hình.
+- [ ] Trên iPad vừa cuộn được vừa kéo được.
 
 **Kiểm chứng:**
-- [x] E2E chuyển tab, đổi status, xem lại ở `/tasks` trên desktop và mobile.
+- [ ] E2E desktop: kéo bằng chuột và bằng bàn phím.
 
-**Phụ thuộc:** T4.2
+**Phụ thuộc:** T5.3
 
-**File dự kiến:** `src/app/(app)/projects/[id]/page.tsx`, `e2e/project-overview.spec.ts`
+**File dự kiến:** `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/Unscheduled.tsx`, `src/app/(app)/calendar/CalendarDnd.tsx`, `e2e/calendar.spec.ts`
 
 **Quy mô:** S
 
 ---
 
-## Nhóm C: Milestones
+## Nhóm C: Các view khác
 
-### T4.4 Milestones
+### T5.4 Week và Day
 
-**Mô tả:** Bảng `milestone` (project, tên, hạn, vị trí), cột `task.milestone_id` có `on delete set null`, migration 0005. `src/services/milestones.ts` thêm, sửa, xóa, liệt kê kèm số task. Khối Milestones ở Overview và sheet "+ Milestone".
+**Mô tả:** Bật Segmented Day/Week/Month (`?view=`). Week: 7 cột từ thứ Hai của tuần chứa ngày đang chọn, mỗi cột liệt kê chip đầy đủ; dưới 744 px là danh sách 7 ngày xếp dọc. Day: agenda cỡ lớn của ngày đang chọn. Nút trước/sau đi theo view (tháng, tuần, ngày). Cùng đọc từ `getCalendar`.
 
 **Tiêu chí nghiệm thu:**
-- [x] Thêm, sửa, xóa milestone được lưu sau khi tải lại.
-- [x] Xóa milestone không xóa task.
-- [x] Project không có milestone hiện trạng thái rỗng và nút thêm.
-- [x] Không đụng được milestone của project người khác.
+- [ ] Chuyển qua lại 3 view giữ nguyên ngày đang chọn.
+- [ ] Trước/sau nhảy đúng một tháng, một tuần hoặc một ngày.
+- [ ] Không có cuộn ngang ở 360, 820 và 1440 px.
 
 **Kiểm chứng:**
-- [x] Vitest cho thêm, sửa, xóa, user khác, tên rỗng.
-- [x] Migration chạy sạch trên DB rỗng ở CI.
-- [x] E2E thêm, sửa, xóa.
+- [ ] E2E chuyển Month → Week → Day và quay lại, kiểm tra `?date=` không đổi và task vẫn hiện.
 
-**Phụ thuộc:** T4.1
+**Phụ thuộc:** T5.1
 
-**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0005_*.sql`, `src/services/milestones.ts`, `src/services/milestones.test.ts`, `src/app/(app)/projects/[id]/Milestones.tsx`
+**File dự kiến:** `src/app/(app)/calendar/page.tsx`, `src/app/(app)/calendar/WeekView.tsx`, `src/app/(app)/calendar/Agenda.tsx`, `e2e/calendar.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T4.4b Gán task vào milestone
+## Checkpoint hoàn thành Phase 5
 
-**Mô tả:** Tile Milestone ở Task detail, chỉ hiện khi task có project. `updateTask` kiểm tra milestone thuộc đúng project và ghi activity. Đổi project thì bỏ milestone. Milestone hiện % và trạng thái suy ra từ task.
-
-**Tiêu chí nghiệm thu:**
-- [x] Hoàn thành task làm đổi % và trạng thái của milestone; task đã hủy không tính.
-- [x] Không gán được milestone của project khác; đổi project tự bỏ milestone.
-- [x] Milestone không có task hiện `Planned`, 0%.
-
-**Kiểm chứng:**
-- [x] Test bảng cho % và trạng thái.
-- [x] E2E gán task, hoàn thành, xem lại ở Overview.
-
-**Phụ thuộc:** T4.4
-
-**File dự kiến:** `src/services/milestones.ts`, `src/services/tasks.ts`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `src/app/(app)/tasks/[id]/page.tsx`
-
-**Quy mô:** S
-
----
-
-## Checkpoint B
-
-- [x] Hoàn thành task làm đổi % và trạng thái milestone.
-- [x] CI xanh.
-- [x] Bạn đã thử trên điện thoại hoặc iPad thật.
-
----
-
-## Nhóm D: Settings
-
-### T4.5 Settings
-
-**Mô tả:** Trang Settings phần không dính MCP. Hồ sơ: tên, múi giờ. Category: đổi tên, xóa. Project: danh sách đã lưu trữ và nút khôi phục. Đăng xuất đã có ở Sidebar nên không thêm. Connected apps ở lại T3.4.
-
-**Tiêu chí nghiệm thu:**
-- [x] Đổi tên hiện ngay ở Sidebar và lời chào.
-- [x] Đổi múi giờ làm hạn và "Today" đổi theo; giá trị ngoài danh sách IANA bị từ chối.
-- [x] Đổi tên category hiện trên card; trùng tên bị từ chối; xóa category không xóa task.
-- [x] Khôi phục project đưa nó về Sidebar.
-
-**Kiểm chứng:**
-- [x] Vitest cho `updateProfile`, đổi tên và xóa category, user khác.
-- [x] E2E đổi tên, đổi múi giờ, khôi phục project.
-
-**Phụ thuộc:** T4.1b
-
-**File dự kiến:** `src/services/profile.ts`, `src/services/categories.ts`, `src/app/(app)/settings/page.tsx`, `src/app/(app)/settings/SettingsForms.tsx`, `src/app/(app)/settings/actions.ts`
-
-**Quy mô:** M
-
----
-
-## Checkpoint hoàn thành Phase 4
-
-- [x] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile.
-- [x] CI xanh.
-- [x] `PLAN.md` đã đánh dấu xong Phase 4.
-- [x] Sẵn sàng sang Phase 5.
+- [ ] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 5 (T5.3b ghi thêm vào danh sách).

@@ -1,62 +1,58 @@
-# Implementation Plan: Flowday — Phase 4 (Project) và Settings
+# Implementation Plan: Flowday — Phase 5 (Calendar)
 
-> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-02. Kế hoạch Phase 2 đã xong, xem lại bằng `git show 2b28c24:tasks/plan.md`.
+> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-03. Kế hoạch Phase 4 đã xong, xem lại bằng `git show b87f213:tasks/plan.md`.
 
 ## Overview
 
-Phase 4 biến project từ một cái tên trên Sidebar thành nơi theo dõi được công việc: trang tổng quan có số liệu thật, sửa và lưu trữ project, bảng task, tab Board và List, milestones. Phase này cũng làm phần Settings không dính MCP, vì Phase 3 đã được gác lại và trang Settings đang trống.
+Phase 5 biến trang `/calendar` đang trống thành lịch dùng được: xem task theo tháng, tuần, ngày; xem agenda của một ngày; lên lịch cho task chưa có ngày bằng kéo thả hoặc sheet chọn ngày.
 
 **Hoàn thành khi:**
 
-1. E2E tạo project từ template → thêm task → Overview cập nhật đúng chạy trên cả desktop và mobile.
-2. Mọi hàm service mới nhận `userId` và có test chứng minh user A không đọc hoặc sửa được dữ liệu của user B.
-3. Không có cuộn ngang ở 360, 390, 820 và 1440 px trên mọi trang mới.
+1. E2E tạo task không ngày → lên lịch → hiện trong agenda chạy trên cả desktop và mobile.
+2. Task gần nửa đêm rơi đúng ngày theo múi giờ người dùng, có test bảng.
+3. Không có cuộn ngang ở 360, 390, 820 và 1440 px trên `/calendar`.
 
 ## Hiện trạng đã kiểm tra
 
 | Hạng mục | Kết quả | Ảnh hưởng |
 |---|---|---|
-| Repo | `main` có Phase 2 đóng, CI xanh ở Run 31 | Bắt đầu từ nền đã kiểm chứng |
-| `/projects/[id]` | Chỉ có tiêu đề, ghi `shortcut` chờ T4.1 | Viết lại trang |
-| `/settings` | Chỉ có tiêu đề | Viết mới |
-| `project` | Đã có `archived_at`, `budget_hours`, `start_date`, `target_date` | T4.1 và T4.1b không cần migration |
-| `task.project_id` | `on delete set null` | Xóa project không xóa task, nhưng V1 chỉ lưu trữ |
-| `getBoard` | Đã nhận `projectId`, nhưng card chưa có estimate và cờ quá hạn | T4.2 thêm hai trường, không viết truy vấn mới |
-| `listProjects` | Bỏ qua project đã lưu trữ | Sidebar tự đúng; form task cần xử lý task thuộc project đã lưu trữ |
-| `/tasks/new?project=` | Đã chọn sẵn project | "Add task" chỉ cần một link |
-| `ProjectForm` | Dùng state riêng, chưa nhận giá trị ban đầu | T4.1b thêm prop, không viết form mới |
-| Migration | 0000–0004, CI chạy `db:migrate` | T4.4 thêm 0005, chỉ thêm bảng và cột |
-| Thiết kế | Trang 10 có Share, Members, Assignee, Team workload, Timeline, Files, Burndown, Time logged | Xem mục "Không làm trong phase này" |
+| Repo | `main` có Phase 4 đóng, CI xanh ở Run 41 | Bắt đầu từ nền đã kiểm chứng |
+| `/calendar` | Chỉ có tiêu đề | Viết mới |
+| `task.planned_at` | Đã có cột, chưa nơi nào đọc hay ghi | Không cần migration |
+| Quy tắc hiển thị | `PLAN.md`: theo `planned_at`, nếu không có thì `due_at`; thiếu cả hai là Unscheduled | Dùng nguyên |
+| `lib/datetime` | Có `zonedToUtc`, `utcToZoned` | Đủ để tính khung lưới theo múi giờ |
+| `@dnd-kit` | Đã cài, Board đã dùng Mouse/Touch/Keyboard sensor | T5.3b dùng lại cách cấu hình |
+| `DateField`, `Sheet` | Đã có, chạy tốt trên iPad | Sheet chọn ngày không cần component mới |
+| `updateTask` | Ghi activity, nhận `actor` | Thêm trường `plannedDate` thay cho hàm mới |
+| Thiết kế | Trang 06 chỉ có Month; có "Synced with Google Calendar" và cờ streak | Xem mục "Không làm trong phase này" |
 
 ## Architecture Decisions
 
-- **Số liệu project tính bằng một hàm service, `getProjectOverview`.** Đọc qua `getBoard` để Board, bảng và KPI cùng một nguồn. Mốc thời gian (quá hạn, số ngày còn lại) tính theo `user.timezone`.
-- **Trạng thái tab nằm trên URL** (`?view=board`, `?status=completed`), giống `/tasks`. Tải lại và chia sẻ link đều giữ nguyên.
-- **Lưu trữ thay cho xóa project.** Task giữ nguyên, vẫn hiện trên `/tasks`. Khôi phục ở Settings. Đúng quy ước "không có xóa cứng ngoài ý muốn" của `PLAN.md`.
-- **`key` không đổi sau khi tạo.** Đổi tên project không đổi mã task, vì mã đã xuất hiện trong activity và có thể đã được ghi lại ở nơi khác.
-- **Trạng thái milestone được suy ra, không lưu.** `Done` khi có task và mọi task không hủy đều xong, `In progress` khi có ít nhất một task xong hoặc đang làm, còn lại là `Planned`. Không có cột nào có thể lệch.
-- **Sửa project dùng lại `ProjectForm`**, thêm prop giá trị ban đầu, ẩn template và starter tasks.
-- **Giữ nguyên từ các phase trước:** nội dung người dùng nhập dùng `font-content`; form khóa submit tới khi hydrate; `.catch` của Server Action phải qua `unstable_rethrow`; mọi thay đổi trên task ghi activity; test chờ server trả lời trước khi tải lại trang; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
+- **Một hàm service `getCalendar(userId, from, to)`** trả task trong khoảng ngày, mỗi task kèm `day` (ngày theo múi giờ người dùng), `time` và `kind` (`planned` hoặc `due`). Ngày được tính trong SQL bằng `(coalesce(planned_at, due_at) at time zone tz)::date`, nên đúng cả khi đổi giờ mùa hè. Month, Week, Day và agenda cùng đọc từ đây.
+- **`planned_at` là một ngày, không có giờ.** Lưu nửa đêm theo múi giờ người dùng. Agenda hiện "Planned" cho task đã lên lịch; task chỉ có hạn hiện giờ hạn hoặc "Due". `shortcut: không có giờ cho planned_at, thêm cột planned_has_time nếu cần xếp theo khung giờ`.
+- **Trạng thái nằm trên URL:** `/calendar?view=month|week|day&date=2026-11-03`. Ngày chọn đi theo URL nên đổi view giữ nguyên ngày, tải lại không mất.
+- **Tuần bắt đầu từ thứ Hai.** Lưới tháng luôn 6 hàng × 7 cột như thiết kế.
+- **Task đã xong vẫn hiện, mờ và gạch ngang; task đã hủy không hiện.** Unscheduled chỉ gồm task chưa xong, chưa hủy.
+- **Màu chip** lấy từ category đầu tiên của task, không có thì từ màu project, không có nữa thì màu trung tính.
+- **Week và Day là danh sách theo ngày, không có lưới giờ**, vì `planned_at` không có giờ. Week là 7 cột chip, Day là agenda cỡ lớn.
+- **Lên lịch đi qua `updateTask`** với trường mới `plannedDate`, nên có activity và kiểm tra quyền sẵn. Task detail có thêm ô "Planned" để đổi hoặc bỏ lịch.
+- **Giữ nguyên từ các phase trước:** nội dung người dùng nhập dùng `font-content`; form khóa submit tới khi hydrate; `.catch` của Server Action phải qua `unstable_rethrow`; test chờ server trả lời trước khi tải lại trang; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
 
 ## Không làm trong phase này
 
 | Phần trong thiết kế | Lý do |
 |---|---|
-| Share, Members, Assignee, Team workload | Lùi khỏi V1, app cá nhân |
-| Tab Timeline, Files | Lùi khỏi V1 |
-| KPI Time logged, Budget, Burndown | T7.7, cần dữ liệu focus |
-| `milestones` trong `create_project`, `milestone` trong `create_task` | Chuyển sang T3.2 cùng MCP |
-| Connected apps, hướng dẫn kết nối Claude | Ở lại T3.4 cùng Phase 3 |
-| Đổi email, đổi mật khẩu trong Settings | `forgot-password` đã đổi được mật khẩu; đợi khi cần |
+| "Synced with Google Calendar" | Lùi khỏi V1 (`PLAN.md` mục 8) |
+| Cờ streak trên ô ngày | Cần service streak của T7.1; chuyển sang T7.2 cùng các chỗ thay số giả khác |
+| Lưới theo giờ trong Week và Day | `planned_at` không có giờ, xem Architecture Decisions |
+| Kéo task đã có ngày sang ngày khác trên lưới | Đổi được ở ô "Planned" của Task detail; thêm nếu bạn cần |
 
 ## Dependency Graph
 
 ```text
-T4.1 Overview ──┬── T4.1b Sửa và lưu trữ
-                ├── T4.2 Bảng task ── T4.3 Tab Board và List
-                └── T4.4 Milestones ── T4.4b Gán task vào milestone
-
-T4.1b ── T4.5 Settings (khôi phục project đã lưu trữ)
+T5.1 Lịch tháng ──┬── T5.2 Lịch mobile
+                  ├── T5.3 Lên lịch bằng sheet ── T5.3b Kéo vào ngày
+                  └── T5.4 Week và Day
 ```
 
 Mỗi task để lại một đường dùng được từ giao diện tới DB.
@@ -65,69 +61,59 @@ Mỗi task để lại một đường dùng được từ giao diện tới DB.
 
 Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
-### Nhóm A: Xem và quản lý project
+### Nhóm A: Xem lịch
 
-- [x] T4.1 Project overview (M)
-- [x] T4.1b Sửa và lưu trữ project (M)
+- [x] T5.1 Lịch tháng (M)
+- [x] T5.2 Lịch mobile (S)
 
 ### Checkpoint A
 
-- [x] Số liệu Overview khớp DB trên desktop và mobile
-- [x] Bạn đã xem Overview và trang sửa project
+- [ ] Task hiện đúng ngày trên desktop, iPad và phone
+- [ ] Bạn đã xem lịch thật trên máy
 
-### Nhóm B: Task trong project
+### Nhóm B: Lên lịch
 
-- [x] T4.2 Bảng Project tasks (M)
-- [x] T4.3 Tab Board và List (S)
+- [ ] T5.3 Unscheduled và sheet chọn ngày (M)
+- [ ] T5.3b Kéo task vào ngày (S)
 
-### Nhóm C: Milestones
+### Nhóm C: Các view khác
 
-- [x] T4.4 Milestones (M)
-- [x] T4.4b Gán task vào milestone (S)
+- [ ] T5.4 Week và Day (M)
 
-### Checkpoint B
+### Checkpoint hoàn thành Phase 5
 
-- [x] Hoàn thành task làm đổi % và trạng thái milestone
-- [x] Bạn đã thử trên điện thoại hoặc iPad thật
-
-### Nhóm D: Settings
-
-- [x] T4.5 Settings (M)
-
-### Checkpoint hoàn thành Phase 4
-
-- [x] E2E tạo project từ template → thêm task → Overview cập nhật đúng pass trên desktop và mobile
-- [x] CI xanh
-- [x] `PLAN.md` đã đánh dấu xong Phase 4
-- [x] Sẵn sàng sang Phase 5
+- [ ] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile
+- [ ] CI xanh
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
+- [ ] `PLAN.md` đã đánh dấu xong Phase 5
 
 ## Parallelization
 
-- **Tuần tự:** T4.1 trước mọi task còn lại, vì cùng dựng trang `/projects/[id]`. T4.4 trước T4.4b vì có migration.
-- **Song song được sau T4.1:** T4.1b, T4.2 và T4.4.
-- **Cần phối hợp:** T4.2 và T4.3 cùng sửa phần dưới trang, nên làm liền nhau.
+- **Tuần tự:** T5.1 trước mọi task còn lại, vì dựng service và trang. T5.3 trước T5.3b vì kéo thả dùng cùng action.
+- **Song song được sau T5.1:** T5.2, T5.3 và T5.4.
+- **Cần phối hợp:** T5.2 và T5.4 cùng sửa phần header và lưới của trang, nên làm liền nhau hoặc tuần tự.
 
 ## Risks and Mitigations
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Task thuộc project đã lưu trữ: ô Project ở trang chi tiết không có lựa chọn đó và có thể làm mất liên kết khi lưu | TB | T4.1b thêm project hiện tại vào danh sách lựa chọn, có test |
-| Đổi múi giờ làm số ngày và nhãn hạn đổi theo | Thấp | Đúng ý muốn, vì `due_at` lưu UTC; T4.5 có test đổi múi giờ |
-| Tên ở Sidebar còn cũ sau khi đổi, do `getCurrentUser` cache 5 phút ở trình duyệt | TB | T4.5 tìm cách dọn cache hoặc tải lại đầy đủ; có E2E kiểm tra Sidebar |
-| Tốc độ: `/projects/[id]` đọc nhiều bảng, mỗi truy vấn khoảng 50 ms từ máy bạn | TB | Khung trang và dữ liệu dùng `<Suspense>`; gộp truy vấn khi có thể; đo lại sau deploy |
-| Hạn "hôm nay" tính nhầm là quá hạn gần nửa đêm | TB | Test bảng theo múi giờ cho `getProjectOverview` |
-| Migration 0005 trên Neon `dev` | Thấp | Chỉ thêm bảng và cột có thể rỗng, CI chạy trên DB sạch |
+| Task gần nửa đêm rơi sai ngày | TB | Tính ngày trong SQL theo `user.timezone`; test bảng với múi giờ dương, âm và ngày đổi giờ |
+| Kéo thả trên iPad xung đột với cuộn | TB | Dùng `TouchSensor` có độ trễ như Board; sheet chọn ngày là đường chính trên cảm ứng |
+| Tốc độ: lịch tháng đọc 42 ngày task | Thấp | Một truy vấn có khoảng ngày; thêm index nếu đo thấy chậm |
+| Tháng nhiều task làm ô bị tràn | Thấp | Tối đa 2 chip mỗi ô, còn lại "+n more" như thiết kế |
+| E2E phụ thuộc ngày hiện tại | TB | Test dùng `?date=` cố định và tạo task theo ngày đó |
 
 ## Việc bạn cần làm
 
 | Khi nào | Việc |
 |---|---|
-| Checkpoint A | Xem Overview và trang sửa project, nói điều muốn đổi |
-| Checkpoint B | Thử trên điện thoại hoặc iPad thật qua ngrok |
+| Checkpoint A | Xem lịch trên desktop và điện thoại qua ngrok, nói điều muốn đổi |
+| Checkpoint hoàn thành | Thử lên lịch trên điện thoại hoặc iPad thật |
 
 ## Open Questions
 
 Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
 
-- **Deploy lên Vercel sớm?** Mặc định chưa đưa vào phase này. Mình đề xuất làm ngay sau Phase 4 để dùng thật và đo lại tốc độ, bạn quyết định ở Checkpoint hoàn thành.
-- **Có cần xóa hẳn project không?** Mặc định chỉ lưu trữ.
+- **Week và Day có cần lưới theo giờ không?** Mặc định không, vì task lên lịch theo ngày.
+- **Task đã xong có hiện trên lịch không?** Mặc định có, mờ đi.
+- **Deploy lên Vercel sớm?** Vẫn để ngoài phase này. Mình vẫn đề xuất deploy sớm để đo tốc độ thật.
