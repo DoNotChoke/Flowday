@@ -37,7 +37,8 @@ test.beforeEach(async ({ page }, testInfo) => {
   await signInNewUser(page, emailFor(testInfo));
   await page.goto("/focus");
   // Frozen so every read of the clock is exact; fastForward moves it on.
-  await page.clock.pauseAt(new Date(start.getTime() + 10_000));
+  // A second after now, however long sign-in took on a busy machine.
+  await page.clock.pauseAt(new Date((await page.evaluate(() => Date.now())) + 1_000));
   await page.clock.runFor(500);
   await expect(clock(page)).toHaveText("25:00");
 });
@@ -135,4 +136,37 @@ test("changing the length leaves a running session alone", async ({ page }) => {
 
   await timer(page).getByRole("button", { name: "Reset timer" }).click();
   await expect(clock(page)).toHaveText("90:00");
+});
+
+test("a started session shows on other pages and rings there when time is up", async ({ page }) => {
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await page.clock.fastForward("01:00");
+  await page.goto("/tasks");
+  await page.clock.runFor(500);
+
+  const pill = page.getByRole("link", { name: /^Focus, \d\d:\d\d left/ }).filter({ visible: true });
+  await expect(pill).toHaveAccessibleName("Focus, 24:00 left. Open Focus mode");
+  await page.clock.fastForward("04:00");
+  await expect(pill).toHaveAccessibleName("Focus, 20:00 left. Open Focus mode");
+
+  await page.clock.fastForward("20:00");
+  await expect(pill).toHaveCount(0);
+  expect(await page.evaluate(() => (window as unknown as { shownNotifications: string[] }).shownNotifications)).toEqual(["Focus session done"]);
+
+  await page.goto("/focus");
+  await page.clock.runFor(500);
+  await expect(tab(page, "Short break")).toHaveAttribute("aria-selected", "true");
+});
+
+test("the pill leads back to the timer, and says when it is paused", async ({ page }) => {
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await page.clock.fastForward("02:00");
+  await timer(page).getByRole("button", { name: "Pause" }).click();
+  await page.goto("/calendar");
+  await page.clock.runFor(500);
+
+  const pill = page.getByRole("link", { name: "Focus · Paused, 23:00 left. Open Focus mode" }).filter({ visible: true });
+  await pill.click();
+  await expect(page).toHaveURL(/\/focus$/);
+  await expect(page.getByRole("link", { name: /Open Focus mode/ }).filter({ visible: true })).toHaveCount(0);
 });

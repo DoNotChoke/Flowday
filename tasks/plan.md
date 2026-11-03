@@ -69,11 +69,11 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T6.1 Bộ đếm (M)
 - [x] T6.4 Tự đặt thời lượng (S), làm sớm theo yêu cầu của bạn
-- [ ] T6.5 Bộ đếm nhỏ trên Sidebar (S)
+- [x] T6.5 Bộ đếm nhỏ trên Sidebar (S)
 
 ### Checkpoint A
 
-- [ ] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại
+- [x] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại
 - [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ
 - [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5
 

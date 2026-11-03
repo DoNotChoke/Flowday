@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { requireUserId } from "@/lib/auth/session";
 import { countOpenTasks } from "@/services/board";
 import { AppLogo } from "./AppLogo";
+import { FocusPill } from "./FocusPill";
 import { NavLinks } from "./NavLinks";
 import { ProjectsSection } from "./ProjectsSection";
 import { UserMenu } from "./UserMenu";
@@ -22,6 +23,10 @@ export function Sidebar() {
         </svg>
         New task
       </Button>
+
+      <Suspense>
+        <FocusPill />
+      </Suspense>
 
       {/* Scrolls on short screens so the account row below never leaves the viewport. */}
       <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-5.5 overflow-y-auto px-1">

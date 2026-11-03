@@ -37,12 +37,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Khi có phiên đang chạy hoặc đang dừng, Sidebar (desktop) và top bar (phone, tablet) hiện một nút nhỏ: mode và thời gian còn lại, bấm vào thì về `/focus`. Đọc chung trạng thái `localStorage` với trang Focus, nghe sự kiện `storage` để cập nhật giữa các tab. Phiên hết giờ khi đang ở trang khác vẫn báo như ở trang Focus. Ẩn khi đang ở `/focus` và khi không có phiên.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Bắt đầu phiên rồi sang `/tasks` thấy bộ đếm nhỏ chạy đúng giờ.
-- [ ] Phiên kết thúc ở trang khác vẫn có thông báo và chuông.
-- [ ] Không có cuộn ngang ở 360 px; có nhãn cho trình đọc màn hình.
+- [x] Bắt đầu phiên rồi sang `/tasks` thấy bộ đếm nhỏ chạy đúng giờ.
+- [x] Phiên kết thúc ở trang khác vẫn có thông báo và chuông.
+- [x] Không có cuộn ngang ở 360 px; có nhãn cho trình đọc màn hình.
 
 **Kiểm chứng:**
-- [ ] E2E dùng `page.clock`: Start ở `/focus`, sang `/tasks`, tua thời gian, thấy số đổi; bấm vào về `/focus`.
+- [x] E2E dùng `page.clock`: Start ở `/focus`, sang `/tasks`, tua thời gian, thấy số đổi; bấm vào về `/focus`.
 
 **Phụ thuộc:** T6.1
 
@@ -54,7 +54,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại.
+- [x] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại.
 - [ ] CI xanh.
 - [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ.
 - [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5, ghi thêm T5.3b.

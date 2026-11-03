@@ -1,8 +1,16 @@
 import { Suspense } from "react";
 import { BottomNav } from "@/components/app/BottomNav";
+import { FocusAlarm } from "@/components/app/FocusPill";
 import { QuickAdd } from "@/components/app/QuickAdd";
 import { Sidebar } from "@/components/app/Sidebar";
 import { TopBar } from "@/components/app/TopBar";
+import { requireUserId } from "@/lib/auth/session";
+import { getTimerSettings } from "@/services/profile";
+
+async function LoadedFocusAlarm() {
+  const { focusMin, shortBreakMin, longBreakMin } = await getTimerSettings(await requireUserId());
+  return <FocusAlarm minutes={{ focus: focusMin, short: shortBreakMin, long: longBreakMin }} />;
+}
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
@@ -18,6 +26,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         <BottomNav />
       </Suspense>
       <QuickAdd />
+      <Suspense>
+        <LoadedFocusAlarm />
+      </Suspense>
     </div>
   );
 }
