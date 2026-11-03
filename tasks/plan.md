@@ -67,7 +67,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm A: Bộ đếm
 
-- [ ] T6.1 Bộ đếm (M)
+- [x] T6.1 Bộ đếm (M)
 - [ ] T6.5 Bộ đếm nhỏ trên Sidebar (S)
 
 ### Checkpoint A

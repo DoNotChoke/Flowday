@@ -13,16 +13,16 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang 08 tại `/focus`: tab Focus / Short break / Long break, vòng đếm có tiến độ, Start/Pause, Reset, Skip, và "+5 min" khi đang chạy. Thời lượng mặc định 25/5/15 tới T6.4. Logic là hàm thuần trong `src/lib/focusTimer.ts`; trạng thái lưu ở `localStorage`, số còn lại tính từ `endsAt`. Hết giờ thì hiện thông báo của hệ điều hành (xin quyền lúc bấm Start lần đầu), kêu chuông ngắn (Web Audio), chuyển sang mode tiếp theo và chờ Start. Tiêu đề tab hiện thời gian còn lại khi đang chạy. Vòng đếm rộng `min(300px, 80vw)`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Để tab nền 5 phút rồi quay lại, số còn lại vẫn đúng.
-- [ ] Tải lại trang giữa phiên, đang chạy thì vẫn chạy, đang dừng thì vẫn dừng, cùng số còn lại.
-- [ ] Đổi mode, Reset, Skip, +5 min đúng như thiết kế; đang chạy thì đổi mode phải qua Reset hoặc Skip.
-- [ ] Hết giờ khi đang ở tab khác thì có thông báo của hệ điều hành; bị từ chối quyền thì trang ghi rõ và vẫn có chuông.
-- [ ] Số đếm có `aria-live` chỉ đọc mỗi phút, không đọc mỗi giây; mọi nút dùng được bằng bàn phím.
+- [x] Để tab nền 5 phút rồi quay lại, số còn lại vẫn đúng.
+- [x] Tải lại trang giữa phiên, đang chạy thì vẫn chạy, đang dừng thì vẫn dừng, cùng số còn lại.
+- [x] Đổi mode, Reset, Skip, +5 min đúng như thiết kế; đang chạy thì đổi mode phải qua Reset hoặc Skip.
+- [x] Hết giờ khi đang ở tab khác thì có thông báo của hệ điều hành; bị từ chối quyền thì trang ghi rõ và vẫn có chuông.
+- [x] Số đếm có `aria-live` chỉ đọc mỗi phút, không đọc mỗi giây; mọi nút dùng được bằng bàn phím.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `focusTimer`: start, pause, resume, reset, skip, +5 min khi chạy và khi dừng, hết giờ, chu kỳ 4 Focus thì Long break.
-- [ ] E2E dùng `page.clock`: chạy, tua 5 phút, tải lại, tua tới hết giờ thấy mode chuyển sang Short break; thông báo được gọi (giả `Notification` trong trang).
-- [ ] Không cuộn ngang ở 360 px; so ảnh với `design/screens/08-focus-mode.html` ở 390 và 1440 px.
+- [x] Vitest cho `focusTimer`: start, pause, resume, reset, skip, +5 min khi chạy và khi dừng, hết giờ, chu kỳ 4 Focus thì Long break.
+- [x] E2E dùng `page.clock`: chạy, tua 5 phút, tải lại, tua tới hết giờ thấy mode chuyển sang Short break; thông báo được gọi (giả `Notification` trong trang).
+- [x] Không cuộn ngang ở 360 px; so ảnh với `design/screens/08-focus-mode.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** Không
 
