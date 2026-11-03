@@ -73,8 +73,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm B: Lên lịch
 
-- [ ] T5.3 Unscheduled và sheet chọn ngày (M)
-- [ ] T5.3b Kéo task vào ngày (S)
+- [x] T5.3 Unscheduled và sheet chọn ngày (M)
+- [x] T5.3b Kéo task vào ngày (S)
 
 ### Nhóm C: Các view khác
 

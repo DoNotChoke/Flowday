@@ -1,8 +1,23 @@
+"use client";
+
+import { useDroppable } from "@dnd-kit/core";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { CalendarItem } from "@/services/calendar";
 
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const NO_COLOR = "#9c9c96";
+
+// A day is a link to its agenda and a place to drop an unscheduled task.
+function DayCell({ day, label, current, className, children }: { day: string; label: string; current: boolean; className: string; children: ReactNode }) {
+  const { setNodeRef, isOver } = useDroppable({ id: day });
+
+  return (
+    <Link ref={setNodeRef} href={`/calendar?date=${day}`} scroll={false} aria-label={label} aria-current={current ? "date" : undefined} className={`${className} ${isOver ? "outline-2 outline-offset-1 outline-coral" : ""}`}>
+      {children}
+    </Link>
+  );
+}
 
 type MonthGridProps = { days: string[]; month: string; today: string; selected: string; byDay: Map<string, CalendarItem[]> };
 
@@ -25,12 +40,11 @@ export function MonthGrid({ days, month, today, selected, byDay }: MonthGridProp
           const name = `${label.format(Date.parse(day))}${isToday ? ", today" : ""}, ${items.length} ${items.length === 1 ? "task" : "tasks"}`;
 
           return (
-            <Link
+            <DayCell
               key={day}
-              href={`/calendar?date=${day}`}
-              scroll={false}
-              aria-label={name}
-              aria-current={isSelected ? "date" : undefined}
+              day={day}
+              label={name}
+              current={isSelected}
               className={`flex min-h-11 min-w-0 flex-col items-center gap-1 rounded-[10px] border-[1.5px] p-1 md:min-h-26 md:items-stretch md:rounded-control md:p-2 ${
                 isSelected ? "border-ink bg-sun-tint shadow-hard-3" : `border-[#e4e4df] ${inMonth ? "bg-white" : "bg-[#f7f7f4] text-muted"}`
               }`}
@@ -58,7 +72,7 @@ export function MonthGrid({ days, month, today, selected, byDay }: MonthGridProp
                   +{items.length - 2} more
                 </span>
               )}
-            </Link>
+            </DayCell>
           );
         })}
       </div>

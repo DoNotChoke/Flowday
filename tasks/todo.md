@@ -66,14 +66,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Khối "Unscheduled · n" dưới agenda liệt kê task chưa xong, chưa hủy, không có `planned_at` và `due_at`. Mỗi dòng có nút "Plan" mở `Sheet` với `DateField`, mặc định là ngày đang chọn. `updateTask` nhận thêm `plannedDate` (lưu nửa đêm theo múi giờ người dùng, `null` để bỏ lịch) và ghi activity. Task detail có thêm ô "Planned" để đổi hoặc bỏ lịch.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Lên lịch xong, task rời Unscheduled, số đếm giảm 1 và task hiện ở ngày đã chọn.
-- [ ] `planned_at` lưu đúng ngày theo múi giờ người dùng; bỏ lịch trả task về Unscheduled.
-- [ ] Mỗi lần đổi lịch có một dòng activity.
-- [ ] Không lên lịch được task của người khác.
+- [x] Lên lịch xong, task rời Unscheduled, số đếm giảm 1 và task hiện ở ngày đã chọn.
+- [x] `planned_at` lưu đúng ngày theo múi giờ người dùng; bỏ lịch trả task về Unscheduled.
+- [x] Mỗi lần đổi lịch có một dòng activity.
+- [x] Không lên lịch được task của người khác.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `plannedDate` trong `updateTask`: lưu, bỏ, múi giờ âm, user khác.
-- [ ] E2E desktop và mobile: tạo task không ngày → Plan → thấy trong agenda, tải lại vẫn còn.
+- [x] Vitest cho `plannedDate` trong `updateTask`: lưu, bỏ, múi giờ âm, user khác.
+- [x] E2E desktop và mobile: tạo task không ngày → Plan → thấy trong agenda, tải lại vẫn còn.
 
 **Phụ thuộc:** T5.1
 
@@ -88,12 +88,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trên lưới tháng (từ 744 px), kéo một dòng Unscheduled thả vào ô ngày để lên lịch, dùng `@dnd-kit` với Mouse, Touch (có độ trễ) và Keyboard sensor như Board. Cập nhật lạc quan; lỗi thì task quay về Unscheduled.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Kéo thả lưu `planned_at` đúng ngày của ô, tải lại vẫn còn.
-- [ ] Làm được bằng bàn phím và có thông báo cho trình đọc màn hình.
-- [ ] Trên iPad vừa cuộn được vừa kéo được.
+- [x] Kéo thả lưu `planned_at` đúng ngày của ô, tải lại vẫn còn.
+- [x] Làm được bằng bàn phím và có thông báo cho trình đọc màn hình.
+- [x] Trên iPad vừa cuộn được vừa kéo được.
 
 **Kiểm chứng:**
-- [ ] E2E desktop: kéo bằng chuột và bằng bàn phím.
+- [x] E2E desktop: kéo bằng chuột và bằng bàn phím.
 
 **Phụ thuộc:** T5.3
 

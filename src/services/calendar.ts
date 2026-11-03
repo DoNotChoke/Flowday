@@ -1,4 +1,4 @@
-import { and, asc, eq, gte, lt, ne, sql } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { project, task } from "@/lib/db/schema";
@@ -14,11 +14,8 @@ export function monthGrid(date: string) {
   return Array.from({ length: 42 }, (_, index) => addDays(start, index));
 }
 
-// Tasks from day `from` up to and including day `to`, placed on their planned day, else their due day.
-// The caller passes the owner's zone, since it already needed it to know which month to show.
-export async function getCalendar(userId: string, timeZone: string, from: string, to: string) {
-  const when = sql<Date>`coalesce(${task.plannedAt}, ${task.dueAt})`;
-  const rows = await db
+function selectTasks() {
+  return db
     .select({
       id: task.id,
       title: task.title,
@@ -34,7 +31,14 @@ export async function getCalendar(userId: string, timeZone: string, from: string
       )`,
     })
     .from(task)
-    .leftJoin(project, eq(task.projectId, project.id))
+    .leftJoin(project, eq(task.projectId, project.id));
+}
+
+// Tasks from day `from` up to and including day `to`, placed on their planned day, else their due day.
+// The caller passes the owner's zone, since it already needed it to know which month to show.
+export async function getCalendar(userId: string, timeZone: string, from: string, to: string) {
+  const when = sql<Date>`coalesce(${task.plannedAt}, ${task.dueAt})`;
+  const rows = await selectTasks()
     .where(
       and(
         eq(task.userId, userId),
@@ -46,16 +50,34 @@ export async function getCalendar(userId: string, timeZone: string, from: string
     .orderBy(asc(when), asc(task.position));
 
   return rows.map(({ plannedAt, dueAt, dueHasTime, projectColor, category, ...row }) => {
-      const due = dueAt && utcToZoned(dueAt, timeZone);
-      return {
-        ...row,
-        day: plannedAt ? utcToZoned(plannedAt, timeZone).date : due!.date,
-        kind: plannedAt ? ("planned" as const) : ("due" as const),
-        time: !plannedAt && dueHasTime ? due!.time : null,
-        category: category?.name ?? null,
-        color: category?.color ?? projectColor ?? null,
-      };
+    const due = dueAt && utcToZoned(dueAt, timeZone);
+    return {
+      ...row,
+      day: plannedAt ? utcToZoned(plannedAt, timeZone).date : due!.date,
+      kind: plannedAt ? ("planned" as const) : ("due" as const),
+      time: !plannedAt && dueHasTime ? due!.time : null,
+      category: category?.name ?? null,
+      color: category?.color ?? projectColor ?? null,
+    };
   });
 }
 
 export type CalendarItem = Awaited<ReturnType<typeof getCalendar>>[number];
+
+// Open tasks with neither a planned day nor a due day.
+export async function listUnscheduled(userId: string) {
+  const rows = await selectTasks()
+    .where(and(eq(task.userId, userId), inArray(task.status, ["ongoing", "in_process"]), isNull(task.plannedAt), isNull(task.dueAt)))
+    .orderBy(asc(task.position), asc(task.id));
+
+  return rows.map(({ id, title, status, estimateMin, projectColor, category }) => ({
+    id,
+    title,
+    status,
+    estimateMin,
+    category: category?.name ?? null,
+    color: category?.color ?? projectColor ?? null,
+  }));
+}
+
+export type UnscheduledTask = Awaited<ReturnType<typeof listUnscheduled>>[number];

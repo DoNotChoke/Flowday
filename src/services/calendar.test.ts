@@ -3,9 +3,10 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { zonedToUtc } from "@/lib/datetime";
 import { task, user } from "@/lib/db/schema";
-import { getCalendar, monthGrid } from "./calendar";
+import { getCalendar, listUnscheduled, monthGrid } from "./calendar";
 import { createCategory } from "./categories";
-import { createTask, getTimeZone, updateTask } from "./tasks";
+import { createTask, getTaskDetail, getTimeZone, updateTask } from "./tasks";
+import { listActivity } from "./activity";
 
 const alice = "calendar-test-alice";
 const bob = "calendar-test-bob";
@@ -87,4 +88,46 @@ test("another user's tasks never show", async () => {
   await createTask(bob, { title: "Private", dueDate: "2026-11-10" });
 
   expect(await days(alice)).toEqual({});
+});
+
+test("planning a day keeps the start of that day in the owner's zone, and can be undone", async () => {
+  await db.update(user).set({ timezone: "America/Los_Angeles" }).where(eq(user.id, alice));
+  const created = await createTask(alice, { title: "Read" });
+
+  await updateTask(alice, created.id, { plannedDate: "2026-11-10" });
+  expect((await getTaskDetail(alice, created.id))!).toMatchObject({ plannedDate: "2026-11-10", plannedLabel: "Tue, Nov 10" });
+  expect((await getTaskDetail(alice, created.id))!.plannedAt).toEqual(new Date("2026-11-10T08:00:00Z"));
+  expect(await days(alice)).toEqual({ Read: "2026-11-10" });
+
+  await updateTask(alice, created.id, { plannedDate: null });
+  expect(await days(alice)).toEqual({});
+  expect((await getTaskDetail(alice, created.id))!).toMatchObject({ plannedDate: "", plannedLabel: null });
+});
+
+test("each change of plan leaves one activity line", async () => {
+  const created = await createTask(alice, { title: "Read" });
+  await updateTask(alice, created.id, { plannedDate: "2026-11-10" });
+  await updateTask(alice, created.id, { plannedDate: "2026-11-10" });
+  await updateTask(alice, created.id, { plannedDate: null });
+
+  const lines = (await listActivity(alice, created.id)).filter((line) => line.type === "updated");
+  expect(lines.map((line) => line.payload)).toEqual([{ field: "plan" }, { field: "plan" }]);
+});
+
+test("a bad day is refused, and another user's task cannot be planned", async () => {
+  const created = await createTask(alice, { title: "Read" });
+
+  await expect(updateTask(alice, created.id, { plannedDate: "2026-02-30" })).rejects.toThrow();
+  await expect(updateTask(bob, created.id, { plannedDate: "2026-11-10" })).rejects.toThrow("Task");
+});
+
+test("unscheduled lists open tasks with no planned or due day", async () => {
+  await createTask(alice, { title: "Loose" });
+  await createTask(alice, { title: "Due", dueDate: "2026-11-10" });
+  await createTask(alice, { title: "Finished", status: "completed" });
+  const planned = await createTask(alice, { title: "Planned" });
+  await updateTask(alice, planned.id, { plannedDate: "2026-11-11" });
+  await createTask(bob, { title: "Bob's" });
+
+  expect((await listUnscheduled(alice)).map((item) => item.title)).toEqual(["Loose"]);
 });

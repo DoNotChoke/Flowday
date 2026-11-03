@@ -145,6 +145,11 @@ export function TaskFields({ task, categories, projects, milestones, children }:
         </div>
       ),
     },
+    plan: {
+      label: "planned day",
+      read: (values: FormData): UpdateTaskInput => ({ plannedDate: String(values.get("date")) || null }),
+      fields: <DateField label="Planned day" name="date" defaultValue={task.plannedDate} />,
+    },
     estimate: {
       label: "estimate",
       read: (values: FormData): UpdateTaskInput => ({ estimateMin: Number(values.get("minutes")) || null }),
@@ -159,8 +164,10 @@ export function TaskFields({ task, categories, projects, milestones, children }:
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!editing) return;
-    const input = editors[editing].read(new FormData(event.currentTarget));
+    if (editing) await saveInput(editors[editing].read(new FormData(event.currentTarget)));
+  }
+
+  async function saveInput(input: UpdateTaskInput) {
     setPending(true);
     setErrors({});
     const result = await updateTaskAction(task.id, input).catch(unreachable);
@@ -245,6 +252,9 @@ export function TaskFields({ task, categories, projects, milestones, children }:
         <Tile label="Deadline" tone="bg-coral-tint" disabled={!hydrated} onClick={() => open("deadline")}>
           {task.dueLabel ?? "Not set"}
         </Tile>
+        <Tile label="Planned" tone="bg-teal-tint" disabled={!hydrated} onClick={() => open("plan")}>
+          {task.plannedLabel ?? "Not planned"}
+        </Tile>
         <Tile label="Project" tone="bg-[#f7f7f4]" disabled={!hydrated} onClick={() => open("project")}>
           <span className="font-content">{task.projectName ?? "Inbox"}</span>
         </Tile>
@@ -268,6 +278,11 @@ export function TaskFields({ task, categories, projects, milestones, children }:
             <Button type="submit" size="md" className="mt-5 w-full" disabled={pending}>
               Save
             </Button>
+            {editing === "plan" && task.plannedDate && (
+              <Button variant="outline" size="md" className="mt-2 w-full" disabled={pending} onClick={() => saveInput({ plannedDate: null })}>
+                Remove from calendar
+              </Button>
+            )}
           </form>
         )}
       </Sheet>

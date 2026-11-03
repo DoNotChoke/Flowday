@@ -3,10 +3,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { isDate, utcToZoned } from "@/lib/datetime";
-import { getCalendar, monthGrid, type CalendarItem } from "@/services/calendar";
+import { getCalendar, listUnscheduled, monthGrid } from "@/services/calendar";
 import { getTimeZone } from "@/services/tasks";
-import { Agenda } from "./Agenda";
-import { MonthGrid } from "./MonthGrid";
+import { Planner } from "./Planner";
 
 export const metadata: Metadata = { title: "Flowday — Calendar" };
 
@@ -35,10 +34,7 @@ async function Content({ searchParams }: PageProps<"/calendar">) {
   const today = utcToZoned(new Date(), timeZone).date;
   const selected = typeof query.date === "string" && isDate(query.date) ? query.date : today;
   const month = monthGrid(selected);
-  const items = await getCalendar(userId, timeZone, month[0], month[41]);
-
-  const byDay = new Map<string, CalendarItem[]>();
-  for (const item of items) byDay.set(item.day, [...(byDay.get(item.day) ?? []), item]);
+  const [items, unscheduled] = await Promise.all([getCalendar(userId, timeZone, month[0], month[41]), listUnscheduled(userId)]);
 
   return (
     <>
@@ -59,10 +55,7 @@ async function Content({ searchParams }: PageProps<"/calendar">) {
         </div>
       </header>
 
-      <div className="flex flex-wrap items-start gap-6">
-        <MonthGrid days={month} month={selected.slice(0, 7)} today={today} selected={selected} byDay={byDay} />
-        <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />
-      </div>
+      <Planner days={month} today={today} selected={selected} items={items} unscheduled={unscheduled} />
     </>
   );
 }

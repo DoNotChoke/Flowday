@@ -31,7 +31,7 @@ const createSchema = z.object({
   categoryIds: fields.categoryIds.default([]),
   alertEnabled: fields.alertEnabled.default(false),
 });
-const updateSchema = z.object({ ...fields, milestoneId: z.string().nullable() }).partial();
+const updateSchema = z.object({ ...fields, milestoneId: z.string().nullable(), plannedDate: z.iso.date().nullable() }).partial();
 const moveSchema = z.object({ status: fields.status, afterId: z.string().nullable() });
 
 const editable = [
@@ -53,10 +53,14 @@ function statusStamps(status: TaskRow["status"]) {
   };
 }
 
+async function zoneOf(tx: Transaction, userId: string) {
+  const [{ timezone }] = await tx.select({ timezone: user.timezone }).from(user).where(eq(user.id, userId));
+  return timezone ?? "UTC";
+}
+
 async function dueFields(tx: Transaction, userId: string, dueDate?: string | null, dueTime?: string | null) {
   if (!dueDate) return { dueAt: null, dueHasTime: false };
-  const [{ timezone }] = await tx.select({ timezone: user.timezone }).from(user).where(eq(user.id, userId));
-  return { dueAt: zonedToUtc(dueDate, dueTime ?? null, timezone ?? "UTC"), dueHasTime: Boolean(dueTime) };
+  return { dueAt: zonedToUtc(dueDate, dueTime ?? null, await zoneOf(tx, userId)), dueHasTime: Boolean(dueTime) };
 }
 
 async function nextNumber(tx: Transaction, userId: string, projectId: string) {
@@ -143,7 +147,8 @@ export async function getTaskDetail(userId: string, id: string) {
   const timeZone = owner.timezone ?? "UTC";
   const due = row.dueAt && utcToZoned(row.dueAt, timeZone);
   const dueTime = due && row.dueHasTime ? due.time : "";
-  const day = row.dueAt && new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone }).format(row.dueAt);
+  const dayFormat = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone });
+  const day = row.dueAt && dayFormat.format(row.dueAt);
 
   return {
     ...row,
@@ -153,6 +158,8 @@ export async function getTaskDetail(userId: string, id: string) {
     dueDate: due ? due.date : "",
     dueTime,
     dueLabel: day ? [day, dueTime].filter(Boolean).join(", ") : null,
+    plannedDate: row.plannedAt ? utcToZoned(row.plannedAt, timeZone).date : "",
+    plannedLabel: row.plannedAt && dayFormat.format(row.plannedAt),
   };
 }
 
@@ -200,7 +207,7 @@ export async function searchTasks(userId: string, query: string) {
 }
 
 export async function updateTask(userId: string, id: string, input: UpdateTaskInput, actor: Actor = "user") {
-  const { categoryIds, dueDate, dueTime, ...values } = parseInput(updateSchema, input);
+  const { categoryIds, dueDate, dueTime, plannedDate, ...values } = parseInput(updateSchema, input);
 
   return db.transaction(async (tx) => {
     const [current] = await tx
@@ -228,6 +235,11 @@ export async function updateTask(userId: string, id: string, input: UpdateTaskIn
       const due = await dueFields(tx, userId, dueDate, dueTime);
       Object.assign(changes, due);
       if (due.dueAt?.getTime() !== current.dueAt?.getTime() || due.dueHasTime !== current.dueHasTime) edited.push("deadline");
+    }
+    if (plannedDate !== undefined) {
+      // A planned day has no time, so it is kept as the start of that day in the owner's zone.
+      changes.plannedAt = plannedDate ? zonedToUtc(plannedDate, null, await zoneOf(tx, userId)) : null;
+      if (changes.plannedAt?.getTime() !== current.plannedAt?.getTime()) edited.push("plan");
     }
     if (categoryIds) {
       const links = await tx.select({ id: taskCategory.categoryId }).from(taskCategory).where(eq(taskCategory.taskId, id));

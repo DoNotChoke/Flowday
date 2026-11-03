@@ -9,7 +9,7 @@ export function Agenda({ date, today, items }: AgendaProps) {
   const title = format({ month: "long", day: "numeric" });
 
   return (
-    <section aria-label="Agenda" className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+    <section aria-label="Agenda" className="flex min-w-0 flex-col gap-4 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
       <div className="flex items-start justify-between gap-2.5">
         <div>
           <div className="text-[13px] text-muted">
