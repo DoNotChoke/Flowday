@@ -3,7 +3,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { zonedToUtc } from "@/lib/datetime";
 import { task, user } from "@/lib/db/schema";
-import { getCalendar, listUnscheduled, monthGrid } from "./calendar";
+import { getCalendar, listUnscheduled, monthGrid, weekDays } from "./calendar";
 import { createCategory } from "./categories";
 import { createTask, getTaskDetail, getTimeZone, updateTask } from "./tasks";
 import { listActivity } from "./activity";
@@ -35,6 +35,12 @@ test("the grid has 6 weeks and starts on the Monday on or before the 1st", () =>
   expect(monthGrid("2026-11-17")[0]).toBe("2026-10-26");
   expect(monthGrid("2026-06-30")[0]).toBe("2026-06-01"); // the 1st is a Monday
   expect(monthGrid("2026-03-05")[0]).toBe("2026-02-23"); // the 1st is a Sunday
+});
+
+test("a week runs Monday to Sunday, across a month end", () => {
+  expect(weekDays("2026-11-08")).toEqual(["2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06", "2026-11-07", "2026-11-08"]);
+  expect(weekDays("2026-12-02")[0]).toBe("2026-11-30");
+  expect(weekDays("2026-11-30")[6]).toBe("2026-12-06");
 });
 
 test.each([

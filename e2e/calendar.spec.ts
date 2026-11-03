@@ -175,3 +175,41 @@ test("a plan that cannot be saved puts the task back in Unscheduled", async ({ p
   await expect(page.getByRole("alert").filter({ hasText: "Could not plan Renew domain" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Unscheduled · 1" })).toBeVisible();
 });
+
+test("switching between month, week and day keeps the chosen date", async ({ page }, testInfo) => {
+  await addTasks(testInfo, [{ title: "Sprint demo", dueDate: "2026-11-05", dueTime: "10:00" }]);
+  await page.goto("/calendar?date=2026-11-05");
+  const views = page.getByRole("group", { name: "Calendar view" });
+
+  await views.getByRole("link", { name: "Week" }).click();
+  await expect(page).toHaveURL(/view=week&date=2026-11-05/);
+  await expect(page.getByRole("heading", { name: "Nov 2 – 8, 2026" })).toBeVisible();
+  const week = page.getByRole("region", { name: "Week" });
+  await expect(week.getByRole("link")).toHaveCount(7);
+  await expect(week.getByRole("link").first()).toHaveAccessibleName(/^November 2,/);
+  await expect(week.getByRole("link", { name: "November 5, 1 task" })).toContainText("Sprint demo");
+  await expectNoHorizontalScroll(page);
+
+  await views.getByRole("link", { name: "Day" }).click();
+  await expect(page).toHaveURL(/view=day&date=2026-11-05/);
+  await expect(page.getByRole("heading", { name: "November 5, 2026" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Agenda" }).getByText("Sprint demo")).toBeVisible();
+
+  await views.getByRole("link", { name: "Month" }).click();
+  await expect(page).toHaveURL(/\/calendar\?date=2026-11-05$/);
+  await expect(page.getByRole("link", { name: "November 5, 1 task" })).toHaveAttribute("aria-current", "date");
+});
+
+test("previous and next move by a week or a day", async ({ page }) => {
+  await page.goto("/calendar?view=week&date=2026-11-05");
+  await page.getByRole("link", { name: "Next week" }).click();
+  await expect(page.getByRole("heading", { name: "Nov 9 – 15, 2026" })).toBeVisible();
+  await page.getByRole("link", { name: "November 11, 0 tasks" }).click();
+  await expect(page).toHaveURL(/view=week&date=2026-11-11/);
+
+  await page.goto("/calendar?view=day&date=2026-11-30");
+  await page.getByRole("link", { name: "Next day" }).click();
+  await expect(page.getByRole("heading", { name: "December 1, 2026" })).toBeVisible();
+  await page.getByRole("link", { name: "Previous day" }).click();
+  await expect(page.getByRole("heading", { name: "November 30, 2026" })).toBeVisible();
+});

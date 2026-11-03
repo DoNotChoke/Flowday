@@ -19,14 +19,14 @@ import { useOptimistic, useState, useTransition } from "react";
 import type { CalendarItem, UnscheduledTask } from "@/services/calendar";
 import { updateTaskAction } from "../tasks/[id]/actions";
 import { Agenda } from "./Agenda";
-import { MonthGrid } from "./MonthGrid";
+import { DayGrid } from "./DayGrid";
 import { Unscheduled } from "./Unscheduled";
 
-type PlannerProps = { days: string[]; today: string; selected: string; items: CalendarItem[]; unscheduled: UnscheduledTask[] };
+type PlannerProps = { view: "month" | "week" | "day"; days: string[]; today: string; selected: string; items: CalendarItem[]; unscheduled: UnscheduledTask[] };
 
 const dayName = (day: unknown) => new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", timeZone: "UTC" }).format(Date.parse(String(day)));
 
-export function Planner({ days, today, selected, items, unscheduled }: PlannerProps) {
+export function Planner({ view, days, today, selected, items, unscheduled }: PlannerProps) {
   const [shown, showPlanned] = useOptimistic({ items, unscheduled }, (current, { task, day }: { task: UnscheduledTask; day: string }) => ({
     items: [{ ...task, day, kind: "planned" as const, time: null }, ...current.items],
     unscheduled: current.unscheduled.filter((option) => option.id !== task.id),
@@ -91,9 +91,15 @@ export function Planner({ days, today, selected, items, unscheduled }: PlannerPr
       onDragCancel={() => setActiveId(null)}
     >
       <div className="flex flex-wrap items-start gap-6">
-        <MonthGrid days={days} month={selected.slice(0, 7)} today={today} selected={selected} byDay={byDay} />
+        {view === "day" ? (
+          <div className="min-w-0 flex-[3_1_560px]">
+            <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />
+          </div>
+        ) : (
+          <DayGrid view={view} days={days} today={today} selected={selected} byDay={byDay} />
+        )}
         <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-4.5">
-          <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />
+          {view !== "day" && <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />}
           {error && (
             <p role="alert" className="rounded-control border-hard bg-coral-tint px-4 py-3 text-sm font-medium">
               {error}

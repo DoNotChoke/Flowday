@@ -7,12 +7,16 @@ export function addDays(date: string, days: number) {
   return new Date(Date.parse(date) + days * 86_400_000).toISOString().slice(0, 10);
 }
 
-// The 6 weeks shown for the month of `date`, starting on a Monday.
-export function monthGrid(date: string) {
-  const first = `${date.slice(0, 8)}01`;
-  const start = addDays(first, -((new Date(first).getUTCDay() + 6) % 7));
-  return Array.from({ length: 42 }, (_, index) => addDays(start, index));
+// The days from `date`'s Monday onwards.
+function daysFromMonday(date: string, count: number) {
+  const start = addDays(date, -((new Date(date).getUTCDay() + 6) % 7));
+  return Array.from({ length: count }, (_, index) => addDays(start, index));
 }
+
+export const weekDays = (date: string) => daysFromMonday(date, 7);
+
+// The 6 weeks shown for the month of `date`.
+export const monthGrid = (date: string) => daysFromMonday(`${date.slice(0, 8)}01`, 42);
 
 function selectTasks() {
   return db

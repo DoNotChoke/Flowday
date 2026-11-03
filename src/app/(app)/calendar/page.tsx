@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { isDate, utcToZoned } from "@/lib/datetime";
-import { getCalendar, listUnscheduled, monthGrid } from "@/services/calendar";
+import { addDays, getCalendar, listUnscheduled, monthGrid, weekDays } from "@/services/calendar";
 import { getTimeZone } from "@/services/tasks";
 import { Planner } from "./Planner";
 
@@ -16,6 +16,8 @@ function firstOfMonth(date: string, offset: number) {
   const [year, month] = date.split("-").map(Number);
   return new Date(Date.UTC(year, month - 1 + offset, 1)).toISOString().slice(0, 10);
 }
+
+const views = ["day", "week", "month"] as const;
 
 const navClass = "flex h-10 min-w-10 items-center justify-center rounded-xl border-hard bg-white text-[13px] font-medium pointer-coarse:min-h-11 pointer-coarse:min-w-11";
 
@@ -33,29 +35,54 @@ async function Content({ searchParams }: PageProps<"/calendar">) {
   const timeZone = await getTimeZone(userId);
   const today = utcToZoned(new Date(), timeZone).date;
   const selected = typeof query.date === "string" && isDate(query.date) ? query.date : today;
-  const month = monthGrid(selected);
-  const [items, unscheduled] = await Promise.all([getCalendar(userId, timeZone, month[0], month[41]), listUnscheduled(userId)]);
+  const view = views.find((option) => option === query.view) ?? "month";
+  const days = view === "month" ? monthGrid(selected) : view === "week" ? weekDays(selected) : [selected];
+  const [items, unscheduled] = await Promise.all([getCalendar(userId, timeZone, days[0], days.at(-1)!), listUnscheduled(userId)]);
+
+  const href = (date: string | null, to = view) => {
+    const params = new URLSearchParams({ ...(to !== "month" && { view: to }), ...(date && { date }) }).toString();
+    return params ? `/calendar?${params}` : "/calendar";
+  };
+  const step = (offset: number) => (view === "month" ? firstOfMonth(selected, offset) : addDays(selected, offset * (view === "week" ? 7 : 1)));
+  const title =
+    view === "month"
+      ? format(selected, { month: "long", year: "numeric" })
+      : view === "week"
+        ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).formatRange(Date.parse(days[0]), Date.parse(days[6]))
+        : format(selected, { month: "long", day: "numeric", year: "numeric" });
 
   return (
     <>
       <header className="flex flex-wrap items-center justify-between gap-3.5">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-[26px] font-bold tracking-[-0.6px] md:text-3xl">{format(selected, { month: "long", year: "numeric" })}</h1>
-          <nav aria-label="Months" className="flex gap-1.5">
-            <Link href={`/calendar?date=${firstOfMonth(selected, -1)}`} aria-label="Previous month" className={navClass}>
+          <h1 className="text-[26px] font-bold tracking-[-0.6px] md:text-3xl">{title}</h1>
+          <nav aria-label="Dates" className="flex gap-1.5">
+            <Link href={href(step(-1))} aria-label={`Previous ${view}`} className={navClass}>
               <Chevron path="M15 18l-6-6 6-6" />
             </Link>
-            <Link href={`/calendar?date=${firstOfMonth(selected, 1)}`} aria-label="Next month" className={navClass}>
+            <Link href={href(step(1))} aria-label={`Next ${view}`} className={navClass}>
               <Chevron path="M9 6l6 6-6 6" />
             </Link>
-            <Link href="/calendar" className={`${navClass} px-3.5`}>
+            <Link href={href(null)} className={`${navClass} px-3.5`}>
               Today
             </Link>
           </nav>
         </div>
+        <div role="group" aria-label="Calendar view" className="flex items-center gap-1 rounded-xl border-hard bg-white p-0.75">
+          {views.map((option) => (
+            <Link
+              key={option}
+              href={href(selected, option)}
+              aria-current={view === option ? "true" : undefined}
+              className={`flex h-8.5 items-center rounded-[9px] px-3.5 text-[13px] capitalize pointer-coarse:min-h-11 ${view === option ? "bg-sun-tint font-semibold" : ""}`}
+            >
+              {option}
+            </Link>
+          ))}
+        </div>
       </header>
 
-      <Planner days={month} today={today} selected={selected} items={items} unscheduled={unscheduled} />
+      <Planner view={view} days={days} today={today} selected={selected} items={items} unscheduled={unscheduled} />
     </>
   );
 }

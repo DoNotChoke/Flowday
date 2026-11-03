@@ -110,12 +110,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Bật Segmented Day/Week/Month (`?view=`). Week: 7 cột từ thứ Hai của tuần chứa ngày đang chọn, mỗi cột liệt kê chip đầy đủ; dưới 744 px là danh sách 7 ngày xếp dọc. Day: agenda cỡ lớn của ngày đang chọn. Nút trước/sau đi theo view (tháng, tuần, ngày). Cùng đọc từ `getCalendar`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Chuyển qua lại 3 view giữ nguyên ngày đang chọn.
-- [ ] Trước/sau nhảy đúng một tháng, một tuần hoặc một ngày.
-- [ ] Không có cuộn ngang ở 360, 820 và 1440 px.
+- [x] Chuyển qua lại 3 view giữ nguyên ngày đang chọn.
+- [x] Trước/sau nhảy đúng một tháng, một tuần hoặc một ngày.
+- [x] Không có cuộn ngang ở 360, 820 và 1440 px.
 
 **Kiểm chứng:**
-- [ ] E2E chuyển Month → Week → Day và quay lại, kiểm tra `?date=` không đổi và task vẫn hiện.
+- [x] E2E chuyển Month → Week → Day và quay lại, kiểm tra `?date=` không đổi và task vẫn hiện.
 
 **Phụ thuộc:** T5.1
 
@@ -127,7 +127,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint hoàn thành Phase 5
 
-- [ ] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile.
+- [x] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile.
 - [ ] CI xanh.
 - [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
 - [ ] `PLAN.md` đã đánh dấu xong Phase 5 (T5.3b ghi thêm vào danh sách).

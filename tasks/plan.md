@@ -78,11 +78,11 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm C: Các view khác
 
-- [ ] T5.4 Week và Day (M)
+- [x] T5.4 Week và Day (M)
 
 ### Checkpoint hoàn thành Phase 5
 
-- [ ] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile
+- [x] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile
 - [ ] CI xanh
 - [ ] Bạn đã thử trên điện thoại hoặc iPad thật
 - [ ] `PLAN.md` đã đánh dấu xong Phase 5
