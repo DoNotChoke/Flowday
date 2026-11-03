@@ -1,4 +1,4 @@
-# Phase 5 — Danh sách việc
+# Phase 6 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
@@ -6,46 +6,47 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ---
 
-## Nhóm A: Xem lịch
+## Nhóm A: Bộ đếm
 
-### T5.1 Lịch tháng
+### T6.1 Bộ đếm
 
-**Mô tả:** Trang 06 tại `/calendar` từ dữ liệu thật, cho màn hình từ 744 px. Header có tên tháng, nút tháng trước/sau và Today. Segmented Day/Week/Month thêm ở T5.4, không dựng nút tắt trước. Lưới 6 × 7 bắt đầu từ thứ Hai; mỗi ô tối đa 2 chip, còn lại "+n more"; ô hôm nay và ô đang chọn nổi bật như thiết kế. Agenda bên phải liệt kê task của ngày đang chọn, mỗi dòng có giờ hoặc "Due"/"Planned", tên, category và estimate, bấm vào mở Task detail. Trạng thái trên URL (`?date=`). `getCalendar(userId, from, to)` trong `src/services/calendar.ts`.
+**Mô tả:** Trang 08 tại `/focus`: tab Focus / Short break / Long break, vòng đếm có tiến độ, Start/Pause, Reset, Skip, và "+5 min" khi đang chạy. Thời lượng mặc định 25/5/15 tới T6.4. Logic là hàm thuần trong `src/lib/focusTimer.ts`; trạng thái lưu ở `localStorage`, số còn lại tính từ `endsAt`. Hết giờ thì hiện thông báo của hệ điều hành (xin quyền lúc bấm Start lần đầu), kêu chuông ngắn (Web Audio), chuyển sang mode tiếp theo và chờ Start. Tiêu đề tab hiện thời gian còn lại khi đang chạy. Vòng đếm rộng `min(300px, 80vw)`.
 
 **Tiêu chí nghiệm thu:**
-- [x] Task hiện theo `planned_at`, không có thì theo `due_at`; task đã hủy không hiện, task đã xong hiện mờ.
-- [x] Task gần nửa đêm rơi đúng ngày theo múi giờ người dùng; tuần bắt đầu từ thứ Hai.
-- [x] Chuyển tháng, Today và chọn ngày đổi URL; tải lại giữ nguyên.
-- [x] Không thấy task của người khác.
+- [ ] Để tab nền 5 phút rồi quay lại, số còn lại vẫn đúng.
+- [ ] Tải lại trang giữa phiên, đang chạy thì vẫn chạy, đang dừng thì vẫn dừng, cùng số còn lại.
+- [ ] Đổi mode, Reset, Skip, +5 min đúng như thiết kế; đang chạy thì đổi mode phải qua Reset hoặc Skip.
+- [ ] Hết giờ khi đang ở tab khác thì có thông báo của hệ điều hành; bị từ chối quyền thì trang ghi rõ và vẫn có chuông.
+- [ ] Số đếm có `aria-live` chỉ đọc mỗi phút, không đọc mỗi giây; mọi nút dùng được bằng bàn phím.
 
 **Kiểm chứng:**
-- [x] Vitest cho `getCalendar`: múi giờ dương và âm, hạn 23:30 và 00:30, ngày đổi giờ, `planned_at` thắng `due_at`, user khác.
-- [x] E2E tạo task có hạn, mở `/calendar?date=`, thấy chip và dòng agenda; bấm mở Task detail.
-- [x] So ảnh với `design/screens/06-calendar.html` ở 820 và 1440 px.
+- [ ] Vitest cho `focusTimer`: start, pause, resume, reset, skip, +5 min khi chạy và khi dừng, hết giờ, chu kỳ 4 Focus thì Long break.
+- [ ] E2E dùng `page.clock`: chạy, tua 5 phút, tải lại, tua tới hết giờ thấy mode chuyển sang Short break; thông báo được gọi (giả `Notification` trong trang).
+- [ ] Không cuộn ngang ở 360 px; so ảnh với `design/screens/08-focus-mode.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** Không
 
-**File dự kiến:** `src/services/calendar.ts`, `src/services/calendar.test.ts`, `src/app/(app)/calendar/page.tsx`, `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/Agenda.tsx`, `e2e/calendar.spec.ts`
+**File dự kiến:** `src/lib/focusTimer.ts`, `src/lib/focusTimer.test.ts`, `src/app/(app)/focus/page.tsx`, `src/app/(app)/focus/Timer.tsx`, `e2e/focus.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T5.2 Lịch mobile
+### T6.5 Bộ đếm nhỏ trên Sidebar
 
-**Mô tả:** Dưới 744 px: lưới tháng gọn, mỗi ô chỉ có số ngày và tối đa 3 chấm màu; chạm ngày để xem agenda nằm dưới lưới. Header gọn lại một hàng.
+**Mô tả:** Khi có phiên đang chạy hoặc đang dừng, Sidebar (desktop) và top bar (phone, tablet) hiện một nút nhỏ: mode và thời gian còn lại, bấm vào thì về `/focus`. Đọc chung trạng thái `localStorage` với trang Focus, nghe sự kiện `storage` để cập nhật giữa các tab. Phiên hết giờ khi đang ở trang khác vẫn báo như ở trang Focus. Ẩn khi đang ở `/focus` và khi không có phiên.
 
 **Tiêu chí nghiệm thu:**
-- [x] Không có cuộn ngang ở 360 và 390 px.
-- [x] Chạm ngày đổi agenda bên dưới; mỗi ô có nhãn cho trình đọc màn hình (ngày và số task).
-- [x] Vùng chạm của ô ngày tối thiểu 44 px.
+- [ ] Bắt đầu phiên rồi sang `/tasks` thấy bộ đếm nhỏ chạy đúng giờ.
+- [ ] Phiên kết thúc ở trang khác vẫn có thông báo và chuông.
+- [ ] Không có cuộn ngang ở 360 px; có nhãn cho trình đọc màn hình.
 
 **Kiểm chứng:**
-- [x] E2E project `mobile`: chạm ngày, thấy agenda, kiểm tra không cuộn ngang.
+- [ ] E2E dùng `page.clock`: Start ở `/focus`, sang `/tasks`, tua thời gian, thấy số đổi; bấm vào về `/focus`.
 
-**Phụ thuộc:** T5.1
+**Phụ thuộc:** T6.1
 
-**File dự kiến:** `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/page.tsx`, `e2e/calendar.spec.ts`
+**File dự kiến:** `src/components/app/FocusPill.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/TopBar.tsx`, `src/lib/focusTimer.ts`, `e2e/focus.spec.ts`
 
 **Quy mô:** S
 
@@ -53,81 +54,81 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [x] Task hiện đúng ngày trên desktop, iPad và phone.
-- [x] CI xanh.
-- [x] Bạn đã xem lịch thật trên máy.
+- [ ] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại.
+- [ ] CI xanh.
+- [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ.
+- [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5, ghi thêm T5.3b.
 
 ---
 
-## Nhóm B: Lên lịch
+## Nhóm B: Lưu phiên và tùy chỉnh
 
-### T5.3 Unscheduled và sheet chọn ngày
+### T6.2 Lưu phiên và Time tracked
 
-**Mô tả:** Khối "Unscheduled · n" dưới agenda liệt kê task chưa xong, chưa hủy, không có `planned_at` và `due_at`. Mỗi dòng có nút "Plan" mở `Sheet` với `DateField`, mặc định là ngày đang chọn. `updateTask` nhận thêm `plannedDate` (lưu nửa đêm theo múi giờ người dùng, `null` để bỏ lịch) và ghi activity. Task detail có thêm ô "Planned" để đổi hoặc bỏ lịch.
+**Mô tả:** Migration thêm bảng `focus_session` (`id`, `user_id`, `task_id?` set null, `mode`, `started_at`, `ended_at`, `seconds`, `completed`), index theo `user_id, ended_at`. Service `src/services/focus.ts`: `recordSession` (id từ trình duyệt, `on conflict do nothing`, kiểm tra quyền, số giây không quá khoảng thời gian thật và tối đa 4 giờ), `trackedSeconds(userId, taskId)`. Bộ đếm gửi phiên khi hết giờ, khi Skip hoặc Reset sau ít nhất 1 phút focus, và khi mở lại trang thấy phiên đã hết giờ. Task detail có khối "Time tracked" (giờ:phút, kèm Est.) và nút "Start focus session" tới `/focus?task=<id>`; trang Focus hiện "Working on" với tên task. `?task=` chỉ đổi task khi bộ đếm không chạy.
 
 **Tiêu chí nghiệm thu:**
-- [x] Lên lịch xong, task rời Unscheduled, số đếm giảm 1 và task hiện ở ngày đã chọn.
-- [x] `planned_at` lưu đúng ngày theo múi giờ người dùng; bỏ lịch trả task về Unscheduled.
-- [x] Mỗi lần đổi lịch có một dòng activity.
-- [x] Không lên lịch được task của người khác.
+- [ ] Xong một phiên gắn với task, Time tracked của task tăng đúng số phút.
+- [ ] Gửi lại cùng một phiên không tạo dòng trùng.
+- [ ] Số giây vượt khoảng thời gian thật, `ended_at` ở tương lai, hoặc task của người khác đều bị từ chối.
+- [ ] Phiên Break không cộng vào Time tracked.
 
 **Kiểm chứng:**
-- [x] Vitest cho `plannedDate` trong `updateTask`: lưu, bỏ, múi giờ âm, user khác.
-- [x] E2E desktop và mobile: tạo task không ngày → Plan → thấy trong agenda, tải lại vẫn còn.
+- [ ] Vitest cho `recordSession` và `trackedSeconds`: trùng id, giới hạn số giây, user khác, task đã xóa (`task_id` thành null).
+- [ ] E2E desktop và mobile: Task detail → Start focus session → tua hết 25 phút → quay lại Task detail thấy `0:25`.
 
-**Phụ thuộc:** T5.1
+**Phụ thuộc:** T6.1
 
-**File dự kiến:** `src/services/tasks.ts`, `src/services/tasks.test.ts`, `src/services/calendar.ts`, `src/app/(app)/calendar/Unscheduled.tsx`, `src/app/(app)/calendar/actions.ts`, `src/app/(app)/tasks/[id]/TaskFields.tsx`, `e2e/calendar.spec.ts`
+**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0006_focus_sessions.sql`, `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/actions.ts`, `src/app/(app)/focus/Timer.tsx`, `src/app/(app)/tasks/[id]/page.tsx`, `e2e/focus.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T5.3b Kéo task vào ngày
+### T6.3 Today's queue
 
-**Mô tả:** Trên lưới tháng (từ 744 px), kéo một dòng Unscheduled thả vào ô ngày để lên lịch, dùng `@dnd-kit` với Mouse, Touch (có độ trễ) và Keyboard sensor như Board. Cập nhật lạc quan; lỗi thì task quay về Unscheduled.
+**Mô tả:** Khối "Today's queue" bên cạnh bộ đếm: task chưa xong đang làm, hoặc có ngày lên lịch hay hạn là hôm nay theo múi giờ người dùng. Mỗi dòng có số phiên đã focus / ước tính và tổng thời gian ước tính ở đầu khối. Chạm một dòng để chọn làm "Working on" (khi bộ đếm không chạy). "Next:" là dòng kế tiếp. "Session n of 4" đếm theo số phiên Focus hoàn thành hôm nay.
 
 **Tiêu chí nghiệm thu:**
-- [x] Kéo thả lưu `planned_at` đúng ngày của ô, tải lại vẫn còn.
-- [x] Làm được bằng bàn phím và có thông báo cho trình đọc màn hình.
-- [x] Trên iPad vừa cuộn được vừa kéo được.
+- [ ] Queue khớp DB: không có task đã xong, đã hủy, hay của ngày khác.
+- [ ] Chọn task từ queue đổi "Working on" và "Next".
+- [ ] "Session n of 4" tăng sau mỗi phiên Focus hoàn thành và quay về 1 sau phiên thứ 4.
 
 **Kiểm chứng:**
-- [x] E2E desktop: kéo bằng chuột và bằng bàn phím.
+- [ ] Vitest cho truy vấn queue và đếm phiên hôm nay, có múi giờ âm và phiên gần nửa đêm.
+- [ ] E2E chọn task từ queue rồi chạy một phiên.
 
-**Phụ thuộc:** T5.3
+**Phụ thuộc:** T6.2
 
-**File dự kiến:** `src/app/(app)/calendar/MonthGrid.tsx`, `src/app/(app)/calendar/Unscheduled.tsx`, `src/app/(app)/calendar/CalendarDnd.tsx`, `e2e/calendar.spec.ts`
+**File dự kiến:** `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/page.tsx`, `src/app/(app)/focus/Queue.tsx`, `e2e/focus.spec.ts`
 
 **Quy mô:** S
 
 ---
 
-## Nhóm C: Các view khác
+### T6.4 Tự đặt thời lượng
 
-### T5.4 Week và Day
-
-**Mô tả:** Bật Segmented Day/Week/Month (`?view=`). Week: 7 cột từ thứ Hai của tuần chứa ngày đang chọn, mỗi cột liệt kê chip đầy đủ; dưới 744 px là danh sách 7 ngày xếp dọc. Day: agenda cỡ lớn của ngày đang chọn. Nút trước/sau đi theo view (tháng, tuần, ngày). Cùng đọc từ `getCalendar`.
+**Mô tả:** Migration thêm ba cột vào `user`: `focus_min` (mặc định 25), `short_break_min` (5), `long_break_min` (15). Nút "Timer settings" trên trang Focus mở `Sheet`: mỗi mode một ô số, Focus có chip nhanh 25 / 50 / 90. `updateTimerSettings` trong `src/services/profile.ts` kiểm tra Focus 5–180, Break 1–60. Thời lượng mới áp dụng từ phiên sau; phiên đang chạy giữ nguyên.
 
 **Tiêu chí nghiệm thu:**
-- [x] Chuyển qua lại 3 view giữ nguyên ngày đang chọn.
-- [x] Trước/sau nhảy đúng một tháng, một tuần hoặc một ngày.
-- [x] Không có cuộn ngang ở 360, 820 và 1440 px.
+- [ ] Đặt Focus 50 phút, lần Start sau đếm từ 50:00; tải lại và đổi máy vẫn giữ.
+- [ ] Giá trị ngoài khoảng bị từ chối, lỗi hiện tại ô tương ứng.
+- [ ] Phiên đang chạy không bị đổi khi lưu thời lượng mới.
 
 **Kiểm chứng:**
-- [x] E2E chuyển Month → Week → Day và quay lại, kiểm tra `?date=` không đổi và task vẫn hiện.
+- [ ] Vitest cho `updateTimerSettings`: giá trị hợp lệ, ngoài khoảng, không đổi của user khác.
+- [ ] E2E chọn chip 50, Start, thấy 50:00.
 
-**Phụ thuộc:** T5.1
+**Phụ thuộc:** T6.2
 
-**File dự kiến:** `src/app/(app)/calendar/page.tsx`, `src/app/(app)/calendar/WeekView.tsx`, `src/app/(app)/calendar/Agenda.tsx`, `e2e/calendar.spec.ts`
+**File dự kiến:** `src/lib/db/auth-schema.ts`, `drizzle/0007_timer_settings.sql`, `src/services/profile.ts`, `src/services/profile.test.ts`, `src/app/(app)/focus/TimerSettings.tsx`, `src/app/(app)/focus/actions.ts`, `e2e/focus.spec.ts`
 
-**Quy mô:** M
+**Quy mô:** S
 
 ---
 
-## Checkpoint hoàn thành Phase 5
+## Checkpoint hoàn thành Phase 6
 
-- [x] E2E tạo task không ngày → lên lịch → hiện trong agenda pass trên desktop và mobile.
-- [x] CI xanh.
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 5 (T5.3b ghi thêm vào danh sách).
+- [ ] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile.
+- [ ] CI xanh.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 6.
