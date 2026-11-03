@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { relativeTime, zonedToUtc, utcToZoned } from "@/lib/datetime";
+import { isDate, relativeTime, zonedToUtc, utcToZoned } from "@/lib/datetime";
 
 const cases = [
   { zone: "Asia/Ho_Chi_Minh", date: "2026-11-06", time: "17:00", utc: "2026-11-06T10:00:00.000Z" },
@@ -42,4 +42,15 @@ test("relative time counts minutes, then hours, then days in the owner's zone", 
   // 23:30 the evening before there, though the same UTC day.
   expect(relativeTime(new Date("2026-11-05T16:30:00Z"), now, zone)).toBe("Yesterday, 23:30");
   expect(relativeTime(new Date("2026-10-29T03:00:00Z"), now, zone)).toBe("Oct 29");
+});
+
+test.each([
+  ["2026-02-28", true],
+  ["2028-02-29", true],
+  ["2026-02-29", false],
+  ["2026-13-01", false],
+  ["2026-2-1", false],
+  ["tomorrow", false],
+])("isDate(%s) is %s", (value, expected) => {
+  expect(isDate(value)).toBe(expected);
 });

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
+import { isDate } from "@/lib/datetime";
 import { listCategories } from "@/services/categories";
 import { listProjects } from "@/services/projects";
 import { TaskForm } from "./TaskForm";
@@ -13,7 +14,9 @@ async function LoadedForm({ searchParams }: PageProps<"/tasks/new">) {
   const [categories, projects, query] = await Promise.all([listCategories(userId), listProjects(userId), searchParams]);
   const projectId = projects.find((project) => project.id === query.project)?.id ?? "";
 
-  return <TaskForm categories={categories} projects={projects} projectId={projectId} />;
+  const dueDate = typeof query.due === "string" && isDate(query.due) ? query.due : undefined;
+
+  return <TaskForm categories={categories} projects={projects} projectId={projectId} dueDate={dueDate} />;
 }
 
 export default function NewTaskPage(props: PageProps<"/tasks/new">) {

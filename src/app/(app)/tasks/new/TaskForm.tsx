@@ -44,9 +44,9 @@ const quickEstimates = [
   { label: "1 day", minutes: 480 },
 ];
 
-type TaskFormProps = { categories: Category[]; projects: Project[]; projectId: string };
+type TaskFormProps = { categories: Category[]; projects: Project[]; projectId: string; dueDate?: string };
 
-export function TaskForm({ categories: initialCategories, projects: initialProjects, projectId: initialProject }: TaskFormProps) {
+export function TaskForm({ categories: initialCategories, projects: initialProjects, projectId: initialProject, dueDate }: TaskFormProps) {
   const hydrated = useHydrated();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -267,7 +267,7 @@ export function TaskForm({ categories: initialCategories, projects: initialProje
               </option>
             ))}
           </Field>
-          <DateField label="Due date" name="date" error={errors.dueDate?.[0]} />
+          <DateField label="Due date" name="date" error={errors.dueDate?.[0]} defaultValue={dueDate} />
           <Field label="Time" name="time" type="time" />
         </div>
 

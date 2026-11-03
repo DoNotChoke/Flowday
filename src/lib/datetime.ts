@@ -41,3 +41,9 @@ export function relativeTime(instant: Date, now: Date, timeZone: string) {
   if (then.date === new Date(Date.parse(today) - 86_400_000).toISOString().slice(0, 10)) return `Yesterday, ${then.time}`;
   return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone }).format(instant);
 }
+
+// A real calendar day written as YYYY-MM-DD, so 2026-02-31 is refused.
+export function isDate(value: string) {
+  const time = Date.parse(value);
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(time) && new Date(time).toISOString().slice(0, 10) === value;
+}
