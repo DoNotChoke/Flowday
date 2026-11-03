@@ -22,6 +22,9 @@ export const user = pgTable("user", {
     .$onUpdate(() => /* @__PURE__ */ new Date())
     .notNull(),
   timezone: text("timezone").default("Asia/Ho_Chi_Minh"),
+  focusMin: integer("focus_min").default(25).notNull(),
+  shortBreakMin: integer("short_break_min").default(5).notNull(),
+  longBreakMin: integer("long_break_min").default(15).notNull(),
 });
 
 export const session = pgTable(

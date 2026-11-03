@@ -68,6 +68,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Nhóm A: Bộ đếm
 
 - [x] T6.1 Bộ đếm (M)
+- [x] T6.4 Tự đặt thời lượng (S), làm sớm theo yêu cầu của bạn
 - [ ] T6.5 Bộ đếm nhỏ trên Sidebar (S)
 
 ### Checkpoint A
@@ -80,7 +81,6 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [ ] T6.2 Lưu phiên và Time tracked (M)
 - [ ] T6.3 Today's queue (S)
-- [ ] T6.4 Tự đặt thời lượng (S)
 
 ### Checkpoint hoàn thành Phase 6
 
@@ -90,7 +90,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ## Parallelization
 
-T6.1 trước mọi task. T6.5 chỉ cần T6.1, làm ngay sau để bạn thử ở Checkpoint A. T6.2 có migration nên phải xong trước T6.3 và T6.4. T6.3 và T6.4 cùng sửa trang `/focus` nên làm tuần tự.
+T6.1 trước mọi task. T6.5 chỉ cần T6.1, làm ngay sau để bạn thử ở Checkpoint A. T6.4 đã làm sớm theo yêu cầu của bạn (migration 0006); T6.2 dùng migration 0007 và phải xong trước T6.3.
 
 ## Risks and Mitigations
 

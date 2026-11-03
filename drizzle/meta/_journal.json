@@ -43,6 +43,13 @@
       "when": 1793616624238,
       "tag": "0005_milestones",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793724467609,
+      "tag": "0006_timer_settings",
+      "breakpoints": true
     }
   ]
 }

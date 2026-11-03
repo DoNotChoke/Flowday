@@ -79,7 +79,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 **Phụ thuộc:** T6.1
 
-**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0006_focus_sessions.sql`, `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/actions.ts`, `src/app/(app)/focus/Timer.tsx`, `src/app/(app)/tasks/[id]/page.tsx`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0007_focus_sessions.sql`, `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/actions.ts`, `src/app/(app)/focus/Timer.tsx`, `src/app/(app)/tasks/[id]/page.tsx`, `e2e/focus.spec.ts`
 
 **Quy mô:** M
 
@@ -111,17 +111,17 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Migration thêm ba cột vào `user`: `focus_min` (mặc định 25), `short_break_min` (5), `long_break_min` (15). Nút "Timer settings" trên trang Focus mở `Sheet`: mỗi mode một ô số, Focus có chip nhanh 25 / 50 / 90. `updateTimerSettings` trong `src/services/profile.ts` kiểm tra Focus 5–180, Break 1–60. Thời lượng mới áp dụng từ phiên sau; phiên đang chạy giữ nguyên.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đặt Focus 50 phút, lần Start sau đếm từ 50:00; tải lại và đổi máy vẫn giữ.
-- [ ] Giá trị ngoài khoảng bị từ chối, lỗi hiện tại ô tương ứng.
-- [ ] Phiên đang chạy không bị đổi khi lưu thời lượng mới.
+- [x] Đặt Focus 50 phút, lần Start sau đếm từ 50:00; tải lại và đổi máy vẫn giữ.
+- [x] Giá trị ngoài khoảng bị từ chối, lỗi hiện tại ô tương ứng.
+- [x] Phiên đang chạy không bị đổi khi lưu thời lượng mới.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `updateTimerSettings`: giá trị hợp lệ, ngoài khoảng, không đổi của user khác.
-- [ ] E2E chọn chip 50, Start, thấy 50:00.
+- [x] Vitest cho `updateTimerSettings`: giá trị hợp lệ, ngoài khoảng, không đổi của user khác.
+- [x] E2E chọn chip 50, Start, thấy 50:00.
 
-**Phụ thuộc:** T6.2
+**Phụ thuộc:** T6.1 (làm trước T6.2 theo yêu cầu của bạn)
 
-**File dự kiến:** `src/lib/db/auth-schema.ts`, `drizzle/0007_timer_settings.sql`, `src/services/profile.ts`, `src/services/profile.test.ts`, `src/app/(app)/focus/TimerSettings.tsx`, `src/app/(app)/focus/actions.ts`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/lib/db/auth-schema.ts`, `drizzle/0006_timer_settings.sql`, `src/services/profile.ts`, `src/services/profile.test.ts`, `src/app/(app)/focus/TimerSettings.tsx`, `src/app/(app)/focus/actions.ts`, `e2e/focus.spec.ts`
 
 **Quy mô:** S
 

@@ -13,6 +13,12 @@ const timer = (page: Page) => page.getByRole("region", { name: "Timer" });
 const clock = (page: Page) => timer(page).getByText(/^\d\d:\d\d$/);
 const tab = (page: Page, name: string) => page.getByRole("tab", { name });
 
+// React reveals streamed content on a timer, which a frozen clock never fires. The clock rounds up, so half a second shows no change.
+async function reload(page: Page) {
+  await page.reload();
+  await page.clock.runFor(500);
+}
+
 test.beforeEach(async ({ page }, testInfo) => {
   // Stands in for the browser's notifications and records what was shown.
   await page.addInitScript(() => {
@@ -32,6 +38,7 @@ test.beforeEach(async ({ page }, testInfo) => {
   await page.goto("/focus");
   // Frozen so every read of the clock is exact; fastForward moves it on.
   await page.clock.pauseAt(new Date(start.getTime() + 10_000));
+  await page.clock.runFor(500);
   await expect(clock(page)).toHaveText("25:00");
 });
 
@@ -45,7 +52,7 @@ test("a running timer keeps time while away and after a reload", async ({ page }
   await expect(clock(page)).toHaveText("20:00");
   await expect(page).toHaveTitle("20:00 · Focus — Flowday");
 
-  await page.reload();
+  await reload(page);
   await expect(clock(page)).toHaveText("20:00");
   await expect(timer(page).getByRole("button", { name: "Pause" })).toBeVisible();
   await page.clock.fastForward("01:00");
@@ -59,7 +66,7 @@ test("a paused timer stays where it stopped", async ({ page }) => {
   await page.clock.fastForward("10:00");
   await expect(clock(page)).toHaveText("22:00");
 
-  await page.reload();
+  await reload(page);
   await expect(clock(page)).toHaveText("22:00");
   await timer(page).getByRole("button", { name: "Resume" }).click();
   await page.clock.fastForward("02:00");
@@ -99,4 +106,33 @@ test("the timer fits a small phone", async ({ page, isMobile }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await expectNoHorizontalScroll(page);
   await expect(timer(page).getByRole("button", { name: "Start" })).toBeVisible();
+});
+
+async function setFocusLength(page: Page, preset: string) {
+  await page.getByRole("region", { name: "Timer lengths" }).getByRole("button", { name: "Edit" }).click();
+  const sheet = page.getByRole("dialog");
+  await sheet.getByRole("button", { name: preset }).click();
+  const saved = page.waitForResponse((response) => response.request().method() === "POST");
+  await sheet.getByRole("button", { name: "Save" }).click();
+  await saved;
+  await expect(sheet).toBeHidden();
+}
+
+test("a new focus length is used from the next session and kept after a reload", async ({ page }) => {
+  await setFocusLength(page, "50 min");
+  await expect(clock(page)).toHaveText("50:00");
+  await expect(page.getByRole("region", { name: "Timer lengths" })).toContainText("Focus 50 · Short 5 · Long 15 min");
+
+  await reload(page);
+  await expect(clock(page)).toHaveText("50:00");
+});
+
+test("changing the length leaves a running session alone", async ({ page }) => {
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await page.clock.fastForward("01:00");
+  await setFocusLength(page, "90 min");
+  await expect(clock(page)).toHaveText("24:00");
+
+  await timer(page).getByRole("button", { name: "Reset timer" }).click();
+  await expect(clock(page)).toHaveText("90:00");
 });
