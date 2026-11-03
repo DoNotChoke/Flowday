@@ -68,8 +68,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint A
 
-- [ ] Task hiện đúng ngày trên desktop, iPad và phone
-- [ ] Bạn đã xem lịch thật trên máy
+- [x] Task hiện đúng ngày trên desktop, iPad và phone
+- [x] Bạn đã xem lịch thật trên máy
 
 ### Nhóm B: Lên lịch
 

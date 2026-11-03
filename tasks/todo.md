@@ -53,9 +53,9 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] Task hiện đúng ngày trên desktop, iPad và phone.
-- [ ] CI xanh.
-- [ ] Bạn đã xem lịch thật trên máy.
+- [x] Task hiện đúng ngày trên desktop, iPad và phone.
+- [x] CI xanh.
+- [x] Bạn đã xem lịch thật trên máy.
 
 ---
 
