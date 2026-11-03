@@ -55,7 +55,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 ## Checkpoint A
 
 - [x] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại.
-- [ ] CI xanh.
+- [x] CI xanh.
 - [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ.
 - [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5, ghi thêm T5.3b.
 
@@ -68,14 +68,14 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Migration thêm bảng `focus_session` (`id`, `user_id`, `task_id?` set null, `mode`, `started_at`, `ended_at`, `seconds`, `completed`), index theo `user_id, ended_at`. Service `src/services/focus.ts`: `recordSession` (id từ trình duyệt, `on conflict do nothing`, kiểm tra quyền, số giây không quá khoảng thời gian thật và tối đa 4 giờ), `trackedSeconds(userId, taskId)`. Bộ đếm gửi phiên khi hết giờ, khi Skip hoặc Reset sau ít nhất 1 phút focus, và khi mở lại trang thấy phiên đã hết giờ. Task detail có khối "Time tracked" (giờ:phút, kèm Est.) và nút "Start focus session" tới `/focus?task=<id>`; trang Focus hiện "Working on" với tên task. `?task=` chỉ đổi task khi bộ đếm không chạy.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Xong một phiên gắn với task, Time tracked của task tăng đúng số phút.
-- [ ] Gửi lại cùng một phiên không tạo dòng trùng.
-- [ ] Số giây vượt khoảng thời gian thật, `ended_at` ở tương lai, hoặc task của người khác đều bị từ chối.
-- [ ] Phiên Break không cộng vào Time tracked.
+- [x] Xong một phiên gắn với task, Time tracked của task tăng đúng số phút.
+- [x] Gửi lại cùng một phiên không tạo dòng trùng.
+- [x] Số giây vượt khoảng thời gian thật, `ended_at` ở tương lai, hoặc task của người khác đều bị từ chối.
+- [x] Phiên Break không cộng vào Time tracked.
 
 **Kiểm chứng:**
-- [ ] Vitest cho `recordSession` và `trackedSeconds`: trùng id, giới hạn số giây, user khác, task đã xóa (`task_id` thành null).
-- [ ] E2E desktop và mobile: Task detail → Start focus session → tua hết 25 phút → quay lại Task detail thấy `0:25`.
+- [x] Vitest cho `recordSession` và `trackedSeconds`: trùng id, giới hạn số giây, user khác, task đã xóa (`task_id` thành null).
+- [x] E2E desktop và mobile: Task detail → Start focus session → tua hết 25 phút → quay lại Task detail thấy `0:25`.
 
 **Phụ thuộc:** T6.1
 

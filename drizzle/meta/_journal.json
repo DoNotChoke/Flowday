@@ -50,6 +50,13 @@
       "when": 1793724467609,
       "tag": "0006_timer_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793727772166,
+      "tag": "0007_focus_sessions",
+      "breakpoints": true
     }
   ]
 }

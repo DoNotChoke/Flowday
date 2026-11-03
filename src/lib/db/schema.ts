@@ -30,6 +30,7 @@ export const taskStatus = pgEnum("task_status", ["ongoing", "in_process", "compl
 export const taskPriority = pgEnum("task_priority", ["low", "medium", "high", "urgent"]);
 export const taskSource = pgEnum("task_source", ["web", "mcp"]);
 export const activityActor = pgEnum("activity_actor", ["user", "mcp"]);
+export const focusMode = pgEnum("focus_mode", ["focus", "short", "long"]);
 
 export const project = pgTable(
   "project",
@@ -142,4 +143,20 @@ export const activity = pgTable(
     createdAt: createdAt(),
   },
   (table) => [index("activity_task_idx").on(table.taskId, table.createdAt)],
+);
+
+export const focusSession = pgTable(
+  "focus_session",
+  {
+    // Made by the browser, so sending a session twice stores it once.
+    id: text("id").primaryKey(),
+    userId: owner(),
+    taskId: text("task_id").references(() => task.id, { onDelete: "set null" }),
+    mode: focusMode("mode").notNull(),
+    startedAt: timestamp("started_at", { withTimezone: true }).notNull(),
+    endedAt: timestamp("ended_at", { withTimezone: true }).notNull(),
+    seconds: integer("seconds").notNull(),
+    completed: boolean("completed").notNull(),
+  },
+  (table) => [index("focus_session_user_ended_idx").on(table.userId, table.endedAt), index("focus_session_task_idx").on(table.taskId)],
 );

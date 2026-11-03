@@ -85,7 +85,7 @@ export function Activity({ taskId, rows }: { taskId: string; rows: Row[] }) {
   }
 
   return (
-    <aside className="flex min-w-0 flex-[2_1_300px] flex-col gap-4 rounded-[22px] border-hard bg-white p-5.5">
+    <section aria-label="Activity" className="flex min-w-0 flex-col gap-4 rounded-[22px] border-hard bg-white p-5.5">
       <h2 className="text-[15px] font-semibold">Activity</h2>
       <form onSubmit={send} className="flex items-center gap-2 rounded-control border-hard py-1 pr-1 pl-3.5">
         <input
@@ -118,6 +118,6 @@ export function Activity({ taskId, rows }: { taskId: string; rows: Row[] }) {
           </li>
         ))}
       </ol>
-    </aside>
+    </section>
   );
 }

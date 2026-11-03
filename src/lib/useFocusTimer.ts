@@ -55,8 +55,8 @@ function announce(finished: Timer, coming: Timer) {
 }
 
 // The saved timer, ticking while it runs. Null until the browser has read it and the time.
-// Only one mounted copy, the alarm, moves a finished timer on, so it is announced once.
-export function useFocusTimer(minutes: Durations = DEFAULT_MINUTES, alarm = false) {
+// Only one mounted copy, the one given an alarm, moves a finished timer on, so it is handled once.
+export function useFocusTimer(minutes: Durations = DEFAULT_MINUTES, alarm?: (finished: Timer) => void) {
   const saved = useSyncExternalStore(subscribe, () => localStorage.getItem(KEY), () => undefined);
   // Read in effects: Next refuses the time during render, where it would differ from the server's.
   const [now, setNow] = useState(0);
@@ -64,7 +64,7 @@ export function useFocusTimer(minutes: Durations = DEFAULT_MINUTES, alarm = fals
   const stored: Timer | null = saved ? JSON.parse(saved) : null;
   // A timer that has not started yet follows the current lengths, even ones changed on another device.
   const fresh = !stored || (stored.startedAt === null && stored.durationMs !== minutes[stored.mode] * 60_000);
-  const timer: Timer | null = saved === undefined ? null : fresh ? idle(stored?.mode ?? "focus", minutes, stored?.focusCount) : stored;
+  const timer: Timer | null = saved === undefined ? null : fresh ? idle(stored?.mode ?? "focus", minutes, stored?.focusCount, stored?.task) : stored;
 
   useEffect(() => {
     openedAt.current = Date.now();
@@ -93,6 +93,7 @@ export function useFocusTimer(minutes: Durations = DEFAULT_MINUTES, alarm = fals
   useEffect(() => {
     if (!alarm || !timer || !isOver(timer, Date.now())) return;
     const coming = next(timer, minutes);
+    alarm(timer);
     saveTimer(coming);
     // A timer that ran out while the app was closed moves on quietly.
     if (timer.endsAt! > openedAt.current) announce(timer, coming);

@@ -64,3 +64,10 @@ test("the clock rounds up so it reads 00:00 only at the end", () => {
   expect(clock(1)).toBe("00:01");
   expect(clock(0)).toBe("00:00");
 });
+
+test("the task stays with the timer through reset and the next modes", () => {
+  const task = { id: "t1", title: "Write" };
+  const timer = idle("focus", DEFAULT_MINUTES, 0, task);
+  expect(reset(timer, DEFAULT_MINUTES).task).toEqual(task);
+  expect(next(next(timer, DEFAULT_MINUTES), DEFAULT_MINUTES).task).toEqual(task);
+});

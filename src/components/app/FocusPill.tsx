@@ -2,12 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { clock, isRunning, remaining, type Durations } from "@/lib/focusTimer";
+import { useEffect } from "react";
+import { finishSession, flushSessions } from "@/app/(app)/focus/sessions";
+import { clock, isRunning, remaining, type Durations, type Timer } from "@/lib/focusTimer";
 import { modeLabels, useFocusTimer } from "@/lib/useFocusTimer";
 
-// Mounted once in the layout: it is the copy that rings and moves the timer on, on any page.
+const keepFinished = (timer: Timer) => finishSession(timer, timer.endsAt!, true);
+
+// Mounted once in the layout: it is the copy that keeps, rings and moves the timer on, on any page.
 export function FocusAlarm({ minutes }: { minutes: Durations }) {
-  useFocusTimer(minutes, true);
+  useFocusTimer(minutes, keepFinished);
+  // Sessions that could not be sent last time.
+  useEffect(() => void flushSessions(), []);
   return null;
 }
 

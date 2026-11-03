@@ -79,7 +79,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm B: Lưu phiên và tùy chỉnh
 
-- [ ] T6.2 Lưu phiên và Time tracked (M)
+- [x] T6.2 Lưu phiên và Time tracked (M)
 - [ ] T6.3 Today's queue (S)
 
 ### Checkpoint hoàn thành Phase 6

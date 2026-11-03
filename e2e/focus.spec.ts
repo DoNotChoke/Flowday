@@ -1,4 +1,8 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { user } from "@/lib/db/schema";
+import { createTask } from "@/services/tasks";
 import { deleteUser, expectNoHorizontalScroll, signInNewUser } from "./helpers";
 
 test.describe.configure({ timeout: 60_000 });
@@ -169,4 +173,68 @@ test("the pill leads back to the timer, and says when it is paused", async ({ pa
   await pill.click();
   await expect(page).toHaveURL(/\/focus$/);
   await expect(page.getByRole("link", { name: /Open Focus mode/ }).filter({ visible: true })).toHaveCount(0);
+});
+
+async function addTask(testInfo: TestInfo, title: string) {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, emailFor(testInfo)));
+  return createTask(owner.id, { title, estimateMin: 120 });
+}
+
+const tracked = (page: Page) => page.getByRole("region", { name: "Time tracked" });
+const sessionSaved = (page: Page) => page.waitForResponse((response) => response.request().method() === "POST" && response.url().includes("/"));
+
+test("a finished session started from a task adds to its time tracked", async ({ page }, testInfo) => {
+  const { id } = await addTask(testInfo, "Viết chương ba");
+  await page.goto(`/tasks/${id}`);
+  await page.clock.runFor(500);
+  await expect(tracked(page)).toContainText("0:00");
+  await expect(tracked(page)).toContainText("Est. 2h");
+
+  await tracked(page).getByRole("link", { name: "Start focus session" }).click();
+  // The page arrives after the click, so the frozen clock is nudged until it shows.
+  await expect(async () => {
+    await page.clock.runFor(200);
+    await expect(timer(page).getByRole("link", { name: "Viết chương ba" })).toBeVisible({ timeout: 500 });
+  }).toPass();
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  const saved = sessionSaved(page);
+  await page.clock.fastForward("25:00");
+  await saved;
+
+  await page.goto(`/tasks/${id}`);
+  await page.clock.runFor(500);
+  await expect(tracked(page)).toContainText("0:25");
+});
+
+test("skipping keeps the minutes already focused, a reset under a minute keeps nothing", async ({ page }, testInfo) => {
+  const { id } = await addTask(testInfo, "Đọc tài liệu");
+  await page.goto(`/focus?task=${id}`);
+  await page.clock.runFor(500);
+  await expect(timer(page).getByRole("link", { name: "Đọc tài liệu" })).toBeVisible();
+
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await page.clock.fastForward("00:30");
+  await timer(page).getByRole("button", { name: "Reset timer" }).click();
+
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await page.clock.fastForward("03:00");
+  const saved = sessionSaved(page);
+  await timer(page).getByRole("button", { name: "Skip to next" }).click();
+  await saved;
+
+  await page.goto(`/tasks/${id}`);
+  await page.clock.runFor(500);
+  await expect(tracked(page)).toContainText("0:03");
+});
+
+test("a running session keeps its task when another is opened", async ({ page }, testInfo) => {
+  const first = await addTask(testInfo, "First");
+  const second = await addTask(testInfo, "Second");
+  await page.goto(`/focus?task=${first.id}`);
+  await page.clock.runFor(500);
+  await timer(page).getByRole("button", { name: "Start" }).click();
+
+  await page.goto(`/focus?task=${second.id}`);
+  await page.clock.runFor(500);
+  await expect(timer(page).getByRole("link", { name: "First" })).toBeVisible();
 });

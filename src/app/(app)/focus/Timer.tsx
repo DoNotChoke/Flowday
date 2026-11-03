@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
-import { addMinutes, clock, idle, isRunning, next, pause, remaining, reset, start, type Durations, type Mode } from "@/lib/focusTimer";
+import { addMinutes, clock, idle, isRunning, next, pause, remaining, reset, start, type Durations, type FocusTask, type Mode } from "@/lib/focusTimer";
 import { modeLabels, prepareAlerts, saveTimer, useFocusTimer } from "@/lib/useFocusTimer";
+import { finishSession } from "./sessions";
 import { TimerSettings } from "./TimerSettings";
 
 const tones: Record<Mode, string> = { focus: "bg-sun", short: "bg-teal", long: "bg-blue" };
@@ -19,8 +22,9 @@ function Icon({ path, fill = false }: { path: string; fill?: boolean }) {
 const permissionOf = () => ("Notification" in window ? Notification.permission : "unsupported");
 const noSubscribe = () => () => {};
 
-export function Timer({ minutes }: { minutes: Durations }) {
+export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTask | null }) {
   const { timer, now } = useFocusTimer(minutes);
+  const router = useRouter();
   const permission = useSyncExternalStore(noSubscribe, permissionOf, () => "default");
   const left = timer ? remaining(timer, now) : minutes.focus * 60_000;
   const running = timer ? isRunning(timer) : false;
@@ -33,6 +37,11 @@ export function Timer({ minutes }: { minutes: Durations }) {
       document.title = before;
     };
   }, [running, left, timer]);
+
+  // A task picked with ?task= joins a timer that has not started; a running session keeps its own.
+  useEffect(() => {
+    if (timer && chosen && timer.startedAt === null && timer.task?.id !== chosen.id) saveTimer({ ...timer, task: chosen });
+  }, [timer, chosen]);
 
   if (!timer) return <div aria-hidden="true" className="h-[560px] min-w-0 flex-[3_1_460px] animate-pulse rounded-[28px] bg-panel motion-reduce:animate-none" />;
 
@@ -70,19 +79,47 @@ export function Timer({ minutes }: { minutes: Durations }) {
             <span className="text-[13px] text-muted">{modeLabels[timer.mode]}</span>
           </div>
         </div>
+        <div className="flex flex-col items-center gap-1 text-center">
+          <span className="text-xs font-semibold tracking-[1px]">WORKING ON</span>
+          {timer.task ? (
+            <Link href={`/tasks/${timer.task.id}`} className="font-content text-xl font-semibold break-words">
+              {timer.task.title}
+            </Link>
+          ) : (
+            <span className="text-sm">No task picked. Open a task and press Start focus session.</span>
+          )}
+          {timer.task && timer.startedAt === null && (
+            <button
+              type="button"
+              onClick={() => {
+                saveTimer({ ...timer, task: null });
+                router.replace("/focus");
+              }}
+              className="min-h-11 px-2 text-xs font-medium underline"
+            >
+              Focus without a task
+            </button>
+          )}
+        </div>
         <p aria-live="polite" className="sr-only">
           {running ? `${minutesLeft} ${minutesLeft === 1 ? "minute" : "minutes"} left` : ""}
         </p>
 
         <div className="flex items-center justify-center gap-2.5 md:gap-3.5">
-          <button type="button" aria-label="Reset timer" onClick={() => saveTimer(reset(timer, minutes))} className="flex size-13.5 items-center justify-center rounded-2xl border-hard bg-white shadow-hard-4">
+          <button type="button" aria-label="Reset timer" onClick={() => {
+              finishSession(timer, Date.now(), false);
+              saveTimer(reset(timer, minutes));
+            }} className="flex size-13.5 items-center justify-center rounded-2xl border-hard bg-white shadow-hard-4">
             <Icon path="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5" />
           </button>
           <button type="button" onClick={toggle} className="flex h-15 min-w-36 items-center md:min-w-45 justify-center gap-2.5 rounded-[18px] border-hard bg-ink px-7 text-[17px] font-semibold text-white shadow-[0_4px_0_#6b6b66]">
             <Icon fill path={running ? "M6 4h4v16H6zM14 4h4v16h-4z" : "M7 4v16l13-8z"} />
             {running ? "Pause" : timer.startedAt ? "Resume" : "Start"}
           </button>
-          <button type="button" aria-label="Skip to next" onClick={() => saveTimer(next(timer, minutes))} className="flex size-13.5 items-center justify-center rounded-2xl border-hard bg-white shadow-hard-4">
+          <button type="button" aria-label="Skip to next" onClick={() => {
+              finishSession(timer, Date.now(), false);
+              saveTimer(next(timer, minutes));
+            }} className="flex size-13.5 items-center justify-center rounded-2xl border-hard bg-white shadow-hard-4">
             <Icon fill path="M5 4v16l10-8zM17 4h2.5v16H17z" />
           </button>
         </div>
