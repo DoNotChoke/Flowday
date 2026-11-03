@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
-import { addMinutes, clock, idle, isRunning, next, pause, remaining, reset, start, type Durations, type FocusTask, type Mode } from "@/lib/focusTimer";
+import { addMinutes, clock, FOCUS_PER_LONG_BREAK, idle, isRunning, next, pause, remaining, reset, start, type Durations, type FocusTask, type Mode } from "@/lib/focusTimer";
 import { modeLabels, prepareAlerts, saveTimer, useFocusTimer } from "@/lib/useFocusTimer";
+import type { QueueTask } from "@/services/focus";
+import { Queue } from "./Queue";
 import { finishSession } from "./sessions";
 import { TimerSettings } from "./TimerSettings";
 
@@ -22,7 +24,9 @@ function Icon({ path, fill = false }: { path: string; fill?: boolean }) {
 const permissionOf = () => ("Notification" in window ? Notification.permission : "unsupported");
 const noSubscribe = () => () => {};
 
-export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTask | null }) {
+type TimerProps = { minutes: Durations; chosen: FocusTask | null; queue: QueueTask[]; focusedToday: number };
+
+export function Timer({ minutes, chosen, queue, focusedToday }: TimerProps) {
   const { timer, now } = useFocusTimer(minutes);
   const router = useRouter();
   const permission = useSyncExternalStore(noSubscribe, permissionOf, () => "default");
@@ -47,6 +51,14 @@ export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTa
 
   const progress = 100 - (left / timer.durationMs) * 100;
   const minutesLeft = Math.ceil(left / 60_000);
+  // The one after the current task, or the first when the current task is not queued.
+  const nextTask = queue[queue.findIndex((task) => task.id === timer.task?.id) + 1];
+
+  function pick(task: FocusTask | null) {
+    saveTimer({ ...timer!, task });
+    // Drops ?task= so it does not pick the old task again.
+    router.replace("/focus");
+  }
 
   function toggle() {
     if (running) return saveTimer(pause(timer!, Date.now()));
@@ -76,7 +88,7 @@ export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTa
         <div className="flex aspect-square w-[min(300px,80vw)] items-center justify-center rounded-full border-hard shadow-hard-6" style={{ background: `conic-gradient(#151515 0 ${progress}%, #ffffff 0)` }}>
           <div className="flex size-[84%] flex-col items-center justify-center gap-1 rounded-full border-hard bg-white">
             <span className="text-[clamp(44px,14vw,64px)] font-bold tracking-[-2px] tabular-nums">{clock(left)}</span>
-            <span className="text-[13px] text-muted">{modeLabels[timer.mode]}</span>
+            <span className="text-[13px] text-muted">{timer.mode === "focus" ? `Session ${(focusedToday % FOCUS_PER_LONG_BREAK) + 1} of ${FOCUS_PER_LONG_BREAK}` : modeLabels[timer.mode]}</span>
           </div>
         </div>
         <div className="flex flex-col items-center gap-1 text-center">
@@ -86,15 +98,13 @@ export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTa
               {timer.task.title}
             </Link>
           ) : (
-            <span className="text-sm">No task picked. Open a task and press Start focus session.</span>
+            <span className="text-sm">No task picked. Choose one from today’s queue or a task’s page.</span>
           )}
+          {nextTask && <span className="font-content text-[13px] text-[#3d3d3d]">Next: {nextTask.title}</span>}
           {timer.task && timer.startedAt === null && (
             <button
               type="button"
-              onClick={() => {
-                saveTimer({ ...timer, task: null });
-                router.replace("/focus");
-              }}
+              onClick={() => pick(null)}
               className="min-h-11 px-2 text-xs font-medium underline"
             >
               Focus without a task
@@ -131,6 +141,7 @@ export function Timer({ minutes, chosen }: { minutes: Durations; chosen: FocusTa
       </section>
 
       <aside className="flex min-w-0 flex-[1_1_300px] flex-col gap-4.5">
+        <Queue tasks={queue} current={timer.task?.id ?? null} locked={timer.startedAt !== null} onPick={({ id, title }) => pick({ id, title })} />
         <TimerSettings minutes={minutes} />
         <section className="flex items-start gap-3.5 rounded-[22px] border-hard bg-lilac p-4.5">
           <span className="flex size-11 flex-none items-center justify-center rounded-xl border-hard bg-white">

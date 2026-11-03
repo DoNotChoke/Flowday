@@ -90,13 +90,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Khối "Today's queue" bên cạnh bộ đếm: task chưa xong đang làm, hoặc có ngày lên lịch hay hạn là hôm nay theo múi giờ người dùng. Mỗi dòng có số phiên đã focus / ước tính và tổng thời gian ước tính ở đầu khối. Chạm một dòng để chọn làm "Working on" (khi bộ đếm không chạy). "Next:" là dòng kế tiếp. "Session n of 4" đếm theo số phiên Focus hoàn thành hôm nay.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Queue khớp DB: không có task đã xong, đã hủy, hay của ngày khác.
-- [ ] Chọn task từ queue đổi "Working on" và "Next".
-- [ ] "Session n of 4" tăng sau mỗi phiên Focus hoàn thành và quay về 1 sau phiên thứ 4.
+- [x] Queue khớp DB: không có task đã xong, đã hủy, hay của ngày khác.
+- [x] Chọn task từ queue đổi "Working on" và "Next".
+- [x] "Session n of 4" tăng sau mỗi phiên Focus hoàn thành và quay về 1 sau phiên thứ 4.
 
 **Kiểm chứng:**
-- [ ] Vitest cho truy vấn queue và đếm phiên hôm nay, có múi giờ âm và phiên gần nửa đêm.
-- [ ] E2E chọn task từ queue rồi chạy một phiên.
+- [x] Vitest cho truy vấn queue và đếm phiên hôm nay, có múi giờ âm và phiên gần nửa đêm.
+- [x] E2E chọn task từ queue rồi chạy một phiên.
 
 **Phụ thuộc:** T6.2
 
@@ -129,6 +129,6 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint hoàn thành Phase 6
 
-- [ ] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile.
+- [x] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile.
 - [ ] CI xanh.
 - [ ] `PLAN.md` đã đánh dấu xong Phase 6.

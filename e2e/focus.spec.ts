@@ -2,7 +2,8 @@ import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { user } from "@/lib/db/schema";
-import { createTask } from "@/services/tasks";
+import { utcToZoned } from "@/lib/datetime";
+import { createTask, type CreateTaskInput } from "@/services/tasks";
 import { deleteUser, expectNoHorizontalScroll, signInNewUser } from "./helpers";
 
 test.describe.configure({ timeout: 60_000 });
@@ -13,7 +14,7 @@ function emailFor(testInfo: TestInfo) {
   return `e2e-focus-${testInfo.project.name}@flowday.test`;
 }
 
-const timer = (page: Page) => page.getByRole("region", { name: "Timer" });
+const timer = (page: Page) => page.getByRole("region", { name: "Timer", exact: true });
 const clock = (page: Page) => timer(page).getByText(/^\d\d:\d\d$/);
 const tab = (page: Page, name: string) => page.getByRole("tab", { name });
 
@@ -175,9 +176,9 @@ test("the pill leads back to the timer, and says when it is paused", async ({ pa
   await expect(page.getByRole("link", { name: /Open Focus mode/ }).filter({ visible: true })).toHaveCount(0);
 });
 
-async function addTask(testInfo: TestInfo, title: string) {
+async function addTask(testInfo: TestInfo, title: string, input: Omit<CreateTaskInput, "title"> = {}) {
   const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, emailFor(testInfo)));
-  return createTask(owner.id, { title, estimateMin: 120 });
+  return createTask(owner.id, { title, estimateMin: 120, ...input });
 }
 
 const tracked = (page: Page) => page.getByRole("region", { name: "Time tracked" });
@@ -237,4 +238,28 @@ test("a running session keeps its task when another is opened", async ({ page },
   await page.goto(`/focus?task=${second.id}`);
   await page.clock.runFor(500);
   await expect(timer(page).getByRole("link", { name: "First" })).toBeVisible();
+});
+
+test("today's queue picks the task to work on and shows what comes next", async ({ page }, testInfo) => {
+  // The server reads the real date, not the browser's frozen one.
+  const today = utcToZoned(new Date(), "Asia/Ho_Chi_Minh").date;
+  await addTask(testInfo, "Doing now", { status: "in_process", estimateMin: 50 });
+  await addTask(testInfo, "Due today", { dueDate: today, estimateMin: 25 });
+  await addTask(testInfo, "Someday");
+  await page.reload();
+  await page.clock.runFor(500);
+
+  const queue = page.getByRole("region", { name: "Today's queue" });
+  await expect(queue.getByRole("button")).toHaveText([/Doing now\s*0\/2/, /Due today\s*0\/1/]);
+  await expect(queue).toContainText("≈ 1h 15m");
+  await expect(timer(page)).toContainText("Session 1 of 4");
+
+  await queue.getByRole("button", { name: /Due today/ }).click();
+  await expect(timer(page).getByRole("link", { name: "Due today" })).toBeVisible();
+  await queue.getByRole("button", { name: /Doing now/ }).click();
+  await expect(timer(page).getByRole("link", { name: "Doing now" })).toBeVisible();
+  await expect(timer(page)).toContainText("Next: Due today");
+
+  await timer(page).getByRole("button", { name: "Start" }).click();
+  await expect(queue.getByRole("button", { name: /Due today/ })).toBeDisabled();
 });

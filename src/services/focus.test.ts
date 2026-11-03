@@ -4,8 +4,10 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { focusSession, task, user } from "@/lib/db/schema";
 import { ValidationError } from "./errors";
-import { recordSession, trackedSeconds, type FocusSessionInput } from "./focus";
-import { createTask, deleteTask } from "./tasks";
+import { utcToZoned, zonedToUtc } from "@/lib/datetime";
+import { addDays } from "./calendar";
+import { countFocusToday, getFocusQueue, recordSession, trackedSeconds, type FocusSessionInput } from "./focus";
+import { createTask, deleteTask, updateTask } from "./tasks";
 
 const alice = "focus-test-alice";
 const bob = "focus-test-bob";
@@ -18,7 +20,7 @@ function session(overrides: Partial<FocusSessionInput> = {}): FocusSessionInput 
 
 beforeAll(async () => {
   await db.insert(user).values([
-    { id: alice, name: "Alice", email: "focus-alice@flowday.test" },
+    { id: alice, name: "Alice", email: "focus-alice@flowday.test", timezone: "America/Los_Angeles" },
     { id: bob, name: "Bob", email: "focus-bob@flowday.test" },
   ]);
 });
@@ -79,4 +81,41 @@ test("deleting a task keeps its sessions, without the task", async () => {
 
   const [row] = await db.select().from(focusSession).where(eq(focusSession.id, kept.id!));
   expect(row).toMatchObject({ taskId: null, seconds: 25 * 60, completed: true });
+});
+
+const zone = "America/Los_Angeles";
+const today = () => utcToZoned(new Date(), zone).date;
+
+test("the queue holds tasks in process, then those planned or due today, and nothing closed or another day's", async () => {
+  await createTask(alice, { title: "Due today", dueDate: today(), dueTime: "23:30", estimateMin: 60 });
+  await createTask(alice, { title: "Due tomorrow", dueDate: addDays(today(), 1) });
+  await createTask(alice, { title: "Undated" });
+  await createTask(alice, { title: "Doing", status: "in_process" });
+  await createTask(alice, { title: "Done today", dueDate: today(), status: "completed" });
+  const planned = await createTask(alice, { title: "Planned today", estimateMin: 50 });
+  await updateTask(alice, planned.id, { plannedDate: today() });
+  await createTask(bob, { title: "Bob's", status: "in_process" });
+
+  const queue = await getFocusQueue(alice, zone, 25);
+  expect(queue.map((row) => row.title)).toEqual(["Doing", "Planned today", "Due today"]);
+  expect(queue.map((row) => row.planned)).toEqual([null, 2, 3]);
+});
+
+test("each queued task counts its finished focus sessions", async () => {
+  const { id } = await createTask(alice, { title: "Doing", status: "in_process", estimateMin: 100 });
+  await recordSession(alice, session({ taskId: id }));
+  await recordSession(alice, session({ taskId: id }));
+  await recordSession(alice, session({ taskId: id, completed: false, seconds: 120 }));
+
+  expect(await getFocusQueue(alice, zone, 50)).toMatchObject([{ title: "Doing", done: 2, planned: 2 }]);
+});
+
+test("today's count follows the owner's midnight and only counts finished focus", async () => {
+  const midnight = zonedToUtc(today(), null, zone).getTime();
+  await recordSession(alice, session({ startedAt: midnight - 26 * MINUTE, endedAt: midnight - MINUTE }));
+  await recordSession(alice, session({ startedAt: midnight - 20 * MINUTE, endedAt: midnight + 5_000, seconds: 20 * 60 }));
+  await recordSession(alice, session({ completed: false, seconds: 120 }));
+  await recordSession(alice, session({ mode: "short", seconds: 5 * 60 }));
+
+  expect(await countFocusToday(alice, zone)).toBe(1);
 });
