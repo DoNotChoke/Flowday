@@ -85,7 +85,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Checkpoint hoàn thành Phase 6
 
 - [x] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile
-- [ ] CI xanh
+- [x] CI xanh
 - [ ] `PLAN.md` đã đánh dấu xong Phase 6
 
 ## Parallelization
