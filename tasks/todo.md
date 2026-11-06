@@ -73,7 +73,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 ## Checkpoint A
 
 - [x] Streak cùng một số ở `/history`, Sidebar và lịch.
-- [ ] CI xanh.
+- [x] CI xanh.
 - [ ] Bạn đã xem `/history` với dữ liệu thật của mình.
 
 ---
