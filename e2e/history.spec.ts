@@ -192,3 +192,17 @@ test("achievements show which badges are earned", async ({ page }, testInfo) => 
   await expect(badges.filter({ hasText: "Inbox zero" })).toContainText("Earned");
   await expect(badges.filter({ hasText: "7-day streak" })).toContainText("Not earned yet");
 });
+
+test("the week inside the streak card fits every phone width", async ({ page, isMobile }) => {
+  test.skip(!isMobile, "phone layout");
+  await page.goto("/history");
+  const card = page.getByRole("region", { name: "Current streak" });
+  for (const width of [360, 390, 430, 744]) {
+    await page.setViewportSize({ width, height: 900 });
+    const spill = await card.evaluate((section) => {
+      const week = section.querySelector("[aria-label='This week']")!.getBoundingClientRect();
+      return week.right - section.getBoundingClientRect().right;
+    });
+    expect(spill, `the week spills out of the card at ${width}px`).toBeLessThan(-8);
+  }
+});
