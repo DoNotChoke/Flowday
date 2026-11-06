@@ -60,12 +60,12 @@ test.describe("signed in on a wide screen", () => {
     await expect(page).toHaveURL("/tasks/new");
   });
 
-  test("the sidebar shows the account and no made-up numbers", async ({ page }, testInfo) => {
+  test("the sidebar shows the account and a real streak, none yet for a new account", async ({ page }, testInfo) => {
     const nav = page.getByRole("navigation", { name: "Main" });
 
     await expect(nav.getByText("Nguyễn Việt")).toBeVisible();
     await expect(nav.getByText(emailFor(testInfo))).toBeVisible();
-    await expect(nav.getByText("Current streak")).toHaveCount(0);
+    await expect(nav.getByRole("link", { name: /Current streak/ })).toHaveAccessibleName("0 days Current streak");
   });
 
   test("the projects section starts empty and leads to creating one", async ({ page }) => {
