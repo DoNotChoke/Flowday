@@ -85,13 +85,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Daily tasks overview: hai đường Completed và Created theo ngày (SVG tự vẽ như bản mẫu, trục tự co theo số lớn nhất). Time by category: thanh ngang giờ Focus theo category. Recently completed: 5 task xong gần nhất, category, thời gian tương đối.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Số liệu khớp service; không thêm thư viện chart.
-- [ ] Biểu đồ có nhãn cho trình đọc màn hình và đọc được khi không có dữ liệu.
-- [ ] Không cuộn ngang ở 360 px.
+- [x] Số liệu khớp service; không thêm thư viện chart.
+- [x] Biểu đồ có nhãn cho trình đọc màn hình và đọc được khi không có dữ liệu.
+- [x] Không cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [ ] Vitest cho truy vấn tạo/xong theo ngày và giờ theo category.
-- [ ] E2E kiểm tra Recently completed và Time by category với dữ liệu tạo sẵn.
+- [x] Vitest cho truy vấn tạo/xong theo ngày và giờ theo category.
+- [x] E2E kiểm tra Recently completed và Time by category với dữ liệu tạo sẵn.
 
 **Phụ thuộc:** T7.1
 

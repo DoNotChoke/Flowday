@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { estimateLabel } from "@/lib/progress";
-import { getHeatmap, getStreak, getSummary } from "@/services/stats";
+import { relativeTime } from "@/lib/datetime";
+import { focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "@/services/stats";
+import { getTimeZone } from "@/services/tasks";
+import { DailyChart } from "./DailyChart";
 import { Heatmap } from "./Heatmap";
 import { StreakCard } from "./StreakCard";
 
@@ -27,11 +31,22 @@ function Kpi({ label, value, sub, tint, icon }: { label: string; value: string; 
 }
 
 const hours = (seconds: number) => `${Math.round((seconds / 3600) * 10) / 10}h`;
+const duration = (seconds: number) => (seconds >= 3600 ? hours(seconds) : `${Math.round(seconds / 60)}m`);
 const signed = (change: number) => `${change > 0 ? "+" : ""}${change}%`;
 
 async function Content() {
   const userId = await requireUserId();
-  const [streak, summary, heatmap] = await Promise.all([getStreak(userId), getSummary(userId, "month"), getHeatmap(userId)]);
+  const [streak, summary, heatmap, overview, categories, recent, timeZone] = await Promise.all([
+    getStreak(userId),
+    getSummary(userId, "month"),
+    getHeatmap(userId),
+    getDailyOverview(userId, "month"),
+    focusByCategory(userId, "month"),
+    recentlyCompleted(userId),
+    getTimeZone(userId),
+  ]);
+  const most = categories[0]?.seconds ?? 0;
+  const now = new Date();
   const perDay = Math.round(summary.focusPerDay / 60);
 
   return (
@@ -65,6 +80,72 @@ async function Content() {
           </span>
         </div>
         <Heatmap days={heatmap.days} />
+      </section>
+
+      <div className="grid grid-cols-1 gap-4.5 lg:grid-cols-[2fr_1fr]">
+        <section aria-label="Daily tasks overview" className="flex min-w-0 flex-col gap-3 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold">Daily tasks overview</h2>
+            <div className="flex gap-3.5 text-xs text-muted">
+              <span className="flex items-center gap-1.5">
+                <span className="h-1 w-4 rounded-full bg-[#3fb3ad]" />
+                Completed
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-1 w-4 rounded-full bg-[#e0a800]" />
+                Created
+              </span>
+            </div>
+          </div>
+          <DailyChart points={overview} period="the last 30 days" />
+        </section>
+
+        <section aria-label="Time by category" className="flex min-w-0 flex-col gap-3.5 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+          <h2 className="text-lg font-semibold">Time by category</h2>
+          {categories.length ? (
+            <ul className="flex flex-col gap-3">
+              {categories.map((category) => (
+                <li key={category.name} className="flex flex-col gap-1.5 text-[13px]">
+                  <div className="flex justify-between gap-2">
+                    <span className="truncate font-content">{category.name}</span>
+                    <span className="font-semibold tabular-nums">{duration(category.seconds)}</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-panel">
+                    <div className="h-full rounded-full border-hard" style={{ width: `${Math.max(4, (category.seconds / most) * 100)}%`, backgroundColor: category.color ?? "#b5b5b0" }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[13px] text-muted">No focus sessions in the last 30 days.</p>
+          )}
+        </section>
+      </div>
+
+      <section aria-label="Recently completed" className="flex min-w-0 flex-col gap-3 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+        <h2 className="text-lg font-semibold">Recently completed</h2>
+        {recent.length ? (
+          <ul className="flex flex-col divide-y divide-panel">
+            {recent.map((row) => (
+              <li key={row.id}>
+                <Link href={`/tasks/${row.id}`} className="flex min-h-12 items-center gap-3 py-2">
+                  <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-lg border-hard bg-teal-tint">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 12l5 5L20 7" />
+                    </svg>
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col">
+                    <span className="truncate font-content text-sm font-semibold">{row.title}</span>
+                    {row.category && <span className="truncate font-content text-xs text-muted">{row.category}</span>}
+                  </span>
+                  <span className="flex-none text-xs text-muted">{relativeTime(row.completedAt!, now, timeZone)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[13px] text-muted">Finished tasks show up here.</p>
+        )}
       </section>
     </>
   );

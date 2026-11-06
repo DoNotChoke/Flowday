@@ -1,9 +1,11 @@
+import { randomUUID } from "node:crypto";
 import { expect, test, type TestInfo } from "@playwright/test";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
-import { task, user } from "@/lib/db/schema";
+import { focusSession, task, user } from "@/lib/db/schema";
 import { monthGrid } from "@/services/calendar";
+import { createCategory } from "@/services/categories";
 import { createTask } from "@/services/tasks";
 import { deleteUser, expectNoHorizontalScroll, signInNewUser } from "./helpers";
 
@@ -132,4 +134,17 @@ test("the heatmap shows a day's count, by mouse, keyboard or touch", async ({ pa
     await expect(details).toHaveText(`${label(today)}: 2 tasks, 0 focus sessions`);
   }
   await expectNoHorizontalScroll(page);
+});
+
+test("recently completed and time by category come from the tasks and focus sessions", async ({ page }, testInfo) => {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, emailFor(testInfo)));
+  const writing = await createCategory(owner.id, "Viết lách");
+  const { id } = await createTask(owner.id, { title: "Chương ba", status: "completed", categoryIds: [writing.id] });
+  await db.insert(focusSession).values({ id: randomUUID(), userId: owner.id, taskId: id, mode: "focus", startedAt: new Date(Date.now() - 2 * 3_600_000), endedAt: new Date(Date.now() - 1_800_000), seconds: 5400, completed: true });
+  await page.goto("/history");
+
+  const recent = page.getByRole("region", { name: "Recently completed" });
+  await expect(recent.getByRole("link", { name: /Chương ba\s*Viết lách\s*Just now/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Time by category" })).toContainText(/Viết lách\s*1\.5h/);
+  await expect(page.getByRole("region", { name: "Daily tasks overview" }).getByRole("img")).toHaveAccessibleName("Over the last 30 days: 1 task created, 1 completed.");
 });

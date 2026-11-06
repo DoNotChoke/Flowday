@@ -4,7 +4,8 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusSession, task, user } from "@/lib/db/schema";
-import { activityDays, getHeatmap, getStreak, getSummary } from "./stats";
+import { activityDays, focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "./stats";
+import { createCategory } from "./categories";
 import { createTask, updateTask } from "./tasks";
 
 const alice = "stats-test-alice";
@@ -153,4 +154,54 @@ test("the heatmap runs 53 weeks from a Monday to today, with totals and the busi
 
 test("an empty year has no busiest day", async () => {
   expect(await getHeatmap(alice)).toMatchObject({ tasks: 0, mostActive: null });
+});
+
+test("the overview counts tasks created and finished per day over the range", async () => {
+  const zone = "Asia/Ho_Chi_Minh";
+  const today = todayIn(zone);
+  await createTask(alice, { title: "Made today" });
+  await finishedAt(alice, zonedToUtc(addDays(today, -2), "10:00", zone)); // also created today
+
+  const points = await getDailyOverview(alice, "week");
+  expect(points).toHaveLength(7);
+  expect(points[0].key).toBe(addDays(today, -6));
+  expect(points.at(-1)).toEqual({ key: today, created: 2, completed: 0 });
+  expect(points.find((point) => point.key === addDays(today, -2))).toEqual({ key: addDays(today, -2), created: 0, completed: 1 });
+});
+
+test("over a year the overview runs month by month, ending with this one", async () => {
+  await finishedAt(alice, new Date());
+  const points = await getDailyOverview(alice, "year");
+  expect(points).toHaveLength(12);
+  expect(points.at(-1)).toMatchObject({ key: todayIn("Asia/Ho_Chi_Minh").slice(0, 7), created: 1, completed: 1 });
+});
+
+test("focus hours go to a task's first category by name, then to Uncategorized", async () => {
+  const [zebra, alpha] = [await createCategory(alice, "Zebra stats"), await createCategory(alice, "Alpha stats")];
+  const both = await createTask(alice, { title: "Both", categoryIds: [zebra.id, alpha.id] });
+  const plain = await createTask(alice, { title: "Plain" });
+  const now = Date.now();
+  await focusAt(alice, new Date(now - 10 * MINUTE), { taskId: both.id, seconds: 3600 });
+  await focusAt(alice, new Date(now - 20 * MINUTE), { taskId: plain.id, seconds: 600 });
+  await focusAt(alice, new Date(now - 30 * MINUTE), { seconds: 300 });
+  await focusAt(alice, new Date(now - 40 * MINUTE), { taskId: both.id, mode: "short", seconds: 300 });
+
+  expect(await focusByCategory(alice, "month")).toEqual([
+    { name: "Alpha stats", color: alpha.color, seconds: 3600 },
+    { name: "Uncategorized", color: null, seconds: 900 },
+  ]);
+});
+
+test("recently completed lists the latest finished tasks first, with their category", async () => {
+  const work = await createCategory(alice, "Work stats");
+  const { id } = await createTask(alice, { title: "Newest", status: "completed", categoryIds: [work.id] });
+  await finishedAt(alice, new Date(Date.now() - 86_400_000));
+  await createTask(alice, { title: "Open" });
+
+  const rows = await recentlyCompleted(alice);
+  expect(rows.map(({ title, category }) => ({ title, category }))).toEqual([
+    { title: "Newest", category: "Work stats" },
+    { title: "Done", category: null },
+  ]);
+  expect(rows[0].id).toBe(id);
 });

@@ -1,4 +1,4 @@
-import { and, count, eq, gte, isNotNull, lt, ne, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNotNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusSession, task } from "@/lib/db/schema";
@@ -128,4 +128,72 @@ export async function getHeatmap(userId: string) {
     tasks: days.reduce((sum, day) => sum + day.tasks, 0),
     mostActive: busiest ? weekdayNames[byWeekday.indexOf(busiest)] : null,
   };
+}
+
+// Where a range starts: whole days back from today, or the first of the month eleven months back for a year.
+function rangeStart(today: string, range: Range) {
+  if (range !== "year") return addDays(today, 1 - ranges[range]);
+  const [year, month] = today.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 12, 1)).toISOString().slice(0, 10);
+}
+
+// Tasks created and finished per day, or per month over a year.
+export async function getDailyOverview(userId: string, range: Range) {
+  const timeZone = await getTimeZone(userId);
+  const today = utcToZoned(new Date(), timeZone).date;
+  const from = rangeStart(today, range);
+  const start = zonedToUtc(from, null, timeZone);
+  const format = range === "year" ? "YYYY-MM" : "YYYY-MM-DD";
+  const bucket = (column: typeof task.createdAt | typeof task.completedAt) => sql<string>`to_char(${column} at time zone ${timeZone}, ${format})`;
+
+  const [created, completed] = await Promise.all([
+    db
+      .select({ key: bucket(task.createdAt), total: count() })
+      .from(task)
+      .where(and(eq(task.userId, userId), gte(task.createdAt, start)))
+      .groupBy(sql`1`),
+    db
+      .select({ key: bucket(task.completedAt), total: count() })
+      .from(task)
+      .where(and(eq(task.userId, userId), gte(task.completedAt, start)))
+      .groupBy(sql`1`),
+  ]);
+  const totals = (rows: { key: string; total: number }[]) => new Map(rows.map((row) => [row.key, row.total]));
+  const [made, done] = [totals(created), totals(completed)];
+
+  const keys: string[] = [];
+  if (range === "year") for (let index = 0; index < 12; index++) keys.push(new Date(Date.UTC(+from.slice(0, 4), +from.slice(5, 7) - 1 + index, 1)).toISOString().slice(0, 7));
+  else for (let day = from; day <= today; day = addDays(day, 1)) keys.push(day);
+  return keys.map((key) => ({ key, created: made.get(key) ?? 0, completed: done.get(key) ?? 0 }));
+}
+
+// Focus hours per category over the range; a task counts toward its first category by name.
+export async function focusByCategory(userId: string, range: Range) {
+  const timeZone = await getTimeZone(userId);
+  const start = zonedToUtc(rangeStart(utcToZoned(new Date(), timeZone).date, range), null, timeZone);
+  const first = (column: "name" | "color") =>
+    sql.raw(`(select c.${column} from task_category tc join category c on c.id = tc.category_id where tc.task_id = "task"."id" order by c.name limit 1)`);
+
+  const rows = await db
+    .select({ name: sql<string | null>`${first("name")}`, color: sql<string | null>`${first("color")}`, seconds: sql<number>`sum(${focusSession.seconds})::int` })
+    .from(focusSession)
+    .leftJoin(task, eq(focusSession.taskId, task.id))
+    .where(and(eq(focusSession.userId, userId), eq(focusSession.mode, "focus"), gte(focusSession.endedAt, start)))
+    .groupBy(sql`1`, sql`2`)
+    .orderBy(sql`3 desc`);
+  return rows.map((row) => ({ name: row.name ?? "Uncategorized", color: row.color, seconds: row.seconds }));
+}
+
+export async function recentlyCompleted(userId: string, limit = 5) {
+  return db
+    .select({
+      id: task.id,
+      title: task.title,
+      completedAt: task.completedAt,
+      category: sql<string | null>`(select c.name from task_category tc join category c on c.id = tc.category_id where tc.task_id = "task"."id" order by c.name limit 1)`,
+    })
+    .from(task)
+    .where(and(eq(task.userId, userId), isNotNull(task.completedAt)))
+    .orderBy(desc(task.completedAt))
+    .limit(limit);
 }
