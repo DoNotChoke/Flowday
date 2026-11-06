@@ -1,11 +1,13 @@
+import { randomUUID } from "node:crypto";
 import { inArray } from "drizzle-orm";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { db } from "@/lib/db";
-import { project, task, user } from "@/lib/db/schema";
+import { focusSession, project, task, user } from "@/lib/db/schema";
+import { utcToZoned } from "@/lib/datetime";
 import { projectKey } from "@/lib/projects";
 import { NotFoundError, ValidationError } from "./errors";
-import { archiveProject, createProject, getProject, getProjectOverview, listArchivedProjects, listProjects, restoreProject, updateProject } from "./projects";
-import { createTask, listTasks } from "./tasks";
+import { archiveProject, createProject, getProject, getProjectOverview, getProjectTime, listArchivedProjects, listProjects, restoreProject, updateProject } from "./projects";
+import { createTask, listTasks, updateTask } from "./tasks";
 
 const alice = "projects-test-alice";
 const bob = "projects-test-bob";
@@ -222,4 +224,46 @@ test("the archived list holds only the owner's archived projects", async () => {
   expect(await listArchivedProjects(bob)).toEqual([]);
   await restoreProject(alice, id);
   expect((await listArchivedProjects(alice)).map((row) => row.id)).not.toContain(id);
+});
+
+const blank = { ...base, withStarterTasks: false };
+const dayIn = (offset: number) => utcToZoned(new Date(Date.now() + offset * 86_400_000), "Asia/Ho_Chi_Minh").date;
+
+test("time logged counts focus on the project's tasks against their estimates, canceled tasks aside", async () => {
+  const sprint = await createProject(alice, { ...blank, name: "Timed", budgetHours: 10 });
+  const first = await createTask(alice, { title: "With estimate", projectId: sprint.id, estimateMin: 120 });
+  await createTask(alice, { title: "No estimate", projectId: sprint.id });
+  const dropped = await createTask(alice, { title: "Dropped", projectId: sprint.id, estimateMin: 600 });
+  await updateTask(alice, dropped.id, { status: "canceled" });
+  const now = Date.now();
+  await db.insert(focusSession).values([
+    { id: randomUUID(), userId: alice, taskId: first.id, mode: "focus", startedAt: new Date(now - 3_600_000), endedAt: new Date(now - 1_800_000), seconds: 1800, completed: true },
+    { id: randomUUID(), userId: alice, taskId: first.id, mode: "short", startedAt: new Date(now - 600_000), endedAt: new Date(now - 300_000), seconds: 300, completed: true },
+  ]);
+
+  expect(await getProjectTime(alice, sprint.id)).toMatchObject({ loggedSeconds: 1800, estimateMin: 120, budgetHours: 10, noEstimate: 1, ideal: null });
+});
+
+test("without dates the burndown starts the day the first task was added and has no ideal line", async () => {
+  const loose = await createProject(alice, { ...blank, name: "Loose" });
+  expect((await getProjectTime(alice, loose.id))!.points).toEqual([]);
+
+  await createTask(alice, { title: "One", projectId: loose.id, estimateMin: 90 });
+  const time = await getProjectTime(alice, loose.id);
+  expect(time!.points).toEqual([{ day: dayIn(0), remaining: 1.5 }]);
+  expect(time!.ideal).toBeNull();
+});
+
+test("with dates the burndown runs from the start to the target, with the ideal line, and stops at today", async () => {
+  const dated = await createProject(alice, { ...blank, name: "Dated", startDate: dayIn(-2), targetDate: dayIn(3) });
+  await createTask(alice, { title: "One", projectId: dated.id, estimateMin: 60 });
+
+  const time = await getProjectTime(alice, dated.id);
+  expect(time!.points.map((point) => point.remaining)).toEqual([0, 0, 1, null, null, null]);
+  expect(time!.ideal).toEqual({ from: dayIn(-2), to: dayIn(3), hours: 1 });
+});
+
+test("another user's project has no time", async () => {
+  const mine = await createProject(alice, { ...blank, name: "Mine" });
+  expect(await getProjectTime(bob, mine.id)).toBeNull();
 });

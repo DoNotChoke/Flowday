@@ -337,3 +337,12 @@ test.describe("milestones", () => {
     await expect(dialog(page).getByRole("alert")).toContainText("Enter a milestone name.");
   });
 });
+
+test("time logged and the burndown come from the project's estimates", async ({ page }) => {
+  await expect(summary(page)).toContainText(/Time logged vs estimate\s*0h \/ \d+(\.\d)?h/);
+  await expect(summary(page)).toContainText("No budget set");
+
+  const burndown = page.getByRole("region", { name: "Burndown" });
+  await expect(burndown.getByRole("img")).toHaveAccessibleName(/estimated hours left\.$/);
+  await expectNoHorizontalScroll(page);
+});

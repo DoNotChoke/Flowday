@@ -1,8 +1,9 @@
-import { and, count, eq, isNotNull, isNull, like, asc } from "drizzle-orm";
+import { and, count, eq, isNotNull, isNull, like, asc, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { burndown } from "@/lib/burndown";
 import { utcToZoned } from "@/lib/datetime";
-import { activity, project, task } from "@/lib/db/schema";
+import { activity, focusSession, project, task } from "@/lib/db/schema";
 import { projectColors, projectIcons, projectKey, projectTemplates } from "@/lib/projects";
 import { NotFoundError, parseInput } from "./errors";
 import { endOfColumn, getTimeZone, POSITION_GAP } from "./tasks";
@@ -150,4 +151,39 @@ export function listProjects(userId: string) {
     .where(and(eq(project.userId, userId), isNull(project.archivedAt)))
     .groupBy(project.id)
     .orderBy(asc(project.createdAt));
+}
+
+// Focus time against estimates, and the burndown, for one project. Canceled tasks are left out of both.
+export async function getProjectTime(userId: string, id: string) {
+  const row = await getProject(userId, id);
+  if (!row) return null;
+
+  const [timeZone, tasks, [focus]] = await Promise.all([
+    getTimeZone(userId),
+    db
+      .select({ estimateMin: task.estimateMin, createdAt: task.createdAt, completedAt: task.completedAt })
+      .from(task)
+      .where(and(eq(task.projectId, id), eq(task.userId, userId), ne(task.status, "canceled"))),
+    db
+      .select({ seconds: sql<number>`coalesce(sum(${focusSession.seconds}), 0)::int` })
+      .from(focusSession)
+      .innerJoin(task, eq(focusSession.taskId, task.id))
+      .where(and(eq(task.projectId, id), eq(focusSession.userId, userId), eq(focusSession.mode, "focus"))),
+  ]);
+  const dayOf = (instant: Date) => utcToZoned(instant, timeZone).date;
+  const today = dayOf(new Date());
+  const shaped = tasks.map((entry) => ({ estimateMin: entry.estimateMin, created: dayOf(entry.createdAt), completed: entry.completedAt && dayOf(entry.completedAt) }));
+  const estimateMin = shaped.reduce((sum, entry) => sum + (entry.estimateMin ?? 0), 0);
+  // Without a start date the line begins the day the first task was added.
+  const from = row.startDate ?? shaped.map((entry) => entry.created).sort()[0];
+  const to = row.targetDate && row.targetDate > today ? row.targetDate : today;
+
+  return {
+    loggedSeconds: focus.seconds,
+    estimateMin,
+    budgetHours: row.budgetHours,
+    noEstimate: shaped.filter((entry) => !entry.estimateMin).length,
+    points: from ? burndown(shaped, from, to, today) : [],
+    ideal: row.startDate && row.targetDate ? { from: row.startDate, to: row.targetDate, hours: estimateMin / 60 } : null,
+  };
 }

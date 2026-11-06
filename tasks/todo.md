@@ -148,13 +148,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang project thêm KPI "Time logged vs estimate" (giờ Focus của task trong project / tổng estimate), dòng Budget ("Budget 80h · on track" hoặc "over"), và biểu đồ Burndown (SVG tự vẽ): giờ estimate còn lại theo ngày và đường Ideal từ `start_date` tới `target_date`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Số liệu khớp DB; task đã hủy không tính vào estimate còn lại.
-- [ ] Số task không có estimate được ghi rõ dưới biểu đồ.
-- [ ] Project chưa có ngày thì ẩn đường Ideal; chưa có task thì hiện trạng thái rỗng.
+- [x] Số liệu khớp DB; task đã hủy không tính vào estimate còn lại.
+- [x] Số task không có estimate được ghi rõ dưới biểu đồ.
+- [x] Project chưa có ngày thì ẩn đường Ideal; chưa có task thì hiện trạng thái rỗng.
 
 **Kiểm chứng:**
-- [ ] Vitest bảng: task không có estimate, task thêm giữa chừng, task hủy, project chưa có ngày, user khác.
-- [ ] E2E xem KPI và Burndown trên desktop và mobile.
+- [x] Vitest bảng: task không có estimate, task thêm giữa chừng, task hủy, project chưa có ngày, user khác.
+- [x] E2E xem KPI và Burndown trên desktop và mobile.
 
 **Phụ thuộc:** Không (chỉ cần `focus_session` đã có)
 

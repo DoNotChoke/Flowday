@@ -6,8 +6,9 @@ import { columns } from "@/components/app/board/columns";
 import { requireUserId } from "@/lib/auth/session";
 import { getBoard } from "@/services/board";
 import { listMilestones } from "@/services/milestones";
-import { getProjectOverview } from "@/services/projects";
+import { getProjectOverview, getProjectTime } from "@/services/projects";
 import { RestoreButton } from "./ArchiveControls";
+import { Burndown } from "./Burndown";
 import { Milestones } from "./Milestones";
 import { ProjectTasks } from "./ProjectTasks";
 
@@ -27,10 +28,13 @@ function Kpi({ label, value, tone = "bg-white", children }: { label: string; val
   );
 }
 
+const hours = (value: number) => `${Math.round(value * 10) / 10}h`;
+
 async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
   const [userId, { id }, query] = await Promise.all([requireUserId(), params, searchParams]);
-  const [project, board, milestones] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id }), listMilestones(userId, id)]);
-  if (!project) notFound();
+  const [project, board, milestones, time] = await Promise.all([getProjectOverview(userId, id), getBoard(userId, { projectId: id }), listMilestones(userId, id), getProjectTime(userId, id)]);
+  if (!project || !time) notFound();
+  const logged = time.loggedSeconds / 3600;
   const status = columns.find((column) => column.status === query.status)?.status;
   const view = views.find((option) => option.value === query.view)?.value ?? "overview";
 
@@ -95,10 +99,15 @@ async function Overview({ params, searchParams }: PageProps<"/projects/[id]">) {
             <Kpi label="Tasks" value={`${project.done} / ${project.total}`}>
               <span className="text-xs text-[#3d3d3d]">{project.total ? `${project.open} open · ${project.overdue} overdue` : "No tasks yet"}</span>
             </Kpi>
+            <Kpi label="Time logged vs estimate" value={`${hours(logged)} / ${hours(time.estimateMin / 60)}`} tone="bg-teal-tint">
+              <span className="text-xs">{time.budgetHours ? `Budget ${time.budgetHours}h · ${logged <= time.budgetHours ? "on track" : "over budget"}` : "No budget set"}</span>
+            </Kpi>
             <Kpi label="Target date" value={project.targetLabel ?? "Not set"} tone="bg-sun-tint">
               {project.daysLabel && <span className="text-xs">{project.daysLabel}</span>}
             </Kpi>
           </section>
+
+          <Burndown points={time.points} ideal={time.ideal} noEstimate={time.noEstimate} />
 
           <Milestones projectId={project.id} milestones={milestones} />
 

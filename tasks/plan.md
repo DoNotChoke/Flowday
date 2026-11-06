@@ -87,7 +87,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm C: Project
 
-- [ ] T7.7 Thời gian và Burndown của project (M)
+- [x] T7.7 Thời gian và Burndown của project (M)
 
 ### Checkpoint hoàn thành Phase 7
 
