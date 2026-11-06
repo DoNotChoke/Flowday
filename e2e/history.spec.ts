@@ -103,10 +103,23 @@ test("the heatmap shows a day's count, by mouse, keyboard or touch", async ({ pa
     await year.getByRole("button", { name: `${label(addDays(today, -1))}: 1 task, 0 focus sessions` }).tap();
     await expect(details).toHaveText(`${label(addDays(today, -1))}: 1 task, 0 focus sessions`);
   } else {
+    // The whole year fits a wide screen, weekday labels included.
+    await expect(year.getByText("Mon", { exact: true })).toBeInViewport();
+    const overflow = await year.getByRole("group").evaluate((grid) => grid.parentElement!.scrollWidth - grid.parentElement!.clientWidth);
+    expect(overflow, "the heatmap scrolls on a wide screen").toBeLessThanOrEqual(0);
+
     // Left is a week back in a grid of weeks.
     await todayCell.focus();
     await page.keyboard.press("ArrowLeft");
     await expect(details).toHaveText(`${label(addDays(today, -7))}: 0 tasks, 0 focus sessions`);
+
+    // Leaving the grid leaves no day picked.
+    await todayCell.blur();
+    await todayCell.hover();
+    await expect(year.getByRole("button", { pressed: true })).toHaveCount(1);
+    await page.getByRole("heading", { name: "Work history" }).hover();
+    await expect(year.getByRole("button", { pressed: true })).toHaveCount(0);
+    await expect(details).toHaveText(`${label(today)}: 2 tasks, 0 focus sessions`);
   }
   await expectNoHorizontalScroll(page);
 });
