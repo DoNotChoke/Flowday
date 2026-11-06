@@ -72,11 +72,11 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T7.1 Service thống kê (M)
 - [x] T7.2 Streak và KPI (M)
-- [ ] T7.3 Heatmap (S)
+- [x] T7.3 Heatmap (S)
 
 ### Checkpoint A
 
-- [ ] Streak cùng một số ở `/history`, Sidebar và lịch
+- [x] Streak cùng một số ở `/history`, Sidebar và lịch
 - [ ] Bạn đã xem `/history` với dữ liệu thật của mình
 
 ### Nhóm B: Phần còn lại của History

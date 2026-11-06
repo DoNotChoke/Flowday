@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusSession, task, user } from "@/lib/db/schema";
-import { activityDays, getStreak, getSummary } from "./stats";
+import { activityDays, getHeatmap, getStreak, getSummary } from "./stats";
 import { createTask, updateTask } from "./tasks";
 
 const alice = "stats-test-alice";
@@ -132,4 +132,25 @@ test("the completion rate counts finished tasks among those created in the range
 
 test("with nothing created the rate is empty rather than zero", async () => {
   expect(await getSummary(alice, "month")).toMatchObject({ completionRate: null, completionChange: null });
+});
+
+test("the heatmap runs 53 weeks from a Monday to today, with totals and the busiest weekday", async () => {
+  const zone = "Asia/Ho_Chi_Minh";
+  const today = todayIn(zone);
+  await finishedAt(alice, zonedToUtc(today, "09:00", zone));
+  await focusAt(alice, zonedToUtc(addDays(today, -7), "09:00", zone));
+  await finishedAt(alice, zonedToUtc(addDays(today, -1), "09:00", zone));
+  await finishedAt(alice, zonedToUtc(addDays(today, -400), "09:00", zone)); // before the first week
+
+  const heatmap = await getHeatmap(alice);
+  expect(new Date(heatmap.days[0].day).getUTCDay()).toBe(1);
+  expect(heatmap.days.at(-1)).toEqual({ day: today, tasks: 1, sessions: 0 });
+  expect(heatmap.days.length).toBeGreaterThan(52 * 7);
+  expect(heatmap.days.length).toBeLessThanOrEqual(53 * 7);
+  expect(heatmap.tasks).toBe(2);
+  expect(heatmap.mostActive).toBe(new Intl.DateTimeFormat("en-US", { weekday: "long", timeZone: "UTC" }).format(Date.parse(today)));
+});
+
+test("an empty year has no busiest day", async () => {
+  expect(await getHeatmap(alice)).toMatchObject({ tasks: 0, mostActive: null });
 });

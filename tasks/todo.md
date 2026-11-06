@@ -55,12 +55,12 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** 53 tuần tới hôm nay, 5 mức màu `heat-0` tới `heat-4`, nhãn tháng, nhãn thứ. Rê chuột hoặc chạm vào ô để xem ngày và số task, số phiên Focus. Tiêu đề "n tasks completed in the last year", dòng "Longest streak · Most active: thứ".
 
 **Tiêu chí nghiệm thu:**
-- [ ] Số trong ô khớp service; ô hôm nay có viền.
-- [ ] Ở 390 px lưới cuộn ngang bên trong khối của nó, trang không cuộn ngang; chạm vào ô hiện chi tiết.
-- [ ] Trình đọc màn hình đọc được tổng và chi tiết từng ngày.
+- [x] Số trong ô khớp service; ô hôm nay có viền.
+- [x] Ở 390 px lưới cuộn ngang bên trong khối của nó, trang không cuộn ngang; chạm vào ô hiện chi tiết.
+- [x] Trình đọc màn hình đọc được tổng và chi tiết từng ngày.
 
 **Kiểm chứng:**
-- [ ] E2E: ô của một ngày có task xong hiện đúng số; chạm trên mobile hiện chi tiết.
+- [x] E2E: ô của một ngày có task xong hiện đúng số; chạm trên mobile hiện chi tiết.
 
 **Phụ thuộc:** T7.1
 
@@ -72,7 +72,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [ ] Streak cùng một số ở `/history`, Sidebar và lịch.
+- [x] Streak cùng một số ở `/history`, Sidebar và lịch.
 - [ ] CI xanh.
 - [ ] Bạn đã xem `/history` với dữ liệu thật của mình.
 

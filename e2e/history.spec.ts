@@ -86,3 +86,27 @@ test("history fits a small phone", async ({ page, isMobile }, testInfo) => {
   await expect(page.getByRole("region", { name: "Current streak" })).toContainText("2 days");
   await expectNoHorizontalScroll(page);
 });
+
+test("the heatmap shows a day's count, by mouse, keyboard or touch", async ({ page, isMobile }, testInfo) => {
+  const today = await finishOn(testInfo, [0, 0, 1]);
+  await page.goto("/history");
+  const year = page.getByRole("region", { name: "Activity over the last year" });
+  await expect(year.getByRole("heading")).toHaveText("3 tasks completed in the last year");
+
+  const label = (day: string) => new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).format(Date.parse(day));
+  const todayCell = year.getByRole("button", { name: `${label(today)}: 2 tasks, 0 focus sessions` });
+  await expect(todayCell).toBeAttached();
+  await expect(year).toContainText(`${label(today)}: 2 tasks, 0 focus sessions`);
+
+  const details = year.locator("[aria-live]");
+  if (isMobile) {
+    await year.getByRole("button", { name: `${label(addDays(today, -1))}: 1 task, 0 focus sessions` }).tap();
+    await expect(details).toHaveText(`${label(addDays(today, -1))}: 1 task, 0 focus sessions`);
+  } else {
+    // Left is a week back in a grid of weeks.
+    await todayCell.focus();
+    await page.keyboard.press("ArrowLeft");
+    await expect(details).toHaveText(`${label(addDays(today, -7))}: 0 tasks, 0 focus sessions`);
+  }
+  await expectNoHorizontalScroll(page);
+});

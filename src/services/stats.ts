@@ -101,3 +101,31 @@ export async function getSummary(userId: string, range: Range) {
     focusPerDay: Math.round(focus.seconds / length),
   };
 }
+
+const weekdayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+export const HEATMAP_WEEKS = 53;
+
+// Every day of the last 53 weeks, from a Monday to today, with what was done on it.
+export async function getHeatmap(userId: string) {
+  const timeZone = await getTimeZone(userId);
+  const today = utcToZoned(new Date(), timeZone).date;
+  const monday = addDays(today, -((new Date(today).getUTCDay() + 6) % 7));
+  const from = addDays(monday, -7 * (HEATMAP_WEEKS - 1));
+  const activity = await activityDays(userId, timeZone, from, today);
+
+  const days = [];
+  const byWeekday = Array(7).fill(0);
+  for (let day = from, index = 0; day <= today; day = addDays(day, 1), index++) {
+    const { tasks, sessions } = activity.get(day) ?? { tasks: 0, sessions: 0 };
+    days.push({ day, tasks, sessions });
+    byWeekday[index % 7] += tasks + sessions;
+  }
+  const busiest = Math.max(...byWeekday);
+
+  return {
+    today,
+    days,
+    tasks: days.reduce((sum, day) => sum + day.tasks, 0),
+    mostActive: busiest ? weekdayNames[byWeekday.indexOf(busiest)] : null,
+  };
+}
