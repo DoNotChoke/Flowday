@@ -231,3 +231,32 @@ export async function completedInRange(userId: string, range: Range) {
     };
   });
 }
+
+type BadgeFacts = { longestStreak: number; completed: number; earlyBird: boolean; open: number };
+
+// The six badges and whether each is earned. Worked out on each visit, nothing stored.
+// shortcut: badges are not stored, so Inbox zero locks again once a task is open; add an achievement table to keep them.
+export function badges({ longestStreak, completed, earlyBird, open }: BadgeFacts) {
+  return [
+    { key: "streak-7", big: "7", label: "7-day streak", tone: "bg-coral", earned: longestStreak >= 7 },
+    { key: "tasks-100", big: "100", label: "100 tasks", tone: "bg-teal", earned: completed >= 100 },
+    { key: "early-bird", big: "5AM", label: "Early bird", tone: "bg-blue", earned: earlyBird },
+    { key: "streak-30", big: "30", label: "30-day streak", tone: "bg-coral", earned: longestStreak >= 30 },
+    { key: "tasks-500", big: "500", label: "500 tasks", tone: "bg-teal", earned: completed >= 500 },
+    { key: "inbox-zero", big: "0", label: "Inbox zero", tone: "bg-sun", earned: completed > 0 && open === 0 },
+  ];
+}
+
+export async function getBadges(userId: string, longestStreak: number) {
+  const timeZone = await getTimeZone(userId);
+  const [row] = await db
+    .select({
+      completed: sql<number>`count(*) filter (where ${task.completedAt} is not null)::int`,
+      open: sql<number>`count(*) filter (where ${task.status} in ('ongoing', 'in_process'))::int`,
+      // Before 6 in the morning, in the owner's zone.
+      earlyBird: sql<boolean>`coalesce(bool_or(extract(hour from ${task.completedAt} at time zone ${timeZone}) < 6), false)`,
+    })
+    .from(task)
+    .where(eq(task.userId, userId));
+  return badges({ longestStreak, ...row });
+}

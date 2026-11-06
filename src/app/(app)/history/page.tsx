@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { estimateLabel } from "@/lib/progress";
 import { relativeTime } from "@/lib/datetime";
-import { focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, ranges, recentlyCompleted, type Range } from "@/services/stats";
+import { focusByCategory, getBadges, getDailyOverview, getHeatmap, getStreak, getSummary, ranges, recentlyCompleted, type Range } from "@/services/stats";
 import { getTimeZone } from "@/services/tasks";
 import { DailyChart } from "./DailyChart";
 import { Heatmap } from "./Heatmap";
@@ -55,6 +55,7 @@ async function Content({ searchParams }: PageProps<"/history">) {
     recentlyCompleted(userId),
     getTimeZone(userId),
   ]);
+  const achievements = await getBadges(userId, streak.longest);
   const most = categories[0]?.seconds ?? 0;
   const now = new Date();
   const perDay = Math.round(summary.focusPerDay / 60);
@@ -132,31 +133,46 @@ async function Content({ searchParams }: PageProps<"/history">) {
         </section>
       </div>
 
-      <section aria-label="Recently completed" className="flex min-w-0 flex-col gap-3 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
-        <h2 className="text-lg font-semibold">Recently completed</h2>
-        {recent.length ? (
-          <ul className="flex flex-col divide-y divide-panel">
-            {recent.map((row) => (
-              <li key={row.id}>
-                <Link href={`/tasks/${row.id}`} className="flex min-h-12 items-center gap-3 py-2">
-                  <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-lg border-hard bg-teal-tint">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M5 12l5 5L20 7" />
-                    </svg>
-                  </span>
-                  <span className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate font-content text-sm font-semibold">{row.title}</span>
-                    {row.category && <span className="truncate font-content text-xs text-muted">{row.category}</span>}
-                  </span>
-                  <span className="flex-none text-xs text-muted">{relativeTime(row.completedAt!, now, timeZone)}</span>
-                </Link>
+      <div className="grid grid-cols-1 gap-4.5 lg:grid-cols-[3fr_2fr]">
+        <section aria-label="Recently completed" className="flex min-w-0 flex-col gap-3 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+          <h2 className="text-lg font-semibold">Recently completed</h2>
+          {recent.length ? (
+            <ul className="flex flex-col divide-y divide-panel">
+              {recent.map((row) => (
+                <li key={row.id}>
+                  <Link href={`/tasks/${row.id}`} className="flex min-h-12 items-center gap-3 py-2">
+                    <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-lg border-hard bg-teal-tint">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12l5 5L20 7" />
+                      </svg>
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="truncate font-content text-sm font-semibold">{row.title}</span>
+                      {row.category && <span className="truncate font-content text-xs text-muted">{row.category}</span>}
+                    </span>
+                    <span className="flex-none text-xs text-muted">{relativeTime(row.completedAt!, now, timeZone)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[13px] text-muted">Finished tasks show up here.</p>
+          )}
+        </section>
+
+        <section aria-label="Achievements" className="flex min-w-0 flex-col gap-3.5 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
+          <h2 className="text-lg font-semibold">Achievements</h2>
+          <ul className="grid grid-cols-3 gap-3">
+            {achievements.map((badge) => (
+              <li key={badge.key} className={`flex flex-col items-center gap-1.5 rounded-control border-hard px-2 py-3 text-center ${badge.earned ? badge.tone : "bg-white opacity-45"}`}>
+                <span className="text-2xl font-bold tracking-[-0.5px]">{badge.big}</span>
+                <span className="text-xs font-medium">{badge.label}</span>
+                <span className="sr-only">{badge.earned ? "Earned" : "Not earned yet"}</span>
               </li>
             ))}
           </ul>
-        ) : (
-          <p className="text-[13px] text-muted">Finished tasks show up here.</p>
-        )}
-      </section>
+        </section>
+      </div>
     </>
   );
 }

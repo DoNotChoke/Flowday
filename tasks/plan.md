@@ -83,7 +83,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] T7.4 Biểu đồ và danh sách (M)
 - [x] T7.5 Khoảng thời gian và CSV (S)
-- [ ] T7.6 Achievements (S)
+- [x] T7.6 Achievements (S)
 
 ### Nhóm C: Project
 

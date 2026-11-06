@@ -183,3 +183,12 @@ test("the CSV needs a signed-in user", async ({ page }) => {
   expect(response.status()).toBeGreaterThanOrEqual(300);
   expect(await response.text()).not.toContain("Completed,Code");
 });
+
+test("achievements show which badges are earned", async ({ page }, testInfo) => {
+  await finishOn(testInfo, [0]);
+  await page.goto("/history");
+  const badges = page.getByRole("region", { name: "Achievements" }).getByRole("listitem");
+  await expect(badges).toHaveCount(6);
+  await expect(badges.filter({ hasText: "Inbox zero" })).toContainText("Earned");
+  await expect(badges.filter({ hasText: "7-day streak" })).toContainText("Not earned yet");
+});

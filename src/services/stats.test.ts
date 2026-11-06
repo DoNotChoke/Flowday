@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusSession, task, user } from "@/lib/db/schema";
-import { activityDays, completedInRange, focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "./stats";
+import { activityDays, badges, completedInRange, getBadges, focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "./stats";
 import { createCategory } from "./categories";
 import { createTask, updateTask } from "./tasks";
 
@@ -218,4 +218,33 @@ test("the export lists the tasks finished in the range with their project, categ
   expect(await completedInRange(alice, "week")).toEqual([
     { completed: `${today} 08:05`, code: "", title: "Viết, rồi sửa", project: "", categories: "Alpha export; Beta export", estimateMin: 90, focusMin: 26 },
   ]);
+});
+
+const earned = (facts: Parameters<typeof badges>[0]) => badges(facts).filter((badge) => badge.earned).map((badge) => badge.key);
+const none = { longestStreak: 0, completed: 0, earlyBird: false, open: 0 };
+
+test.each([
+  ["nothing done", none, []],
+  ["a 6-day streak", { ...none, longestStreak: 6 }, []],
+  ["a 7-day streak", { ...none, longestStreak: 7 }, ["streak-7"]],
+  ["a 29-day streak", { ...none, longestStreak: 29 }, ["streak-7"]],
+  ["a 30-day streak", { ...none, longestStreak: 30 }, ["streak-7", "streak-30"]],
+  ["99 tasks, one still open", { ...none, completed: 99, open: 1 }, []],
+  ["100 tasks, one still open", { ...none, completed: 100, open: 1 }, ["tasks-100"]],
+  ["499 tasks, one still open", { ...none, completed: 499, open: 1 }, ["tasks-100"]],
+  ["500 tasks, one still open", { ...none, completed: 500, open: 1 }, ["tasks-100", "tasks-500"]],
+  ["an early finish", { ...none, earlyBird: true, open: 1 }, ["early-bird"]],
+  ["one task done and none open", { ...none, completed: 1 }, ["inbox-zero"]],
+])("%s earns %j", (_, facts, keys) => {
+  expect(earned(facts)).toEqual(keys);
+});
+
+test("an early bird finishes before 6 in the owner's zone, and open tasks block inbox zero", async () => {
+  const zone = "Asia/Ho_Chi_Minh";
+  await finishedAt(alice, zonedToUtc("2026-11-02", "06:00", zone));
+  expect((await getBadges(alice, 0)).filter((badge) => badge.earned).map((badge) => badge.key)).toEqual(["inbox-zero"]);
+
+  await finishedAt(alice, zonedToUtc("2026-11-03", "05:59", zone));
+  await createTask(alice, { title: "Open" });
+  expect((await getBadges(alice, 0)).filter((badge) => badge.earned).map((badge) => badge.key)).toEqual(["early-bird"]);
 });

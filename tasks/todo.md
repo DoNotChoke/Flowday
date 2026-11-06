@@ -127,11 +127,11 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** 6 huy hiệu: 7-day streak, 30-day streak (theo streak dài nhất), 100 tasks, 500 tasks, Early bird (xong task trước 6 giờ sáng theo múi giờ người dùng), Inbox zero (đã xong ít nhất 1 task và hiện không còn task mở). Huy hiệu chưa mở hiện mờ.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Mỗi huy hiệu mở đúng ngưỡng.
-- [ ] Trình đọc màn hình đọc được huy hiệu nào đã mở, nào chưa.
+- [x] Mỗi huy hiệu mở đúng ngưỡng.
+- [x] Trình đọc màn hình đọc được huy hiệu nào đã mở, nào chưa.
 
 **Kiểm chứng:**
-- [ ] Vitest bảng cho điều kiện từng huy hiệu, có ngay dưới và ngay trên ngưỡng.
+- [x] Vitest bảng cho điều kiện từng huy hiệu, có ngay dưới và ngay trên ngưỡng.
 
 **Phụ thuộc:** T7.2
 
