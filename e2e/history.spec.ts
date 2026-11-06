@@ -98,6 +98,16 @@ test("the heatmap shows a day's count, by mouse, keyboard or touch", async ({ pa
   await expect(todayCell).toBeAttached();
   await expect(year).toContainText(`${label(today)}: 2 tasks, 0 focus sessions`);
 
+  // Today's outline, drawn outside the square, stays inside the box that scrolls and clips.
+  const room = () =>
+    todayCell.evaluate((cell) => {
+      const box = cell.getBoundingClientRect();
+      const clip = cell.closest("[class*=overflow-x-auto]")!.getBoundingClientRect();
+      return Math.min(clip.right - box.right, clip.bottom - box.bottom, box.top - clip.top);
+    });
+  // Phones scroll to the latest weeks once the page has loaded.
+  await expect.poll(room, { message: "the outline of today is cut off" }).toBeGreaterThanOrEqual(2);
+
   const details = year.locator("[aria-live]");
   if (isMobile) {
     await year.getByRole("button", { name: `${label(addDays(today, -1))}: 1 task, 0 focus sessions` }).tap();

@@ -49,7 +49,8 @@ export function Heatmap({ days }: { days: Day[] }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div ref={scroller} className="overflow-x-auto pb-1">
+      {/* The padding keeps the outline of today and the ring of a picked day inside the scroll box, which clips anything past its edge. */}
+      <div ref={scroller} className="-m-1 overflow-x-auto p-1">
         {/* Wide screens share the width among the weeks; smaller ones keep 16px squares and scroll under sticky weekday labels. */}
         <div
           role="group"
