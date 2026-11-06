@@ -27,6 +27,10 @@ export function utcToZoned(instant: Date, timeZone: string) {
   return { date, time: time.slice(0, 5) };
 }
 
+export function addDays(date: string, days: number) {
+  return new Date(Date.parse(date) + days * 86_400_000).toISOString().slice(0, 10);
+}
+
 export function relativeTime(instant: Date, now: Date, timeZone: string) {
   const minutes = Math.floor((now.getTime() - instant.getTime()) / 60_000);
   if (minutes < 1) return "Just now";

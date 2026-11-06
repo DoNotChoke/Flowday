@@ -70,7 +70,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Nhóm A: Streak
 
-- [ ] T7.1 Service thống kê (M)
+- [x] T7.1 Service thống kê (M)
 - [ ] T7.2 Streak và KPI (M)
 - [ ] T7.3 Heatmap (S)
 

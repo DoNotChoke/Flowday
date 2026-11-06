@@ -1,9 +1,8 @@
 import { and, asc, count, eq, gte, inArray, lt, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { utcToZoned, zonedToUtc } from "@/lib/datetime";
+import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusMode, focusSession, task } from "@/lib/db/schema";
-import { addDays } from "./calendar";
 import { NotFoundError, parseInput } from "./errors";
 
 const MAX_SECONDS = 4 * 60 * 60;

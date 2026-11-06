@@ -4,8 +4,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { focusSession, task, user } from "@/lib/db/schema";
 import { ValidationError } from "./errors";
-import { utcToZoned, zonedToUtc } from "@/lib/datetime";
-import { addDays } from "./calendar";
+import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { countFocusToday, getFocusQueue, recordSession, trackedSeconds, type FocusSessionInput } from "./focus";
 import { createTask, deleteTask, updateTask } from "./tasks";
 

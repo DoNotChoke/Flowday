@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
-import { isDate, utcToZoned } from "@/lib/datetime";
-import { addDays, getCalendar, listUnscheduled, monthGrid, weekDays } from "@/services/calendar";
+import { addDays, isDate, utcToZoned } from "@/lib/datetime";
+import { getCalendar, listUnscheduled, monthGrid, weekDays } from "@/services/calendar";
 import { getTimeZone } from "@/services/tasks";
 import { Planner } from "./Planner";
 

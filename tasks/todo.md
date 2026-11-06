@@ -10,16 +10,16 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ### T7.1 Service thống kê
 
-**Mô tả:** `src/lib/streak.ts`: hàm thuần nhận các ngày có hoạt động và ngày hôm nay, trả streak hiện tại, dài nhất và ngày mất streak. `src/services/stats.ts`: `activityDays(userId, timeZone, from, to)` gom theo ngày trong SQL (task xong, phiên Focus hoàn thành, giây Focus); `getStreak(userId)`; `getSummary(userId, range)` cho completion rate (kèm khoảng trước) và focus hours. Đo truy vấn và thêm index `task (user_id, completed_at)` nếu cần.
+**Mô tả:** `src/lib/streak.ts`: hàm thuần nhận các ngày có hoạt động và ngày hôm nay, trả streak hiện tại, dài nhất và ngày mất streak. `src/services/stats.ts`: `activityDays(userId, timeZone, from, to)` gom theo ngày trong SQL (task xong, phiên Focus hoàn thành, giây Focus); `getStreak(userId)`; `getSummary(userId, range)` cho completion rate (kèm khoảng trước) và focus hours. Đo truy vấn và thêm index nếu cần: dời sang lúc đo với dữ liệu mẫu ở checkpoint cuối.
 
 **Tiêu chí nghiệm thu:**
-- [ ] Một ngày được tính khi có task xong hoặc phiên Focus hoàn thành, theo múi giờ người dùng.
-- [ ] Hôm nay chưa làm thì streak đếm tới hôm qua; trống cả hôm qua thì streak là 0 và có ngày mất streak.
-- [ ] Không đọc được dữ liệu của người khác.
+- [x] Một ngày được tính khi có task xong hoặc phiên Focus hoàn thành, theo múi giờ người dùng.
+- [x] Hôm nay chưa làm thì streak đếm tới hôm qua; trống cả hôm qua thì streak là 0 và có ngày mất streak.
+- [x] Không đọc được dữ liệu của người khác.
 
 **Kiểm chứng:**
-- [ ] Vitest bảng cho `streak.ts`: chuỗi đứt, hôm nay chưa làm, chuỗi qua cuối tháng và cuối năm, không có hoạt động.
-- [ ] Vitest cho `stats.ts`: task xong lúc 23:30 và 00:30 ở múi giờ dương và âm, ngày đổi giờ, đổi múi giờ người dùng, phiên Focus chưa hoàn thành không tính, user khác.
+- [x] Vitest bảng cho `streak.ts`: chuỗi đứt, hôm nay chưa làm, chuỗi qua cuối tháng và cuối năm, không có hoạt động.
+- [x] Vitest cho `stats.ts`: task xong lúc 23:30 và 00:30 ở múi giờ dương và âm, ngày đổi giờ, đổi múi giờ người dùng, phiên Focus chưa hoàn thành không tính, user khác.
 
 **Phụ thuộc:** Không
 

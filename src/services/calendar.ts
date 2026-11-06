@@ -1,11 +1,7 @@
 import { and, asc, eq, gte, inArray, isNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { utcToZoned, zonedToUtc } from "@/lib/datetime";
+import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { project, task } from "@/lib/db/schema";
-
-export function addDays(date: string, days: number) {
-  return new Date(Date.parse(date) + days * 86_400_000).toISOString().slice(0, 10);
-}
 
 // The days from `date`'s Monday onwards.
 function daysFromMonday(date: string, count: number) {
