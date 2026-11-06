@@ -106,13 +106,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Nhóm nút Week/Month/Year trên URL (`?range=`), áp dụng cho KPI, biểu đồ và Time by category. Nút Export CSV tải `GET /history/export?range=`: các task xong trong khoảng (ngày xong, mã, tên, project, category, estimate, phút Focus).
 
 **Tiêu chí nghiệm thu:**
-- [ ] Đổi khoảng thời gian thì số liệu đổi theo và tải lại vẫn giữ.
-- [ ] File mở đúng tiếng Việt trong Excel nhờ BOM UTF-8.
-- [ ] Ô bắt đầu bằng `= + - @` được vô hiệu hóa; người chưa đăng nhập bị chặn.
+- [x] Đổi khoảng thời gian thì số liệu đổi theo và tải lại vẫn giữ.
+- [x] File mở đúng tiếng Việt trong Excel nhờ BOM UTF-8.
+- [x] Ô bắt đầu bằng `= + - @` được vô hiệu hóa; người chưa đăng nhập bị chặn.
 
 **Kiểm chứng:**
-- [ ] Vitest cho hàm tạo CSV: BOM, dấu phẩy và dấu ngoặc kép trong tên, CSV injection.
-- [ ] E2E tải file và kiểm tra nội dung.
+- [x] Vitest cho hàm tạo CSV: BOM, dấu phẩy và dấu ngoặc kép trong tên, CSV injection.
+- [x] E2E tải file và kiểm tra nội dung.
 
 **Phụ thuộc:** T7.2
 

@@ -1,7 +1,7 @@
 import { and, count, desc, eq, gte, isNotNull, lt, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
-import { focusSession, task } from "@/lib/db/schema";
+import { focusSession, project, task } from "@/lib/db/schema";
 import { streaks } from "@/lib/streak";
 import { getTimeZone } from "./tasks";
 
@@ -196,4 +196,38 @@ export async function recentlyCompleted(userId: string, limit = 5) {
     .where(and(eq(task.userId, userId), isNotNull(task.completedAt)))
     .orderBy(desc(task.completedAt))
     .limit(limit);
+}
+
+// Every task finished in the range, oldest first, as the rows of the CSV export.
+export async function completedInRange(userId: string, range: Range) {
+  const timeZone = await getTimeZone(userId);
+  const start = zonedToUtc(rangeStart(utcToZoned(new Date(), timeZone).date, range), null, timeZone);
+  const rows = await db
+    .select({
+      completedAt: task.completedAt,
+      number: task.number,
+      projectKey: project.key,
+      title: task.title,
+      projectName: project.name,
+      categories: sql<string>`coalesce((select string_agg(c.name, '; ' order by c.name) from task_category tc join category c on c.id = tc.category_id where tc.task_id = ${task.id}), '')`,
+      estimateMin: task.estimateMin,
+      focusSeconds: sql<number>`(select coalesce(sum(f.seconds), 0)::int from focus_session f where f.task_id = ${task.id} and f.mode = 'focus')`,
+    })
+    .from(task)
+    .leftJoin(project, eq(task.projectId, project.id))
+    .where(and(eq(task.userId, userId), gte(task.completedAt, start)))
+    .orderBy(task.completedAt);
+
+  return rows.map((row) => {
+    const at = utcToZoned(row.completedAt!, timeZone);
+    return {
+      completed: `${at.date} ${at.time}`,
+      code: row.projectKey && row.number ? `${row.projectKey}-${row.number}` : "",
+      title: row.title,
+      project: row.projectName ?? "",
+      categories: row.categories,
+      estimateMin: row.estimateMin,
+      focusMin: Math.round(row.focusSeconds / 60),
+    };
+  });
 }

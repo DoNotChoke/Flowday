@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { expect, test, type TestInfo } from "@playwright/test";
 import { eq } from "drizzle-orm";
@@ -147,4 +148,38 @@ test("recently completed and time by category come from the tasks and focus sess
   await expect(recent.getByRole("link", { name: /Chương ba\s*Viết lách\s*Just now/ })).toBeVisible();
   await expect(page.getByRole("region", { name: "Time by category" })).toContainText(/Viết lách\s*1\.5h/);
   await expect(page.getByRole("region", { name: "Daily tasks overview" }).getByRole("img")).toHaveAccessibleName("Over the last 30 days: 1 task created, 1 completed.");
+});
+
+test("the range changes the numbers and stays after a reload", async ({ page }, testInfo) => {
+  await finishOn(testInfo, [0]);
+  await page.goto("/history");
+  const ranges = page.getByRole("group", { name: "Range" });
+  await expect(ranges.getByRole("link", { name: "Month" })).toHaveAttribute("aria-current", "true");
+
+  await ranges.getByRole("link", { name: "Week" }).click();
+  await expect(page).toHaveURL(/range=week/);
+  await expect(page.getByRole("region", { name: "Completion rate" })).toContainText("Of tasks created in the last 7 days");
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Daily tasks overview" }).getByRole("img")).toHaveAccessibleName(/^Over the last 7 days/);
+});
+
+test("the CSV holds the finished tasks and opens right in Excel", async ({ page }, testInfo) => {
+  const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.email, emailFor(testInfo)));
+  await createTask(owner.id, { title: "=Đọc, rồi viết", status: "completed", estimateMin: 45 });
+  await page.goto("/history?range=week");
+
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Export CSV" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("flowday-history-week.csv");
+  const text = readFileSync((await file.path())!, "utf8");
+  expect(text.startsWith("﻿Completed,Code,Title,Project,Categories,Estimate (min),Focus (min)\r\n")).toBe(true);
+  expect(text).toContain(`,"'=Đọc, rồi viết",,,45,0\r\n`);
+});
+
+test("the CSV needs a signed-in user", async ({ page }) => {
+  await page.context().clearCookies();
+  const response = await page.request.get("/history/export", { maxRedirects: 0 });
+  expect(response.status()).toBeGreaterThanOrEqual(300);
+  expect(await response.text()).not.toContain("Completed,Code");
 });

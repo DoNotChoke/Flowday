@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, expect, test } from "vitest";
 import { db } from "@/lib/db";
 import { addDays, utcToZoned, zonedToUtc } from "@/lib/datetime";
 import { focusSession, task, user } from "@/lib/db/schema";
-import { activityDays, focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "./stats";
+import { activityDays, completedInRange, focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "./stats";
 import { createCategory } from "./categories";
 import { createTask, updateTask } from "./tasks";
 
@@ -204,4 +204,18 @@ test("recently completed lists the latest finished tasks first, with their categ
     { title: "Done", category: null },
   ]);
   expect(rows[0].id).toBe(id);
+});
+
+test("the export lists the tasks finished in the range with their project, categories and focus time", async () => {
+  const zone = "Asia/Ho_Chi_Minh";
+  const today = todayIn(zone);
+  const [beta, alpha] = [await createCategory(alice, "Beta export"), await createCategory(alice, "Alpha export")];
+  const { id } = await createTask(alice, { title: "Viết, rồi sửa", status: "completed", estimateMin: 90, categoryIds: [beta.id, alpha.id] });
+  await db.update(task).set({ completedAt: zonedToUtc(today, "08:05", zone) }).where(eq(task.id, id));
+  await focusAt(alice, new Date(Date.now() - MINUTE), { taskId: id, seconds: 1530 });
+  await finishedAt(alice, zonedToUtc(addDays(today, -10), "09:00", zone)); // outside a week
+
+  expect(await completedInRange(alice, "week")).toEqual([
+    { completed: `${today} 08:05`, code: "", title: "Viết, rồi sửa", project: "", categories: "Alpha export; Beta export", estimateMin: 90, focusMin: 26 },
+  ]);
 });

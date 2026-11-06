@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { estimateLabel } from "@/lib/progress";
 import { relativeTime } from "@/lib/datetime";
-import { focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, recentlyCompleted } from "@/services/stats";
+import { focusByCategory, getDailyOverview, getHeatmap, getStreak, getSummary, ranges, recentlyCompleted, type Range } from "@/services/stats";
 import { getTimeZone } from "@/services/tasks";
 import { DailyChart } from "./DailyChart";
 import { Heatmap } from "./Heatmap";
@@ -34,14 +34,24 @@ const hours = (seconds: number) => `${Math.round((seconds / 3600) * 10) / 10}h`;
 const duration = (seconds: number) => (seconds >= 3600 ? hours(seconds) : `${Math.round(seconds / 60)}m`);
 const signed = (change: number) => `${change > 0 ? "+" : ""}${change}%`;
 
-async function Content() {
+const periods: Record<Range, string> = { week: "the last 7 days", month: "the last 30 days", year: "the last 12 months" };
+const rangeLabels: Record<Range, string> = { week: "Week", month: "Month", year: "Year" };
+
+async function pickRange(searchParams: PageProps<"/history">["searchParams"]): Promise<Range> {
+  const { range } = await searchParams;
+  return typeof range === "string" && range in ranges ? (range as Range) : "month";
+}
+
+async function Content({ searchParams }: PageProps<"/history">) {
   const userId = await requireUserId();
+  const range = await pickRange(searchParams);
+  const period = periods[range];
   const [streak, summary, heatmap, overview, categories, recent, timeZone] = await Promise.all([
     getStreak(userId),
-    getSummary(userId, "month"),
+    getSummary(userId, range),
     getHeatmap(userId),
-    getDailyOverview(userId, "month"),
-    focusByCategory(userId, "month"),
+    getDailyOverview(userId, range),
+    focusByCategory(userId, range),
     recentlyCompleted(userId),
     getTimeZone(userId),
   ]);
@@ -56,14 +66,14 @@ async function Content() {
         <Kpi
           label="Completion rate"
           value={summary.completionRate === null ? "—" : `${summary.completionRate}%`}
-          sub={summary.completionRate === null ? "No tasks created in the last 30 days" : summary.completionChange === null ? "Of tasks created in the last 30 days" : `${signed(summary.completionChange)} vs the 30 days before`}
+          sub={summary.completionRate === null ? `No tasks created in ${period}` : summary.completionChange === null ? `Of tasks created in ${period}` : `${signed(summary.completionChange)} vs the ${range} before`}
           tint="bg-teal-tint"
           icon="M22 12h-4l-3 9L9 3l-3 9H2"
         />
         <Kpi
           label="Focus hours"
           value={hours(summary.focusSeconds)}
-          sub={`≈ ${perDay ? estimateLabel(perDay) : "0m"} per day over 30 days`}
+          sub={`≈ ${perDay ? estimateLabel(perDay) : "0m"} per day over ${period.replace("the last ", "")}`}
           tint="bg-blue-tint"
           icon="M12 7v5l3 2M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"
         />
@@ -97,7 +107,7 @@ async function Content() {
               </span>
             </div>
           </div>
-          <DailyChart points={overview} period="the last 30 days" />
+          <DailyChart points={overview} period={period} />
         </section>
 
         <section aria-label="Time by category" className="flex min-w-0 flex-col gap-3.5 rounded-card border-hard bg-white p-5.5 shadow-hard-5">
@@ -117,7 +127,7 @@ async function Content() {
               ))}
             </ul>
           ) : (
-            <p className="text-[13px] text-muted">No focus sessions in the last 30 days.</p>
+            <p className="text-[13px] text-muted">No focus sessions in {period}.</p>
           )}
         </section>
       </div>
@@ -151,15 +161,46 @@ async function Content() {
   );
 }
 
-export default function HistoryPage() {
+async function RangeControls({ searchParams }: PageProps<"/history">) {
+  const range = await pickRange(searchParams);
+  return (
+    <div className="flex flex-wrap items-center gap-2.5">
+      <div role="group" aria-label="Range" className="flex items-center gap-1 rounded-xl border-hard bg-white p-0.75">
+        {(Object.keys(ranges) as Range[]).map((option) => (
+          <Link
+            key={option}
+            href={option === "month" ? "/history" : `/history?range=${option}`}
+            aria-current={option === range ? "true" : undefined}
+            className={`flex h-8.5 items-center rounded-[9px] px-3.5 text-[13px] pointer-coarse:min-h-11 ${option === range ? "bg-sun-tint font-semibold" : ""}`}
+          >
+            {rangeLabels[option]}
+          </Link>
+        ))}
+      </div>
+      <a href={`/history/export?range=${range}`} download className="flex h-10 items-center gap-2 rounded-xl border-hard bg-white px-3.5 text-[13px] font-medium pointer-coarse:min-h-11">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v3h16v-3" />
+        </svg>
+        Export CSV
+      </a>
+    </div>
+  );
+}
+
+export default function HistoryPage(props: PageProps<"/history">) {
   return (
     <>
-      <header>
-        <h1 className="text-3xl font-bold tracking-[-0.6px]">Work history</h1>
-        <p className="text-sm text-muted">Every task you finished, every day you showed up.</p>
+      <header className="flex flex-wrap items-center justify-between gap-3.5">
+        <div>
+          <h1 className="text-3xl font-bold tracking-[-0.6px]">Work history</h1>
+          <p className="text-sm text-muted">Every task you finished, every day you showed up.</p>
+        </div>
+        <Suspense>
+          <RangeControls {...props} />
+        </Suspense>
       </header>
       <Suspense fallback={<div aria-hidden="true" className="h-60 animate-pulse rounded-card bg-panel motion-reduce:animate-none" />}>
-        <Content />
+        <Content {...props} />
       </Suspense>
     </>
   );
