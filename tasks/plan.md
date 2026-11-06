@@ -77,7 +77,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 ### Checkpoint A
 
 - [x] Streak cùng một số ở `/history`, Sidebar và lịch
-- [ ] Bạn đã xem `/history` với dữ liệu thật của mình
+- [x] Bạn đã xem `/history` với dữ liệu thật của mình
 
 ### Nhóm B: Phần còn lại của History
 
@@ -93,8 +93,8 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 - [x] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây (truy vấn ~230 ms)
 - [x] CI xanh
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
-- [ ] `PLAN.md` đã đánh dấu xong Phase 7
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật
+- [x] `PLAN.md` đã đánh dấu xong Phase 7
 
 ## Parallelization
 

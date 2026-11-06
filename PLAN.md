@@ -300,15 +300,17 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 ### Phase 7 — History và streak
 
-- [ ] **T7.1 Service thống kê (M).** Streak hiện tại/dài nhất, completion rate, focus hours, heatmap. *Xong khi:* test bảng gồm chuỗi đứt, hôm nay chưa làm, đổi múi giờ, ngày cuối tháng.
-- [ ] **T7.2 Streak và KPI (M).** Thẻ streak (cháy/tắt), KPI, thay số giả ở Sidebar và Board. *Xong khi:* mọi nơi hiện cùng một con số; tôn trọng `prefers-reduced-motion`.
-- [ ] **T7.3 Heatmap (S).** 53 tuần, xem chi tiết bằng hover hoặc chạm. *Xong khi:* hoạt động ở 390 px, có nhãn cho trình đọc màn hình.
-- [ ] **T7.4 Biểu đồ và danh sách (M).** Daily overview (SVG tự vẽ như bản mẫu), Time by category, Recently completed. *Xong khi:* số liệu khớp service, không thêm thư viện chart.
-- [ ] **T7.5 Khoảng thời gian và CSV (S).** Week/Month/Year, Export CSV. *Xong khi:* file mở đúng tiếng Việt trong Excel (UTF-8 BOM); ô bắt đầu bằng `= + - @` được vô hiệu hóa để chống CSV injection.
-- [ ] **T7.6 Achievements (S).** 6 huy hiệu, điều kiện tính từ dữ liệu. *Xong khi:* huy hiệu mở khóa đúng ngưỡng trong test.
-- [ ] **T7.7 Thời gian và Burndown của project (M).** KPI Time logged vs estimate, Budget, biểu đồ Burndown (SVG tự vẽ). *Xong khi:* test bảng phủ task không có estimate, task thêm giữa chừng, project chưa có ngày; số task không có estimate được ghi rõ dưới biểu đồ.
+Đã xong. Tiêu chí và quyết định: `tasks/todo.md` và `tasks/plan.md` ở commit đóng Phase 7. Cờ streak trên lịch (dời từ Phase 5) làm ở T7.2.
 
-**Checkpoint:** tạo dữ liệu mẫu 1 năm, trang `/history` tải dưới 1 giây.
+- [x] **T7.1 Service thống kê (M).** Streak hiện tại/dài nhất, completion rate, focus hours, heatmap. *Xong khi:* test bảng gồm chuỗi đứt, hôm nay chưa làm, đổi múi giờ, ngày cuối tháng.
+- [x] **T7.2 Streak và KPI (M).** Thẻ streak (cháy/tắt), KPI, thay số giả ở Sidebar và Board. *Xong khi:* mọi nơi hiện cùng một con số; tôn trọng `prefers-reduced-motion`.
+- [x] **T7.3 Heatmap (S).** 53 tuần, xem chi tiết bằng hover hoặc chạm. *Xong khi:* hoạt động ở 390 px, có nhãn cho trình đọc màn hình.
+- [x] **T7.4 Biểu đồ và danh sách (M).** Daily overview (SVG tự vẽ như bản mẫu), Time by category, Recently completed. *Xong khi:* số liệu khớp service, không thêm thư viện chart.
+- [x] **T7.5 Khoảng thời gian và CSV (S).** Week/Month/Year, Export CSV. *Xong khi:* file mở đúng tiếng Việt trong Excel (UTF-8 BOM); ô bắt đầu bằng `= + - @` được vô hiệu hóa để chống CSV injection.
+- [x] **T7.6 Achievements (S).** 6 huy hiệu, điều kiện tính từ dữ liệu. *Xong khi:* huy hiệu mở khóa đúng ngưỡng trong test.
+- [x] **T7.7 Thời gian và Burndown của project (M).** KPI Time logged vs estimate, Budget, biểu đồ Burndown (SVG tự vẽ). *Xong khi:* test bảng phủ task không có estimate, task thêm giữa chừng, project chưa có ngày; số task không có estimate được ghi rõ dưới biểu đồ.
+
+**Checkpoint:** đã đạt. Với dữ liệu mẫu 1 năm, mọi truy vấn của `/history` mất khoảng 230 ms; bạn đã thử trên điện thoại.
 
 ### Phase 8 — Nhắc hạn
 

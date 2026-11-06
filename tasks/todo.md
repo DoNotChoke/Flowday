@@ -74,7 +74,7 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 - [x] Streak cùng một số ở `/history`, Sidebar và lịch.
 - [x] CI xanh.
-- [ ] Bạn đã xem `/history` với dữ liệu thật của mình.
+- [x] Bạn đã xem `/history` với dữ liệu thật của mình.
 
 ---
 
@@ -168,5 +168,5 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 - [x] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây. Đo ngày 2026-11-06 với 1.460 task và 1.095 phiên Focus: mọi truy vấn của trang mất khoảng 230 ms khi đã ấm, 519 ms lần đầu, từ máy dev tới Neon Singapore. Chưa cần thêm index.
 - [x] CI xanh.
-- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 7.
+- [x] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [x] `PLAN.md` đã đánh dấu xong Phase 7.
