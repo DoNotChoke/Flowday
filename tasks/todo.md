@@ -1,4 +1,4 @@
-# Phase 6 — Danh sách việc
+# Phase 7 — Danh sách việc
 
 Tổng quan và quyết định: `tasks/plan.md`.
 
@@ -6,47 +6,65 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ---
 
-## Nhóm A: Bộ đếm
+## Nhóm A: Streak
 
-### T6.1 Bộ đếm
+### T7.1 Service thống kê
 
-**Mô tả:** Trang 08 tại `/focus`: tab Focus / Short break / Long break, vòng đếm có tiến độ, Start/Pause, Reset, Skip, và "+5 min" khi đang chạy. Thời lượng mặc định 25/5/15 tới T6.4. Logic là hàm thuần trong `src/lib/focusTimer.ts`; trạng thái lưu ở `localStorage`, số còn lại tính từ `endsAt`. Hết giờ thì hiện thông báo của hệ điều hành (xin quyền lúc bấm Start lần đầu), kêu chuông ngắn (Web Audio), chuyển sang mode tiếp theo và chờ Start. Tiêu đề tab hiện thời gian còn lại khi đang chạy. Vòng đếm rộng `min(300px, 80vw)`.
+**Mô tả:** `src/lib/streak.ts`: hàm thuần nhận các ngày có hoạt động và ngày hôm nay, trả streak hiện tại, dài nhất và ngày mất streak. `src/services/stats.ts`: `activityDays(userId, timeZone, from, to)` gom theo ngày trong SQL (task xong, phiên Focus hoàn thành, giây Focus); `getStreak(userId)`; `getSummary(userId, range)` cho completion rate (kèm khoảng trước) và focus hours. Đo truy vấn và thêm index `task (user_id, completed_at)` nếu cần.
 
 **Tiêu chí nghiệm thu:**
-- [x] Để tab nền 5 phút rồi quay lại, số còn lại vẫn đúng.
-- [x] Tải lại trang giữa phiên, đang chạy thì vẫn chạy, đang dừng thì vẫn dừng, cùng số còn lại.
-- [x] Đổi mode, Reset, Skip, +5 min đúng như thiết kế; đang chạy thì đổi mode phải qua Reset hoặc Skip.
-- [x] Hết giờ khi đang ở tab khác thì có thông báo của hệ điều hành; bị từ chối quyền thì trang ghi rõ và vẫn có chuông.
-- [x] Số đếm có `aria-live` chỉ đọc mỗi phút, không đọc mỗi giây; mọi nút dùng được bằng bàn phím.
+- [ ] Một ngày được tính khi có task xong hoặc phiên Focus hoàn thành, theo múi giờ người dùng.
+- [ ] Hôm nay chưa làm thì streak đếm tới hôm qua; trống cả hôm qua thì streak là 0 và có ngày mất streak.
+- [ ] Không đọc được dữ liệu của người khác.
 
 **Kiểm chứng:**
-- [x] Vitest cho `focusTimer`: start, pause, resume, reset, skip, +5 min khi chạy và khi dừng, hết giờ, chu kỳ 4 Focus thì Long break.
-- [x] E2E dùng `page.clock`: chạy, tua 5 phút, tải lại, tua tới hết giờ thấy mode chuyển sang Short break; thông báo được gọi (giả `Notification` trong trang).
-- [x] Không cuộn ngang ở 360 px; so ảnh với `design/screens/08-focus-mode.html` ở 390 và 1440 px.
+- [ ] Vitest bảng cho `streak.ts`: chuỗi đứt, hôm nay chưa làm, chuỗi qua cuối tháng và cuối năm, không có hoạt động.
+- [ ] Vitest cho `stats.ts`: task xong lúc 23:30 và 00:30 ở múi giờ dương và âm, ngày đổi giờ, đổi múi giờ người dùng, phiên Focus chưa hoàn thành không tính, user khác.
 
 **Phụ thuộc:** Không
 
-**File dự kiến:** `src/lib/focusTimer.ts`, `src/lib/focusTimer.test.ts`, `src/app/(app)/focus/page.tsx`, `src/app/(app)/focus/Timer.tsx`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/lib/streak.ts`, `src/lib/streak.test.ts`, `src/services/stats.ts`, `src/services/stats.test.ts`, có thể `drizzle/0008_*.sql`
 
 **Quy mô:** M
 
 ---
 
-### T6.5 Bộ đếm nhỏ trên Sidebar
+### T7.2 Streak và KPI
 
-**Mô tả:** Khi có phiên đang chạy hoặc đang dừng, Sidebar (desktop) và top bar (phone, tablet) hiện một nút nhỏ: mode và thời gian còn lại, bấm vào thì về `/focus`. Đọc chung trạng thái `localStorage` với trang Focus, nghe sự kiện `storage` để cập nhật giữa các tab. Phiên hết giờ khi đang ở trang khác vẫn báo như ở trang Focus. Ẩn khi đang ở `/focus` và khi không có phiên.
+**Mô tả:** Trang 07 tại `/history`: header, thẻ streak (cháy khi còn, tắt khi mất, kèm lời nhắc và 7 ngày của tuần này), KPI Completion rate và Focus hours. Thẻ streak nhỏ trên Sidebar dẫn tới `/history`. Cờ lửa trên ô ngày có hoạt động ở lịch. Mọi nơi đọc từ `getStreak`.
 
 **Tiêu chí nghiệm thu:**
-- [x] Bắt đầu phiên rồi sang `/tasks` thấy bộ đếm nhỏ chạy đúng giờ.
-- [x] Phiên kết thúc ở trang khác vẫn có thông báo và chuông.
-- [x] Không có cuộn ngang ở 360 px; có nhãn cho trình đọc màn hình.
+- [ ] `/history`, Sidebar và lịch hiện cùng một con số và cùng những ngày.
+- [ ] Thẻ streak có hai trạng thái như thiết kế; hiệu ứng tắt khi `prefers-reduced-motion`.
+- [ ] Người mới chưa có hoạt động thấy trạng thái rỗng rõ ràng, không chia cho 0.
 
 **Kiểm chứng:**
-- [x] E2E dùng `page.clock`: Start ở `/focus`, sang `/tasks`, tua thời gian, thấy số đổi; bấm vào về `/focus`.
+- [ ] E2E tạo dữ liệu 3 ngày liên tiếp, kiểm tra số ở `/history`, Sidebar và cờ trên lịch.
+- [ ] So ảnh với `design/screens/07-history-streak.html` ở 390 và 1440 px.
 
-**Phụ thuộc:** T6.1
+**Phụ thuộc:** T7.1
 
-**File dự kiến:** `src/components/app/FocusPill.tsx`, `src/components/app/Sidebar.tsx`, `src/components/app/TopBar.tsx`, `src/lib/focusTimer.ts`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/app/(app)/history/page.tsx`, `src/app/(app)/history/StreakCard.tsx`, `src/components/app/Sidebar.tsx`, `src/app/(app)/calendar/DayGrid.tsx`, `src/app/(app)/calendar/page.tsx`, `e2e/history.spec.ts`
+
+**Quy mô:** M
+
+---
+
+### T7.3 Heatmap
+
+**Mô tả:** 53 tuần tới hôm nay, 5 mức màu `heat-0` tới `heat-4`, nhãn tháng, nhãn thứ. Rê chuột hoặc chạm vào ô để xem ngày và số task, số phiên Focus. Tiêu đề "n tasks completed in the last year", dòng "Longest streak · Most active: thứ".
+
+**Tiêu chí nghiệm thu:**
+- [ ] Số trong ô khớp service; ô hôm nay có viền.
+- [ ] Ở 390 px lưới cuộn ngang bên trong khối của nó, trang không cuộn ngang; chạm vào ô hiện chi tiết.
+- [ ] Trình đọc màn hình đọc được tổng và chi tiết từng ngày.
+
+**Kiểm chứng:**
+- [ ] E2E: ô của một ngày có task xong hiện đúng số; chạm trên mobile hiện chi tiết.
+
+**Phụ thuộc:** T7.1
+
+**File dự kiến:** `src/app/(app)/history/Heatmap.tsx`, `src/app/(app)/history/page.tsx`, `src/services/stats.ts`, `e2e/history.spec.ts`
 
 **Quy mô:** S
 
@@ -54,81 +72,101 @@ Tổng quan và quyết định: `tasks/plan.md`.
 
 ## Checkpoint A
 
-- [x] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại.
-- [x] CI xanh.
-- [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ.
-- [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5, ghi thêm T5.3b.
+- [ ] Streak cùng một số ở `/history`, Sidebar và lịch.
+- [ ] CI xanh.
+- [ ] Bạn đã xem `/history` với dữ liệu thật của mình.
 
 ---
 
-## Nhóm B: Lưu phiên và tùy chỉnh
+## Nhóm B: Phần còn lại của History
 
-### T6.2 Lưu phiên và Time tracked
+### T7.4 Biểu đồ và danh sách
 
-**Mô tả:** Migration thêm bảng `focus_session` (`id`, `user_id`, `task_id?` set null, `mode`, `started_at`, `ended_at`, `seconds`, `completed`), index theo `user_id, ended_at`. Service `src/services/focus.ts`: `recordSession` (id từ trình duyệt, `on conflict do nothing`, kiểm tra quyền, số giây không quá khoảng thời gian thật và tối đa 4 giờ), `trackedSeconds(userId, taskId)`. Bộ đếm gửi phiên khi hết giờ, khi Skip hoặc Reset sau ít nhất 1 phút focus, và khi mở lại trang thấy phiên đã hết giờ. Task detail có khối "Time tracked" (giờ:phút, kèm Est.) và nút "Start focus session" tới `/focus?task=<id>`; trang Focus hiện "Working on" với tên task. `?task=` chỉ đổi task khi bộ đếm không chạy.
+**Mô tả:** Daily tasks overview: hai đường Completed và Created theo ngày (SVG tự vẽ như bản mẫu, trục tự co theo số lớn nhất). Time by category: thanh ngang giờ Focus theo category. Recently completed: 5 task xong gần nhất, category, thời gian tương đối.
 
 **Tiêu chí nghiệm thu:**
-- [x] Xong một phiên gắn với task, Time tracked của task tăng đúng số phút.
-- [x] Gửi lại cùng một phiên không tạo dòng trùng.
-- [x] Số giây vượt khoảng thời gian thật, `ended_at` ở tương lai, hoặc task của người khác đều bị từ chối.
-- [x] Phiên Break không cộng vào Time tracked.
+- [ ] Số liệu khớp service; không thêm thư viện chart.
+- [ ] Biểu đồ có nhãn cho trình đọc màn hình và đọc được khi không có dữ liệu.
+- [ ] Không cuộn ngang ở 360 px.
 
 **Kiểm chứng:**
-- [x] Vitest cho `recordSession` và `trackedSeconds`: trùng id, giới hạn số giây, user khác, task đã xóa (`task_id` thành null).
-- [x] E2E desktop và mobile: Task detail → Start focus session → tua hết 25 phút → quay lại Task detail thấy `0:25`.
+- [ ] Vitest cho truy vấn tạo/xong theo ngày và giờ theo category.
+- [ ] E2E kiểm tra Recently completed và Time by category với dữ liệu tạo sẵn.
 
-**Phụ thuộc:** T6.1
+**Phụ thuộc:** T7.1
 
-**File dự kiến:** `src/lib/db/schema.ts`, `drizzle/0007_focus_sessions.sql`, `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/actions.ts`, `src/app/(app)/focus/Timer.tsx`, `src/app/(app)/tasks/[id]/page.tsx`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/services/stats.ts`, `src/services/stats.test.ts`, `src/app/(app)/history/DailyChart.tsx`, `src/app/(app)/history/page.tsx`, `e2e/history.spec.ts`
 
 **Quy mô:** M
 
 ---
 
-### T6.3 Today's queue
+### T7.5 Khoảng thời gian và CSV
 
-**Mô tả:** Khối "Today's queue" bên cạnh bộ đếm: task chưa xong đang làm, hoặc có ngày lên lịch hay hạn là hôm nay theo múi giờ người dùng. Mỗi dòng có số phiên đã focus / ước tính và tổng thời gian ước tính ở đầu khối. Chạm một dòng để chọn làm "Working on" (khi bộ đếm không chạy). "Next:" là dòng kế tiếp. "Session n of 4" đếm theo số phiên Focus hoàn thành hôm nay.
+**Mô tả:** Nhóm nút Week/Month/Year trên URL (`?range=`), áp dụng cho KPI, biểu đồ và Time by category. Nút Export CSV tải `GET /history/export?range=`: các task xong trong khoảng (ngày xong, mã, tên, project, category, estimate, phút Focus).
 
 **Tiêu chí nghiệm thu:**
-- [x] Queue khớp DB: không có task đã xong, đã hủy, hay của ngày khác.
-- [x] Chọn task từ queue đổi "Working on" và "Next".
-- [x] "Session n of 4" tăng sau mỗi phiên Focus hoàn thành và quay về 1 sau phiên thứ 4.
+- [ ] Đổi khoảng thời gian thì số liệu đổi theo và tải lại vẫn giữ.
+- [ ] File mở đúng tiếng Việt trong Excel nhờ BOM UTF-8.
+- [ ] Ô bắt đầu bằng `= + - @` được vô hiệu hóa; người chưa đăng nhập bị chặn.
 
 **Kiểm chứng:**
-- [x] Vitest cho truy vấn queue và đếm phiên hôm nay, có múi giờ âm và phiên gần nửa đêm.
-- [x] E2E chọn task từ queue rồi chạy một phiên.
+- [ ] Vitest cho hàm tạo CSV: BOM, dấu phẩy và dấu ngoặc kép trong tên, CSV injection.
+- [ ] E2E tải file và kiểm tra nội dung.
 
-**Phụ thuộc:** T6.2
+**Phụ thuộc:** T7.2
 
-**File dự kiến:** `src/services/focus.ts`, `src/services/focus.test.ts`, `src/app/(app)/focus/page.tsx`, `src/app/(app)/focus/Queue.tsx`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/lib/csv.ts`, `src/lib/csv.test.ts`, `src/app/(app)/history/export/route.ts`, `src/app/(app)/history/page.tsx`, `e2e/history.spec.ts`
 
 **Quy mô:** S
 
 ---
 
-### T6.4 Tự đặt thời lượng
+### T7.6 Achievements
 
-**Mô tả:** Migration thêm ba cột vào `user`: `focus_min` (mặc định 25), `short_break_min` (5), `long_break_min` (15). Nút "Timer settings" trên trang Focus mở `Sheet`: mỗi mode một ô số, Focus có chip nhanh 25 / 50 / 90. `updateTimerSettings` trong `src/services/profile.ts` kiểm tra Focus 5–180, Break 1–60. Thời lượng mới áp dụng từ phiên sau; phiên đang chạy giữ nguyên.
+**Mô tả:** 6 huy hiệu: 7-day streak, 30-day streak (theo streak dài nhất), 100 tasks, 500 tasks, Early bird (xong task trước 6 giờ sáng theo múi giờ người dùng), Inbox zero (đã xong ít nhất 1 task và hiện không còn task mở). Huy hiệu chưa mở hiện mờ.
 
 **Tiêu chí nghiệm thu:**
-- [x] Đặt Focus 50 phút, lần Start sau đếm từ 50:00; tải lại và đổi máy vẫn giữ.
-- [x] Giá trị ngoài khoảng bị từ chối, lỗi hiện tại ô tương ứng.
-- [x] Phiên đang chạy không bị đổi khi lưu thời lượng mới.
+- [ ] Mỗi huy hiệu mở đúng ngưỡng.
+- [ ] Trình đọc màn hình đọc được huy hiệu nào đã mở, nào chưa.
 
 **Kiểm chứng:**
-- [x] Vitest cho `updateTimerSettings`: giá trị hợp lệ, ngoài khoảng, không đổi của user khác.
-- [x] E2E chọn chip 50, Start, thấy 50:00.
+- [ ] Vitest bảng cho điều kiện từng huy hiệu, có ngay dưới và ngay trên ngưỡng.
 
-**Phụ thuộc:** T6.1 (làm trước T6.2 theo yêu cầu của bạn)
+**Phụ thuộc:** T7.2
 
-**File dự kiến:** `src/lib/db/auth-schema.ts`, `drizzle/0006_timer_settings.sql`, `src/services/profile.ts`, `src/services/profile.test.ts`, `src/app/(app)/focus/TimerSettings.tsx`, `src/app/(app)/focus/actions.ts`, `e2e/focus.spec.ts`
+**File dự kiến:** `src/services/stats.ts`, `src/services/stats.test.ts`, `src/app/(app)/history/page.tsx`
 
 **Quy mô:** S
 
 ---
 
-## Checkpoint hoàn thành Phase 6
+## Nhóm C: Project
 
-- [x] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile.
-- [x] CI xanh.
-- [ ] `PLAN.md` đã đánh dấu xong Phase 6.
+### T7.7 Thời gian và Burndown của project
+
+**Mô tả:** Trang project thêm KPI "Time logged vs estimate" (giờ Focus của task trong project / tổng estimate), dòng Budget ("Budget 80h · on track" hoặc "over"), và biểu đồ Burndown (SVG tự vẽ): giờ estimate còn lại theo ngày và đường Ideal từ `start_date` tới `target_date`.
+
+**Tiêu chí nghiệm thu:**
+- [ ] Số liệu khớp DB; task đã hủy không tính vào estimate còn lại.
+- [ ] Số task không có estimate được ghi rõ dưới biểu đồ.
+- [ ] Project chưa có ngày thì ẩn đường Ideal; chưa có task thì hiện trạng thái rỗng.
+
+**Kiểm chứng:**
+- [ ] Vitest bảng: task không có estimate, task thêm giữa chừng, task hủy, project chưa có ngày, user khác.
+- [ ] E2E xem KPI và Burndown trên desktop và mobile.
+
+**Phụ thuộc:** Không (chỉ cần `focus_session` đã có)
+
+**File dự kiến:** `src/services/projects.ts`, `src/services/projects.test.ts`, `src/app/(app)/projects/[id]/page.tsx`, `src/app/(app)/projects/[id]/Burndown.tsx`, `e2e/project-overview.spec.ts`
+
+**Quy mô:** M
+
+---
+
+## Checkpoint hoàn thành Phase 7
+
+- [ ] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây.
+- [ ] CI xanh.
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật.
+- [ ] `PLAN.md` đã đánh dấu xong Phase 7.

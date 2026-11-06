@@ -276,19 +276,27 @@ Tiêu chí chi tiết nằm trong `tasks/todo.md`, quyết định nằm trong `
 
 ### Phase 5 — Calendar
 
-- [ ] **T5.1 Lịch tháng (M).** Trang 06 từ dữ liệu thật: chip, "+n more", cờ streak, agenda, Today, chuyển tháng. *Xong khi:* task gần nửa đêm rơi đúng ngày theo múi giờ người dùng; tuần bắt đầu từ thứ Hai.
-- [ ] **T5.2 Lịch mobile (S).** Lưới gọn với chấm màu, chạm ngày để xem agenda. *Xong khi:* không có cuộn ngang ở 360 px.
-- [ ] **T5.3 Lên lịch task (M).** Danh sách Unscheduled, kéo vào ngày, mobile dùng sheet chọn ngày. *Xong khi:* `planned_at` lưu đúng, đếm Unscheduled giảm tương ứng.
-- [ ] **T5.4 Week và Day (M).** Hai view mới cùng phong cách. *Xong khi:* chuyển 3 view giữ nguyên ngày đang chọn.
+Đã xong. Tiêu chí và quyết định: `git show 7f12e24:tasks/todo.md` và `git show 7f12e24:tasks/plan.md`. Cờ streak trên lịch chuyển sang T7.2.
 
-**Checkpoint:** E2E tạo task không ngày → lên lịch → hiện trong agenda, trên cả desktop và mobile.
+- [x] **T5.1 Lịch tháng (M).** Trang 06 từ dữ liệu thật: chip, "+n more", cờ streak, agenda, Today, chuyển tháng. *Xong khi:* task gần nửa đêm rơi đúng ngày theo múi giờ người dùng; tuần bắt đầu từ thứ Hai.
+- [x] **T5.2 Lịch mobile (S).** Lưới gọn với chấm màu, chạm ngày để xem agenda. *Xong khi:* không có cuộn ngang ở 360 px.
+- [x] **T5.3 Lên lịch task (M).** Danh sách Unscheduled, kéo vào ngày, mobile dùng sheet chọn ngày. *Xong khi:* `planned_at` lưu đúng, đếm Unscheduled giảm tương ứng.
+- [x] **T5.3b Kéo task vào ngày (S).** Tách khỏi T5.3. *Xong khi:* kéo bằng chuột, cảm ứng, bàn phím đều lưu `planned_at`.
+- [x] **T5.4 Week và Day (M).** Hai view mới cùng phong cách. *Xong khi:* chuyển 3 view giữ nguyên ngày đang chọn.
+
+**Checkpoint:** đã đạt. E2E tạo task không ngày → lên lịch → hiện trong agenda chạy trên desktop và mobile; bạn đã thử trên thiết bị thật.
 
 ### Phase 6 — Focus
 
-- [ ] **T6.1 Bộ đếm (M).** Trang 08: Focus 25, Short break 5, Long break 15; Start/Pause/Reset/Skip. Tính theo mốc thời gian, không trừ dần bằng `setInterval` như bản mẫu vì tab nền bị trì hoãn. *Xong khi:* để tab nền 5 phút vẫn đúng giờ; tải lại trang không mất phiên.
-- [ ] **T6.2 Lưu phiên và hàng đợi (M).** `focus_session`, Today's queue, "Start focus session" từ Detail, Time tracked. *Xong khi:* xong một phiên, thời gian cộng vào task và phiên được tính streak.
+Đã xong. Tiêu chí và quyết định: `git show c3a6334:tasks/todo.md` và `git show c3a6334:tasks/plan.md`. Bỏ Ambient sound theo quyết định của bạn; thêm thông báo hệ điều hành, thời lượng tự đặt và bộ đếm nhỏ trên Sidebar.
 
-**Checkpoint:** chạy hết một phiên, số liệu xuất hiện đúng trong Task detail.
+- [x] **T6.1 Bộ đếm (M).** Trang 08: Focus 25, Short break 5, Long break 15; Start/Pause/Reset/Skip. Tính theo mốc thời gian, không trừ dần bằng `setInterval` như bản mẫu vì tab nền bị trì hoãn. *Xong khi:* để tab nền 5 phút vẫn đúng giờ; tải lại trang không mất phiên.
+- [x] **T6.2 Lưu phiên và hàng đợi (M).** `focus_session`, Today's queue, "Start focus session" từ Detail, Time tracked. *Xong khi:* xong một phiên, thời gian cộng vào task và phiên được tính streak.
+- [x] **T6.3 Today's queue (S).** Tách khỏi T6.2. *Xong khi:* queue khớp DB, "Session n of 4" đếm theo hôm nay.
+- [x] **T6.4 Tự đặt thời lượng (S).** Focus 5–180, Break 1–60 phút, lưu ở `user`. *Xong khi:* đổi máy vẫn giữ; phiên đang chạy không bị đổi.
+- [x] **T6.5 Bộ đếm nhỏ trên Sidebar (S).** *Xong khi:* phiên đang chạy hiện và báo giờ ở mọi trang.
+
+**Checkpoint:** đã đạt. Chạy hết một phiên, Time tracked trong Task detail đúng; bạn đã thử thông báo khi làm ở cửa sổ khác.
 
 ### Phase 7 — History và streak
 

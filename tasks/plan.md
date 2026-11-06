@@ -1,121 +1,130 @@
-# Implementation Plan: Flowday — Phase 6 (Focus)
+# Implementation Plan: Flowday — Phase 7 (History và streak)
 
-> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-03. Kế hoạch Phase 5 xem lại bằng `git show 7f12e24:tasks/plan.md`.
+> Nguồn: `PLAN.md` (mục 3, 4, 6). Danh sách việc chi tiết: `tasks/todo.md`. Khảo sát ngày 2026-11-06. Kế hoạch Phase 6 xem lại bằng `git show c3a6334:tasks/plan.md`.
 
 ## Overview
 
-Phase 6 biến trang `/focus` đang trống thành bộ đếm Pomodoro dùng được khi bạn làm việc ở cửa sổ khác: đếm đúng giờ kể cả khi tab nằm nền, báo hết giờ bằng thông báo của hệ điều hành, thời lượng tự đặt được, không mất phiên khi tải lại, lưu phiên vào DB, cộng thời gian vào task và gợi ý việc cần làm hôm nay.
+Phase 7 biến trang `/history` đang trống thành nơi nhìn lại công việc: streak, KPI, heatmap một năm, biểu đồ, thời gian theo category, việc vừa xong, huy hiệu, xuất CSV. Phase này cũng đưa streak thật lên Sidebar và lịch, và thêm thời gian đã làm cùng biểu đồ Burndown cho trang project.
 
 **Hoàn thành khi:**
 
-1. Chạy hết một phiên Focus gắn với task, thời gian hiện đúng ở ô Time tracked của Task detail.
-2. Để tab nền hoặc tải lại trang giữa phiên vẫn đúng giờ, có E2E dùng đồng hồ giả của Playwright.
-3. Không có cuộn ngang ở 360, 390, 820 và 1440 px trên `/focus`.
-
-**Còn mở từ Phase 5:** thử Calendar trên điện thoại hoặc iPad thật, rồi đánh dấu Phase 5 xong trong `PLAN.md` (kèm T5.3b). Gộp vào Checkpoint A bên dưới.
+1. Streak hiện cùng một con số ở `/history`, Sidebar và lịch; test bảng phủ chuỗi đứt, hôm nay chưa làm, đổi múi giờ, ngày cuối tháng.
+2. Với dữ liệu mẫu một năm, `/history` tải dưới 1 giây.
+3. Không có cuộn ngang ở 360, 390, 820 và 1440 px trên `/history`.
 
 ## Hiện trạng đã kiểm tra
 
 | Hạng mục | Kết quả | Ảnh hưởng |
 |---|---|---|
-| Repo | `main` có Phase 5 xong, CI xanh ở Run 46 | Bắt đầu từ nền đã kiểm chứng |
-| `/focus` | Chỉ có tiêu đề; đã có trong Sidebar và bottom nav | Viết mới trang |
-| `focus_session` | Chưa có bảng; `PLAN.md` đã định nghĩa cột | T6.2 thêm migration, chỉ thêm bảng |
-| Thiết kế trang 08 | Tab mode, vòng đếm, "Session 3 of 4", Working on / Next, Start-Pause-Reset-Skip, Today's queue, Ambient sound, ghi chú tắt thông báo | Xem mục "Không làm trong phase này" |
-| Thiết kế trang 05 | Khối "Time tracked" với Est. và nút "Start focus session" | T6.2 thêm vào Task detail |
-| Bản mẫu | Trừ dần bằng `setInterval` | Không dùng: tab nền bị trì hoãn nên sai giờ khi bạn làm ở cửa sổ khác |
-| `planned_at`, `due_at` | Đã có từ Phase 5 | Today's queue lấy task lên lịch hoặc tới hạn hôm nay |
-| Form tạo task | Đã ghi "≈ n focus sessions (25 min)" | Queue dùng cùng quy ước 25 phút một phiên |
+| Repo | `main` có Phase 6 xong, CI xanh ở Run 52; bạn đã thử Phase 5 và 6 | Bắt đầu từ nền đã kiểm chứng |
+| `/history` | Chỉ có tiêu đề | Viết mới |
+| Dữ liệu | `task.completed_at`, `task.canceled_at`, `task.created_at`, `focus_session` (`ended_at`, `seconds`, `completed`) | Đủ để tính mọi số liệu, không cần bảng mới |
+| Index | `task` chỉ có index theo `user_id, status, position`; `focus_session` có `user_id, ended_at` | T7.1 thêm index `task (user_id, completed_at)` nếu đo thấy chậm |
+| Quy tắc streak | `PLAN.md`: một ngày được tính khi có ít nhất 1 task xong **hoặc** 1 phiên Focus hoàn thành, theo múi giờ người dùng | Dùng nguyên |
+| Sidebar | Thiết kế có thẻ "12 days · Current streak"; Sidebar hiện không có thẻ này | T7.2 thêm thẻ với số thật |
+| Lịch | Cờ streak trên ô ngày được dời từ Phase 5 | T7.2 thêm |
+| Board | Thiết kế trang 03 không có số streak | Không cần sửa |
+| Trang project | Đã có KPI Progress, Tasks, Target date; `budget_hours`, `start_date`, `target_date` có sẵn | T7.7 thêm KPI và Burndown |
+| Thiết kế trang 07 | Streak (cháy/tắt), 2 KPI, heatmap 53 tuần, Daily tasks overview, Time by category, Recently completed, 6 huy hiệu, Week/Month/Year, Export CSV | Làm hết |
 
 ## Architecture Decisions
 
-- **Đồng hồ tính theo mốc thời gian.** Khi chạy chỉ lưu `endsAt`; số còn lại là `endsAt - Date.now()` ở mỗi lần vẽ. Khi dừng lưu `remainingMs`. Tab nền bị trì hoãn cũng không lệch, nên bạn bấm Start rồi làm việc ở cửa sổ khác được.
-- **Trạng thái bộ đếm nằm ở `localStorage`**, không ở server: `{ id, mode, taskId, startedAt, endsAt | remainingMs, focusedMs }`. Tải lại trang thì đọc lại. `shortcut: phiên đang chạy chỉ thấy trên thiết bị đã bắt đầu nó, lưu lên server nếu cần đồng bộ nhiều máy`.
-- **Logic đồng hồ là hàm thuần trong `src/lib/focusTimer.ts`** (start, pause, resume, reset, skip, +5 min, finish, next mode), test được bằng Vitest không cần trình duyệt.
-- **Báo hết giờ bằng thông báo của hệ điều hành** (Notification API), xin quyền một lần khi bấm Start lần đầu. Thông báo hiện cả khi bạn đang ở cửa sổ khác. Kèm tiếng chuông ngắn tạo bằng Web Audio (không cần file) và tiêu đề tab hiện thời gian còn lại. Bị từ chối quyền thì vẫn còn chuông và tiêu đề tab.
-- **Thời lượng linh hoạt.** Mỗi mode có thời lượng riêng do bạn đặt (Focus 5–180 phút, Break 1–60 phút), lưu ở bảng `user` để mọi máy dùng chung. Đang chạy có nút "+5 min". Skip sau ít nhất 1 phút vẫn cộng thời gian đã làm.
-- **Bộ đếm nhỏ trên Sidebar và top bar** khi có phiên, bấm vào thì về `/focus`. Đọc chung trạng thái `localStorage` với trang Focus.
-- **Chỉ lưu phiên đã kết thúc.** Hết giờ, Skip hoặc Reset sau ít nhất 1 phút focus thì gửi một dòng `focus_session`. `completed = true` chỉ khi chạy hết giờ. Time tracked cộng mọi giây đã focus; streak (Phase 7) chỉ tính phiên `completed`.
-- **Mỗi phiên có `id` tạo ở trình duyệt.** Lưu bằng `on conflict do nothing`, nên gửi lại sau khi tải trang hoặc mất mạng không tạo dòng trùng. Phiên hết giờ lúc tab đóng sẽ được lưu khi mở lại trang.
-- **Server không tin số giây từ trình duyệt:** `seconds` không vượt quá `ended_at - started_at` và tối đa 4 giờ; `ended_at` không ở tương lai; `task_id` phải thuộc người dùng.
-- **Chu kỳ Pomodoro:** sau Focus là Short break, sau mỗi Focus thứ 4 trong ngày là Long break. Hết giờ thì chuyển mode nhưng không tự chạy. "Session n of 4" đếm theo số phiên Focus hoàn thành hôm nay, theo múi giờ người dùng.
-- **Today's queue** là task chưa xong, đang làm (`in_process`), hoặc có ngày lên lịch hay hạn là hôm nay. Mỗi dòng ghi số phiên đã focus / số phiên ước tính (`ceil(estimate / thời lượng Focus)`).
-- **Giữ nguyên từ các phase trước:** form khóa submit tới khi hydrate; `.catch` của Server Action phải qua `unstable_rethrow`; test chờ server trả lời trước khi tải lại trang; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
+- **Gom theo ngày ngay trong SQL.** `(completed_at at time zone tz)::date` và `(ended_at at time zone tz)::date`, `group by` ngày. Postgres đổi giờ mùa hè đúng theo tên múi giờ; mỗi biểu đồ một truy vấn, không kéo từng dòng về máy chủ.
+- **Logic streak là hàm thuần trong `src/lib/streak.ts`:** nhận danh sách ngày có hoạt động và ngày hôm nay, trả streak hiện tại, dài nhất, ngày mất streak. Test bảng không cần DB.
+- **Hôm nay chưa làm thì streak vẫn còn**, đếm tới hôm qua, kèm lời nhắc "Finish 1 task today to reach n + 1". Chỉ mất khi cả hôm qua cũng trống.
+- **Một hàm `getStreak(userId)`** cho mọi nơi hiện streak (History, Sidebar, lịch), nên không thể lệch số.
+- **Định nghĩa số liệu:**
+  - *Completion rate:* trong các task tạo trong khoảng thời gian (trừ task đã hủy), bao nhiêu phần trăm đã xong; so với khoảng liền trước.
+  - *Focus hours:* tổng giây Focus trong khoảng, kèm trung bình mỗi ngày.
+  - *Heatmap:* mỗi ô là số task xong cộng số phiên Focus hoàn thành trong ngày; nhãn ghi riêng hai số.
+  - *Time by category:* giờ Focus của task, tính vào category đầu tiên theo tên (giống chip trên lịch); task không category vào "Uncategorized".
+- **Khoảng thời gian trên URL:** `/history?range=week|month|year`, mặc định Month. Áp dụng cho KPI, biểu đồ, Time by category và CSV; heatmap luôn là 53 tuần.
+- **Biểu đồ là SVG tự vẽ** như bản mẫu, không thêm thư viện chart.
+- **Huy hiệu tính lúc xem, không lưu.** "Inbox zero" là: đã xong ít nhất 1 task và hiện không còn task nào đang mở. `shortcut: huy hiệu không lưu nên Inbox zero có thể khóa lại, thêm bảng achievement nếu cần giữ vĩnh viễn`.
+- **CSV qua một Route Handler** `GET /history/export?range=`, có BOM UTF-8 để Excel đọc đúng tiếng Việt; ô bắt đầu bằng `= + - @` được thêm dấu `'` để chống CSV injection.
+- **Burndown** theo `PLAN.md`: giờ estimate còn lại mỗi ngày, suy ra từ `created_at`, `completed_at`, `canceled_at`; đường Ideal từ `start_date` tới `target_date`.
+- **Giữ nguyên từ các phase trước:** nội dung người dùng nhập dùng `font-content`; test chờ server trả lời trước khi tải lại trang; mỗi task một commit; không chờ CI giữa các task, nhưng CI phải xanh trước checkpoint.
 
 ## Không làm trong phase này
 
 | Phần trong thiết kế | Lý do |
 |---|---|
-| Ambient sound (Rain, Café, Lo-fi) và Volume | Bỏ theo quyết định của bạn |
-| Tắt thông báo khi đang focus | Thuộc T8.2, khi đã có thông báo |
-| Đổi số Focus trước Long break (mặc định 4) | Chưa cần; hằng số một chỗ |
-| Streak và focus hours ở History | Phase 7 đọc từ `focus_session` |
+| Ghi lịch sử đổi estimate cho Burndown | `PLAN.md` đã ghi `shortcut`; thêm bảng snapshot nếu cần chính xác tuyệt đối |
+| Lưu huy hiệu vĩnh viễn | Xem Architecture Decisions |
+| Chia giờ Focus cho nhiều category của một task | Tính vào category đầu tiên; đủ cho V1 |
 
 ## Dependency Graph
 
 ```text
-T6.1 Bộ đếm (client) ──┬── T6.2 Lưu phiên + Time tracked ──┬── T6.3 Today's queue
-                       │                                   └── T6.4 Tự đặt thời lượng
-                       └── T6.5 Bộ đếm nhỏ trên Sidebar
-```
+T7.1 Service thống kê ──┬── T7.2 Streak và KPI ──┬── T7.5 Khoảng thời gian và CSV
+                        │                        └── T7.6 Achievements
+                        ├── T7.3 Heatmap
+                        └── T7.4 Biểu đồ và danh sách
 
-Mỗi task để lại một đường dùng được: T6.1 là bộ đếm chạy được, T6.5 cho thấy nó ở mọi trang, T6.2 nối nó với DB và Task detail, T6.3 thêm gợi ý việc, T6.4 cho đổi thời lượng.
+T7.7 Thời gian và Burndown của project (độc lập, chỉ cần focus_session)
+```
 
 ## Task List
 
 Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
-### Nhóm A: Bộ đếm
+### Nhóm A: Streak
 
-- [x] T6.1 Bộ đếm (M)
-- [x] T6.4 Tự đặt thời lượng (S), làm sớm theo yêu cầu của bạn
-- [x] T6.5 Bộ đếm nhỏ trên Sidebar (S)
+- [ ] T7.1 Service thống kê (M)
+- [ ] T7.2 Streak và KPI (M)
+- [ ] T7.3 Heatmap (S)
 
 ### Checkpoint A
 
-- [x] Bộ đếm đúng giờ khi để tab nền và sau khi tải lại
-- [ ] Bạn đã thử: bắt đầu phiên, làm ở cửa sổ khác, nhận thông báo khi hết giờ
-- [ ] Bạn đã thử Calendar (Phase 5) trên điện thoại hoặc iPad thật; `PLAN.md` đánh dấu xong Phase 5
+- [ ] Streak cùng một số ở `/history`, Sidebar và lịch
+- [ ] Bạn đã xem `/history` với dữ liệu thật của mình
 
-### Nhóm B: Lưu phiên và tùy chỉnh
+### Nhóm B: Phần còn lại của History
 
-- [x] T6.2 Lưu phiên và Time tracked (M)
-- [x] T6.3 Today's queue (S)
+- [ ] T7.4 Biểu đồ và danh sách (M)
+- [ ] T7.5 Khoảng thời gian và CSV (S)
+- [ ] T7.6 Achievements (S)
 
-### Checkpoint hoàn thành Phase 6
+### Nhóm C: Project
 
-- [x] Chạy hết một phiên, số liệu xuất hiện đúng trong Task detail, trên desktop và mobile
-- [x] CI xanh
-- [ ] `PLAN.md` đã đánh dấu xong Phase 6
+- [ ] T7.7 Thời gian và Burndown của project (M)
+
+### Checkpoint hoàn thành Phase 7
+
+- [ ] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây
+- [ ] CI xanh
+- [ ] Bạn đã thử trên điện thoại hoặc iPad thật
+- [ ] `PLAN.md` đã đánh dấu xong Phase 7
 
 ## Parallelization
 
-T6.1 trước mọi task. T6.5 chỉ cần T6.1, làm ngay sau để bạn thử ở Checkpoint A. T6.4 đã làm sớm theo yêu cầu của bạn (migration 0006); T6.2 dùng migration 0007 và phải xong trước T6.3.
+- **Tuần tự:** T7.1 trước T7.2–T7.6, vì cùng dựng service và trang.
+- **Song song được sau T7.1:** T7.3 và T7.4.
+- **Độc lập:** T7.7 làm lúc nào cũng được.
+- **Cần phối hợp:** T7.2, T7.5 và T7.6 cùng sửa phần đầu trang `/history`, nên làm liền nhau.
 
 ## Risks and Mitigations
 
 | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|
-| Bạn từ chối quyền thông báo, hoặc Windows bật Focus Assist | TB | Vẫn còn chuông và tiêu đề tab; trang Focus ghi rõ khi quyền bị chặn |
-| iOS Safari tạm dừng JavaScript khi khóa màn hình | Thấp | Đồng hồ tính theo mốc thời gian nên mở lại vẫn đúng; phiên hết giờ trong lúc đó được lưu khi mở lại |
-| Trình duyệt chặn âm thanh khi chưa có thao tác người dùng | Thấp | Tạo `AudioContext` lúc bấm Start, là lúc có thao tác |
-| Đổi thời lượng giữa phiên làm số còn lại nhảy | Thấp | Thời lượng mới áp dụng từ phiên sau; phiên đang chạy chỉ đổi bằng +5 min |
-| Lưu trùng phiên khi gửi lại | TB | `id` tạo ở trình duyệt, `on conflict do nothing`, có test |
-| Đồng hồ máy người dùng sai | Thấp | Server giới hạn số giây và từ chối `ended_at` ở tương lai |
-| E2E chờ 25 phút thật | Cao | Dùng `page.clock` của Playwright để tua thời gian |
-| Hai tab cùng mở app | Thấp | Cùng đọc một `localStorage`; nghe sự kiện `storage` để tab kia cập nhật |
+| Ngày sai do múi giờ hoặc đổi giờ mùa hè | Cao | Gom ngày trong SQL theo tên múi giờ; test bảng có múi giờ âm, ngày đổi giờ, cuối tháng, đổi múi giờ người dùng |
+| `/history` chậm với dữ liệu một năm | TB | Gom trong SQL, chạy các truy vấn song song, thêm index `task (user_id, completed_at)`; script tạo dữ liệu mẫu để đo |
+| Thẻ streak trên Sidebar thêm một truy vấn vào mọi trang | TB | Nằm trong `<Suspense>` nên không chặn trang; một truy vấn gom ngày có index |
+| Hiệu ứng lửa gây khó chịu | Thấp | Tắt khi `prefers-reduced-motion` |
+| Burndown sai khi task không có estimate hoặc project chưa có ngày | TB | Test bảng; ghi rõ số task không có estimate dưới biểu đồ; không có ngày thì ẩn đường Ideal |
+| CSV injection | TB | Thêm `'` trước ô bắt đầu bằng `= + - @`, có test |
 
 ## Việc bạn cần làm
 
 | Khi nào | Việc |
 |---|---|
-| Checkpoint A | Bắt đầu một phiên rồi làm việc ở cửa sổ khác tới khi hết giờ, xem thông báo hiện ra. Thử Calendar của Phase 5 nếu chưa |
-| Checkpoint hoàn thành | Chạy một phiên ngắn gắn với task và xem Time tracked |
+| Checkpoint A | Xem `/history`, Sidebar và lịch; xác nhận streak đúng với những ngày bạn đã làm |
+| Checkpoint hoàn thành | Mở CSV bằng Excel; thử `/history` trên điện thoại hoặc iPad |
 
 ## Open Questions
 
 Plan chạy theo mặc định bên dưới. Trả lời khác thì mình sửa lại.
 
-- **Phiên dừng giữa chừng có tính vào Time tracked không?** Mặc định có, nếu đã focus ít nhất 1 phút. Không tính vào streak.
-- **Hết Focus có tự chạy Break luôn không?** Mặc định không, chỉ chuyển mode và chờ bấm Start.
-- **Chip nhanh cho Focus:** mặc định 25 / 50 / 90 phút.
+- **Completion rate tính thế nào?** Mặc định: trong các task tạo trong khoảng thời gian (trừ đã hủy), phần trăm đã xong.
+- **Khoảng thời gian mặc định?** Mặc định Month.
+- **Early bird** mở khi xong một task trước 6 giờ sáng theo múi giờ của bạn. Mặc định giữ như vậy.
