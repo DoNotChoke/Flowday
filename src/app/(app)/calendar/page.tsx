@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { requireUserId } from "@/lib/auth/session";
 import { addDays, isDate, utcToZoned } from "@/lib/datetime";
 import { getCalendar, listUnscheduled, monthGrid, weekDays } from "@/services/calendar";
+import { getStreak } from "@/services/stats";
 import { getTimeZone } from "@/services/tasks";
 import { Planner } from "./Planner";
 
@@ -37,7 +38,7 @@ async function Content({ searchParams }: PageProps<"/calendar">) {
   const selected = typeof query.date === "string" && isDate(query.date) ? query.date : today;
   const view = views.find((option) => option === query.view) ?? "month";
   const days = view === "month" ? monthGrid(selected) : view === "week" ? weekDays(selected) : [selected];
-  const [items, unscheduled] = await Promise.all([getCalendar(userId, timeZone, days[0], days.at(-1)!), listUnscheduled(userId)]);
+  const [items, unscheduled, streak] = await Promise.all([getCalendar(userId, timeZone, days[0], days.at(-1)!), listUnscheduled(userId), getStreak(userId)]);
 
   const href = (date: string | null, to = view) => {
     const params = new URLSearchParams({ ...(to !== "month" && { view: to }), ...(date && { date }) }).toString();
@@ -82,7 +83,7 @@ async function Content({ searchParams }: PageProps<"/calendar">) {
         </div>
       </header>
 
-      <Planner view={view} days={days} today={today} selected={selected} items={items} unscheduled={unscheduled} />
+      <Planner view={view} days={days} today={today} selected={selected} items={items} unscheduled={unscheduled} streakDays={streak.days.filter((day) => day >= days[0] && day <= days.at(-1)!)} />
     </>
   );
 }

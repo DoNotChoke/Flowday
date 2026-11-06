@@ -22,11 +22,11 @@ import { Agenda } from "./Agenda";
 import { DayGrid } from "./DayGrid";
 import { Unscheduled } from "./Unscheduled";
 
-type PlannerProps = { view: "month" | "week" | "day"; days: string[]; today: string; selected: string; items: CalendarItem[]; unscheduled: UnscheduledTask[] };
+type PlannerProps = { view: "month" | "week" | "day"; days: string[]; today: string; selected: string; items: CalendarItem[]; unscheduled: UnscheduledTask[]; streakDays: string[] };
 
 const dayName = (day: unknown) => new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", timeZone: "UTC" }).format(Date.parse(String(day)));
 
-export function Planner({ view, days, today, selected, items, unscheduled }: PlannerProps) {
+export function Planner({ view, days, today, selected, items, unscheduled, streakDays }: PlannerProps) {
   const [shown, showPlanned] = useOptimistic({ items, unscheduled }, (current, { task, day }: { task: UnscheduledTask; day: string }) => ({
     items: [{ ...task, day, kind: "planned" as const, time: null }, ...current.items],
     unscheduled: current.unscheduled.filter((option) => option.id !== task.id),
@@ -96,7 +96,7 @@ export function Planner({ view, days, today, selected, items, unscheduled }: Pla
             <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />
           </div>
         ) : (
-          <DayGrid view={view} days={days} today={today} selected={selected} byDay={byDay} />
+          <DayGrid view={view} days={days} today={today} selected={selected} byDay={byDay} streakDays={new Set(streakDays)} />
         )}
         <div className="flex min-w-0 flex-[1_1_300px] flex-col gap-4.5">
           {view !== "day" && <Agenda date={selected} today={today} items={byDay.get(selected) ?? []} />}

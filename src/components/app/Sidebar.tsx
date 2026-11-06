@@ -1,8 +1,11 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/Button";
 import { requireUserId } from "@/lib/auth/session";
 import { countOpenTasks } from "@/services/board";
+import { getStreak } from "@/services/stats";
 import { AppLogo } from "./AppLogo";
+import { Flame } from "./Flame";
 import { FocusPill } from "./FocusPill";
 import { NavLinks } from "./NavLinks";
 import { ProjectsSection } from "./ProjectsSection";
@@ -10,6 +13,21 @@ import { UserMenu } from "./UserMenu";
 
 async function OpenTaskCount() {
   return <span className="text-xs text-muted">{await countOpenTasks(await requireUserId())}</span>;
+}
+
+async function StreakLink() {
+  const { current } = await getStreak(await requireUserId());
+  return (
+    <Link href="/history" className="flex flex-none items-center gap-3 rounded-control border-hard bg-sun-tint px-3.5 py-3">
+      <Flame size={30} lit={current > 0} />
+      <span className="flex flex-col">
+        <span className="text-[15px] font-bold">
+          {current} {current === 1 ? "day" : "days"}
+        </span>
+        <span className="text-xs text-muted">Current streak</span>
+      </span>
+    </Link>
+  );
 }
 
 export function Sidebar() {
@@ -39,6 +57,10 @@ export function Sidebar() {
 
         <ProjectsSection />
       </div>
+
+      <Suspense>
+        <StreakLink />
+      </Suspense>
 
       <Suspense>
         <UserMenu />

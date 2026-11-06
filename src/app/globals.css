@@ -39,6 +39,21 @@
 
   --radius-control: 14px;
   --radius-card: 24px;
+
+  --animate-flicker: flicker 1.4s ease-in-out infinite;
+
+  @keyframes flicker {
+    0%,
+    100% {
+      transform: scale(1, 1) rotate(-2deg);
+    }
+    35% {
+      transform: scale(1.04, 1.09) rotate(1.5deg);
+    }
+    70% {
+      transform: scale(0.98, 1.03) rotate(-1deg);
+    }
+  }
 }
 
 @utility border-hard {

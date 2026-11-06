@@ -3,6 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Flame } from "@/components/app/Flame";
 import type { CalendarItem } from "@/services/calendar";
 
 const weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -19,10 +20,10 @@ function DayCell({ href, day, label, current, className, children }: { href: str
   );
 }
 
-type DayGridProps = { view: "month" | "week"; days: string[]; today: string; selected: string; byDay: Map<string, CalendarItem[]> };
+type DayGridProps = { view: "month" | "week"; days: string[]; today: string; selected: string; byDay: Map<string, CalendarItem[]>; streakDays: Set<string> };
 
 // The month as 6 rows of 7 days, or one week with every task written out (a list on phones).
-export function DayGrid({ view, days, today, selected, byDay }: DayGridProps) {
+export function DayGrid({ view, days, today, selected, byDay, streakDays }: DayGridProps) {
   const label = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", timeZone: "UTC" });
   const week = view === "week";
   const month = week ? "" : selected.slice(0, 7);
@@ -40,7 +41,8 @@ export function DayGrid({ view, days, today, selected, byDay }: DayGridProps) {
           const inMonth = day.startsWith(month);
           const isSelected = day === selected;
           const isToday = day === today;
-          const name = `${label.format(Date.parse(day))}${isToday ? ", today" : ""}, ${items.length} ${items.length === 1 ? "task" : "tasks"}`;
+          const streak = streakDays.has(day);
+          const name = `${label.format(Date.parse(day))}${isToday ? ", today" : ""}, ${items.length} ${items.length === 1 ? "task" : "tasks"}${streak ? ", streak day" : ""}`;
 
           return (
             <DayCell
@@ -57,6 +59,11 @@ export function DayGrid({ view, days, today, selected, byDay }: DayGridProps) {
                 <span className={`flex size-6.5 items-center justify-center rounded-full text-[13px] font-semibold ${isToday ? "bg-ink text-white" : ""}`}>
                   {Number(day.slice(8))}
                 </span>
+                {streak && (
+                  <span aria-hidden="true" className={week ? "ml-auto" : "ml-auto hidden md:block"}>
+                    <Flame size={14} lit />
+                  </span>
+                )}
                 {week && (
                   <span aria-hidden="true" className="text-xs font-semibold text-muted md:hidden">
                     {weekdays[(new Date(day).getUTCDay() + 6) % 7]}

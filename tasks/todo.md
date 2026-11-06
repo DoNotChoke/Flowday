@@ -34,13 +34,13 @@ Tổng quan và quyết định: `tasks/plan.md`.
 **Mô tả:** Trang 07 tại `/history`: header, thẻ streak (cháy khi còn, tắt khi mất, kèm lời nhắc và 7 ngày của tuần này), KPI Completion rate và Focus hours. Thẻ streak nhỏ trên Sidebar dẫn tới `/history`. Cờ lửa trên ô ngày có hoạt động ở lịch. Mọi nơi đọc từ `getStreak`.
 
 **Tiêu chí nghiệm thu:**
-- [ ] `/history`, Sidebar và lịch hiện cùng một con số và cùng những ngày.
-- [ ] Thẻ streak có hai trạng thái như thiết kế; hiệu ứng tắt khi `prefers-reduced-motion`.
-- [ ] Người mới chưa có hoạt động thấy trạng thái rỗng rõ ràng, không chia cho 0.
+- [x] `/history`, Sidebar và lịch hiện cùng một con số và cùng những ngày.
+- [x] Thẻ streak có hai trạng thái như thiết kế; hiệu ứng tắt khi `prefers-reduced-motion`.
+- [x] Người mới chưa có hoạt động thấy trạng thái rỗng rõ ràng, không chia cho 0.
 
 **Kiểm chứng:**
-- [ ] E2E tạo dữ liệu 3 ngày liên tiếp, kiểm tra số ở `/history`, Sidebar và cờ trên lịch.
-- [ ] So ảnh với `design/screens/07-history-streak.html` ở 390 và 1440 px.
+- [x] E2E tạo dữ liệu 3 ngày liên tiếp, kiểm tra số ở `/history`, Sidebar và cờ trên lịch.
+- [x] So ảnh với `design/screens/07-history-streak.html` ở 390 và 1440 px.
 
 **Phụ thuộc:** T7.1
 
