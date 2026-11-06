@@ -91,7 +91,7 @@ Chi tiết tiêu chí nằm trong `tasks/todo.md`.
 
 ### Checkpoint hoàn thành Phase 7
 
-- [ ] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây
+- [x] Dữ liệu mẫu một năm: `/history` tải dưới 1 giây (truy vấn ~230 ms)
 - [ ] CI xanh
 - [ ] Bạn đã thử trên điện thoại hoặc iPad thật
 - [ ] `PLAN.md` đã đánh dấu xong Phase 7
