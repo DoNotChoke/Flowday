@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
+import { useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
 
 type Day = { day: string; tasks: number; sessions: number };
 
@@ -17,13 +17,7 @@ export function Heatmap({ days }: { days: Day[] }) {
   const today = days.length - 1;
   // The day under the pointer, the keyboard or a tap; none once they leave, so no ring is left behind.
   const [selected, setSelected] = useState<number | null>(null);
-  const scroller = useRef<HTMLDivElement>(null);
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
-
-  // Phones see the latest weeks first.
-  useEffect(() => {
-    scroller.current?.scrollTo({ left: scroller.current.scrollWidth });
-  }, []);
 
   function move(event: KeyboardEvent, index: number) {
     const step = keySteps[event.key];
@@ -50,9 +44,11 @@ export function Heatmap({ days }: { days: Day[] }) {
   return (
     <div className="flex flex-col gap-3">
       {/* The padding keeps the outline of today and the ring of a picked day inside the scroll box, which clips anything past its edge. */}
-      <div ref={scroller} className="-m-1 overflow-x-auto p-1">
+      {/* Right to left so a box too narrow for the year opens on the latest weeks, before any script runs. */}
+      <div dir="rtl" className="-m-1 overflow-x-auto p-1">
         {/* Wide screens share the width among the weeks; smaller ones keep 16px squares and scroll under sticky weekday labels. */}
         <div
+          dir="ltr"
           role="group"
           aria-label="Activity per day over the last 53 weeks"
           onMouseLeave={() => setSelected(null)}
@@ -65,7 +61,7 @@ export function Heatmap({ days }: { days: Day[] }) {
             </span>
           ))}
           {rowLabels.map((label, row) => (
-            <span key={row} aria-hidden="true" style={{ gridColumn: 1, gridRow: row + 1 }} className="sticky left-0 z-10 flex items-center bg-white pr-1.5 text-[11px] text-muted md:text-xs">
+            <span key={row} aria-hidden="true" style={{ gridColumn: 1, gridRow: row + 1 }} className="sticky left-0 z-10 flex items-center bg-white pr-1.5 text-[11px] text-muted shadow-[-4px_0_0_#fff,3px_0_0_#fff] md:text-xs">
               {label}
             </span>
           ))}
